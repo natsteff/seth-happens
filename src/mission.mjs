@@ -70,12 +70,13 @@ export function fallDecision(floor,bottom,velocityY){
 }
 export function runExpired(elapsedMs){return elapsedMs>=RUN_LIMIT_MS;}
 
-export const MEGA_CHARGE_MS=650;
+export const MEGA_TAP_MS=300;
 export const REGULAR_JUMP_SPEED=490;
 export const MEGA_JUMP_SPEED=650;
-export function jumpChoice(heldMs,released){
-  if(heldMs>=MEGA_CHARGE_MS)return 'mega';
-  return released?'regular':'charging';
+// Add only the extra launch energy, so a later second tap cannot create a higher jump.
+export function megaJumpVelocity(sinceFirstMs,velocityY){
+  if(sinceFirstMs<=0||sinceFirstMs>MEGA_TAP_MS||velocityY>=0)return null;
+  return -Math.sqrt(velocityY**2+MEGA_JUMP_SPEED**2-REGULAR_JUMP_SPEED**2);
 }
 export function countdownLabel(elapsedMs){
   const seconds=Math.max(0,Math.ceil((RUN_LIMIT_MS-elapsedMs)/1000));

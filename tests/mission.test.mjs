@@ -99,14 +99,16 @@ test('patrols sweep both ends and stay inside every platform',async()=>{
   }
 });
 
-test('regular hop stays default until the longer mega threshold, and both clear the floor rise',async()=>{
-  const {jumpChoice,MEGA_CHARGE_MS,REGULAR_JUMP_SPEED,MEGA_JUMP_SPEED}=await import('../src/mission.mjs');
-  assert.equal(jumpChoice(80,true),'regular');
-  assert.equal(jumpChoice(MEGA_CHARGE_MS-1,true),'regular');
-  assert.equal(jumpChoice(MEGA_CHARGE_MS-1,false),'charging');
-  assert.equal(jumpChoice(MEGA_CHARGE_MS,false),'mega');
+test('second tap upgrades rising jump within 300ms without adding a full second jump',async()=>{
+  const {megaJumpVelocity,REGULAR_JUMP_SPEED,MEGA_JUMP_SPEED}=await import('../src/mission.mjs');
+  assert.equal(megaJumpVelocity(0,-490),null);
+  assert.equal(megaJumpVelocity(301,-175),null);
+  assert.equal(megaJumpVelocity(200,10),null);
+  assert.equal(megaJumpVelocity(1,-490),-650);
+  const v=-REGULAR_JUMP_SPEED+1050*.3;
+  const height=REGULAR_JUMP_SPEED*.3-1050*.3**2/2;
+  assert.ok(Math.abs(height+megaJumpVelocity(300,v)**2/(2*1050)-MEGA_JUMP_SPEED**2/(2*1050))<.001);
   assert.ok(REGULAR_JUMP_SPEED**2/(2*1050)>76);
-  assert.ok(MEGA_JUMP_SPEED>REGULAR_JUMP_SPEED);
 });
 test('countdown formats three minutes, final seconds and timeout',async()=>{
   const {countdownLabel}=await import('../src/mission.mjs');

@@ -2,7 +2,9 @@
 
 ![Seth Happens - Beer Run, Elevator Out of Order](public/assets/title-logo.png)
 
-[![Play Now! Launch Seth Happens Beer Run](docs/play-now.svg)](https://natsteff.github.io/seth-happens/)
+<p align="center">
+  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Launch Seth Happens Beer Run"></a>
+</p>
 
 Fullscreen highly recommended.
 
@@ -13,7 +15,7 @@ One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and
 | Action | Key |
 | --- | --- |
 | Move | A / D or ← / → |
-| Jump | Space, W or ↑; release for a regular hop, hold 0.65s to charge a mega jump |
+| Jump | Space, W or ↑ jumps immediately; press twice within 0.3s for Mega Jump. Holding has no extra effect |
 | Sprint | Hold Shift |
 | Pause / resume | P or Pause button |
 | Photo / finish / enter elevator | F |

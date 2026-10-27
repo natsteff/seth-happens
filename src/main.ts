@@ -5,7 +5,7 @@ import { impactEffects } from './impact-effects';
 import { gameAudio } from './audio';
 import { soccerBall, steelKeg, sixPack } from './props';
 import { walkLayout } from './art-layout';
-import { MEGA_CHARGE_MS, REGULAR_JUMP_SPEED, MEGA_JUMP_SPEED, jumpChoice, countdownLabel, fallDecision, runExpired, RUN_LIMIT_MS, SPRINT_SPEED, timeBonus, finalScore, roadLandingIsFall, fallingStep, patrolX, EGG, fallingAssignments, floors, photoStops, beerSpot, recordMishap, RESTART_HOLD_MS, missing, missedPhotos, photoIndicator, LEVEL_WIDTH, GROUND_Y, ROAD, FLOOR_RISE, objectImpactReaction } from './mission.mjs';
+import { REGULAR_JUMP_SPEED, megaJumpVelocity, countdownLabel, fallDecision, runExpired, RUN_LIMIT_MS, SPRINT_SPEED, timeBonus, finalScore, roadLandingIsFall, fallingStep, patrolX, EGG, fallingAssignments, floors, photoStops, beerSpot, recordMishap, RESTART_HOLD_MS, missing, missedPhotos, photoIndicator, LEVEL_WIDTH, GROUND_Y, ROAD, FLOOR_RISE, objectImpactReaction } from './mission.mjs';
 
 const W = 1100, H = 600;
 // Render at display density, retaining the same logical play area and physics.
@@ -25,8 +25,8 @@ class Errand extends Phaser.Scene {
   progress!: Phaser.GameObjects.Rectangle;
   crate!: Phaser.GameObjects.Container; hero!: Phaser.GameObjects.Container; portrait!: Phaser.GameObjects.Sprite;
   elapsedMs=0;failed=false;cheater=false;riding=false;rideTween?:Phaser.Tweens.Tween;
-  chargeStarted=-1;jumpCount=0;
-  paused=false;pauseStarted=0;pauseOverlay!:Phaser.GameObjects.Container;chargeMeter!:Phaser.GameObjects.Container;chargeFill!:Phaser.GameObjects.Rectangle;
+  jumpStarted=-1;megaUsed=false;jumpCount=0;
+  paused=false;pauseStarted=0;pauseOverlay!:Phaser.GameObjects.Container;
   timerText!:Phaser.GameObjects.Text;
   eggStage=0;eggPreviousX=75;eggBall!:Phaser.GameObjects.Container;eggLift!:Phaser.GameObjects.Container;
   eggLabel!:Phaser.GameObjects.Text;liftHint!:Phaser.GameObjects.Text;eggBlocks:Phaser.GameObjects.Rectangle[]=[];
@@ -57,7 +57,7 @@ class Errand extends Phaser.Scene {
     resetScoreEntry();this.scorePaused=false;
     this.input.keyboard!.enabled=true;
     this.elapsedMs=0;this.failed=false;this.cheater=false;this.riding=false;this.rideTween=undefined;
-    this.chargeStarted=-1;this.jumpCount=0;this.paused=false;this.eggStage=0;this.eggPreviousX=75;this.eggBlocks=[];
+    this.jumpStarted=-1;this.megaUsed=false;this.jumpCount=0;this.paused=false;this.eggStage=0;this.eggPreviousX=75;this.eggBlocks=[];
     this.mishaps={falls:0,squishes:0,bumps:0};this.restartSince=null;
     this.runVersion++;this.onRoad=true;this.fallSoundPlayed=false;this.heroHeard=false;this.heroPlaying=false;
     gameAudio.beginRun();this.introActive=true;this.introStarted=false;
@@ -105,9 +105,7 @@ class Errand extends Phaser.Scene {
     for(const [key,frames] of [['walk-empty',[0,1,2,3]],['walk-beer',[4,5,6,7]]] as const){
       if(!this.anims.exists(key))this.anims.create({key,frames:frames.map(frame=>({key:'seth-walk',frame})),frameRate:8,repeat:-1});
     }
-    this.chargeFill=this.add.rectangle(-22,-96,0,5,0xffcc7b).setOrigin(0,.5);
-    this.chargeMeter=this.add.container(0,0,[this.add.rectangle(0,-96,46,8,0x102137),this.chargeFill,this.label(-34,-116,'MEGA CHARGE','#ffd08b',9)]).setVisible(false);
-    this.hero.add([this.portrait,this.chargeMeter]).setDepth(5);
+    this.hero.add(this.portrait).setDepth(5);
     this.physics.world.setBounds(0,0,LEVEL_WIDTH,GROUND_Y+800);
     this.cameras.main.setBounds(0,300,LEVEL_WIDTH,GROUND_Y+240-300);
     this.cameras.main.startFollow(this.player,true,.12,.12,-120,90);
@@ -335,7 +333,7 @@ class Errand extends Phaser.Scene {
   say(t:string){this.toast.setText(t);}
   retry(time:number,reason:string,reaction:'fall'|'person'|'object'|'squish'='object'){
     this.mishaps=recordMishap(this.mishaps,reaction);
-    this.chargeStarted=-1;this.chargeMeter.setVisible(false);
+    this.jumpStarted=-1;this.megaUsed=false;
     this.retries++;(this.player.body as Phaser.Physics.Arcade.Body).reset(this.checkpoint.x,this.checkpoint.y);this.player.setVelocity(0,0);this.immuneUntil=time+1400;this.lastGround=-1000;this.jumpUntil=0;
     gameAudio.play('impact');if(reaction==='fall'&&!this.fallSoundPlayed)gameAudio.speak('Aaaaaah!','fall');if(reaction==='squish')gameAudio.speak('Squish!','squish');if(reaction==='person')gameAudio.speak('Well, excuse you.','person');if(reaction==='object'){const kind=objectImpactReaction(Math.random());gameAudio.speak(kind==='ouch'?'Ouch!':'Ahh!',kind);}this.cameras.main.shake(100,.003);this.say(reason+' Beer and photos saved. C toggles jump clues.');this.fallSoundPlayed=false;
   }
@@ -344,7 +342,7 @@ class Errand extends Phaser.Scene {
     this.paused=!this.paused;
     const button=document.getElementById('pause-toggle')!;
     button.textContent=this.paused?'Resume · P':'Pause · P';button.setAttribute('aria-pressed',String(this.paused));
-    this.chargeStarted=-1;this.chargeMeter.setVisible(false);
+    this.jumpStarted=-1;this.megaUsed=false;
     if(this.paused){
       this.pauseStarted=this.time.now;this.physics.world.pause();this.tweens.pauseAll();void gameAudio.setPaused(true);
       this.pauseOverlay=this.add.container(0,0,[
@@ -483,19 +481,19 @@ class Errand extends Phaser.Scene {
           else{this.fallSoundPlayed=false;this.onRoad=landed.floor===0;this.floor=landed.floor;this.checkpoint={x:landed.floor===0?this.player.x:landed.x+50,y:landed.y-24};}
         }
       }
-      const jumpHeld=['W','UP','SPACE'].some(k=>this.keys[k].isDown);
-      if(['W','UP','SPACE'].some(k=>Phaser.Input.Keyboard.JustDown(this.keys[k])))this.jumpUntil=time+130;
-      if(this.chargeStarted<0&&this.jumpUntil>time&&time-this.lastGround<110){this.chargeStarted=this.elapsedMs;this.jumpUntil=0;}
-      if(this.chargeStarted>=0&&!body.blocked.down&&time-this.lastGround>=110){this.chargeStarted=-1;this.chargeMeter.setVisible(false);}
-      if(this.chargeStarted>=0){
-        const charge=this.elapsedMs-this.chargeStarted;
-        const choice=jumpChoice(charge,!jumpHeld);
-        this.chargeMeter.setVisible(true);this.chargeFill.width=44*Math.min(charge/MEGA_CHARGE_MS,1);
-        if(choice!=='charging'){
-          this.player.setVelocityY(-(choice==='mega'?MEGA_JUMP_SPEED:REGULAR_JUMP_SPEED));
-          this.player.setVelocityX(direction*(this.keys.SHIFT.isDown?SPRINT_SPEED:275));
-          this.chargeStarted=-1;this.chargeMeter.setVisible(false);this.lastGround=-1000;this.jumpCount++;
-          gameAudio.play('jump');gameAudio.speak(choice==='mega'?'Mega jump':'Quick hop',choice==='mega'?'grunt':'quick',undefined,false,this.jumpCount%2?.97:1.04);
+      const jumpPressed=['W','UP','SPACE'].some(k=>Phaser.Input.Keyboard.JustDown(this.keys[k]));
+      if(body.blocked.down&&body.velocity.y>=0){this.jumpStarted=-1;this.megaUsed=false;}
+      const boost=jumpPressed&&!this.megaUsed&&this.jumpStarted>=0
+        ?megaJumpVelocity(this.elapsedMs-this.jumpStarted,body.velocity.y):null;
+      if(boost!==null){
+        this.player.setVelocityY(boost);this.megaUsed=true;this.jumpUntil=0;
+        gameAudio.speak('Mega jump','grunt',undefined,false,this.jumpCount%2?.97:1.04);
+      }else{
+        if(jumpPressed)this.jumpUntil=time+130;
+        if(this.jumpUntil>time&&time-this.lastGround<110){
+          this.player.setVelocityY(-REGULAR_JUMP_SPEED);this.jumpUntil=0;this.lastGround=-1000;
+          this.jumpStarted=this.elapsedMs;this.megaUsed=false;this.jumpCount++;
+          gameAudio.play('jump');gameAudio.speak('Quick hop','quick',undefined,false,this.jumpCount%2?.97:1.04);
         }
       }
       this.player.x=Phaser.Math.Clamp(this.player.x,14,LEVEL_WIDTH-14);
@@ -571,7 +569,7 @@ class Errand extends Phaser.Scene {
     this.photoHud.setText(indicator).setColor(hasMissed?'#ffac8c':'#80e5ce');
     const status=document.getElementById('live-status');
     const summary=`${this.hud.text}. ${indicator}. ${this.toast.text}${this.won?' Mission complete.':''}`;
-    if(status){status.dataset.paused='false';status.dataset.charging=String(this.chargeStarted>=0);status.dataset.floor=String(this.floor);status.dataset.elapsed=String(Math.round(this.elapsedMs));status.dataset.eggStage=String(this.eggStage);status.dataset.riding=String(this.riding);status.dataset.failed=String(this.failed);status.dataset.score=String(finalScore(this.beer,this.photos,this.mishaps,this.latePhotos,this.elapsedMs,this.cheater));status.dataset.falls=String(this.mishaps.falls);status.dataset.squishes=String(this.mishaps.squishes);status.dataset.bumps=String(this.mishaps.bumps);status.dataset.won=String(this.won);status.dataset.intro='false';status.dataset.heroPlaying=String(this.heroPlaying);status.dataset.fallSound=String(this.fallSoundPlayed);if(status.textContent!==summary)status.textContent=summary;status.dataset.x=String(Math.round(this.player.x));status.dataset.y=String(Math.round(this.player.y));status.dataset.grounded=String(body.blocked.down);status.dataset.walkFrame=String(this.portrait.frame.name);status.dataset.walkFrames=[...this.visitedWalkFrames].sort().join(',');status.dataset.carrying=String(this.beer);status.dataset.sound=gameAudio.state;status.dataset.muted=String(gameAudio.muted);status.dataset.lastCue=gameAudio.lastCue;status.dataset.voiceLine=gameAudio.lastSpoken;status.dataset.voiceStatus=gameAudio.voiceStatus;status.dataset.voiceName=gameAudio.voiceName;status.dataset.loadedVoices=String(gameAudio.loadedVoiceCount);status.dataset.playedVoices=[...gameAudio.playedKinds].sort().join(',');status.dataset.locationCue=gameAudio.lastLocation;status.dataset.heardLocations=[...this.heardLocations].sort().join(',');status.dataset.cheatMode=String(this.cheatMode);status.dataset.jumpClues=String(this.jumpClues.filter(clue=>clue.visible).length);const nearbyPiano=this.hazards.find(h=>h.kind==='piano'&&h.floor===this.floor);status.dataset.pianoDrops=String(nearbyPiano?.piano?.serial??0);status.dataset.pianoVisible=String(nearbyPiano?.art.visible??false);}
+    if(status){status.dataset.paused='false';status.dataset.megaJump=String(this.megaUsed);status.dataset.floor=String(this.floor);status.dataset.elapsed=String(Math.round(this.elapsedMs));status.dataset.eggStage=String(this.eggStage);status.dataset.riding=String(this.riding);status.dataset.failed=String(this.failed);status.dataset.score=String(finalScore(this.beer,this.photos,this.mishaps,this.latePhotos,this.elapsedMs,this.cheater));status.dataset.falls=String(this.mishaps.falls);status.dataset.squishes=String(this.mishaps.squishes);status.dataset.bumps=String(this.mishaps.bumps);status.dataset.won=String(this.won);status.dataset.intro='false';status.dataset.heroPlaying=String(this.heroPlaying);status.dataset.fallSound=String(this.fallSoundPlayed);if(status.textContent!==summary)status.textContent=summary;status.dataset.x=String(Math.round(this.player.x));status.dataset.y=String(Math.round(this.player.y));status.dataset.grounded=String(body.blocked.down);status.dataset.walkFrame=String(this.portrait.frame.name);status.dataset.walkFrames=[...this.visitedWalkFrames].sort().join(',');status.dataset.carrying=String(this.beer);status.dataset.sound=gameAudio.state;status.dataset.muted=String(gameAudio.muted);status.dataset.lastCue=gameAudio.lastCue;status.dataset.voiceLine=gameAudio.lastSpoken;status.dataset.voiceStatus=gameAudio.voiceStatus;status.dataset.voiceName=gameAudio.voiceName;status.dataset.loadedVoices=String(gameAudio.loadedVoiceCount);status.dataset.playedVoices=[...gameAudio.playedKinds].sort().join(',');status.dataset.locationCue=gameAudio.lastLocation;status.dataset.heardLocations=[...this.heardLocations].sort().join(',');status.dataset.cheatMode=String(this.cheatMode);status.dataset.jumpClues=String(this.jumpClues.filter(clue=>clue.visible).length);const nearbyPiano=this.hazards.find(h=>h.kind==='piano'&&h.floor===this.floor);status.dataset.pianoDrops=String(nearbyPiano?.piano?.serial??0);status.dataset.pianoVisible=String(nearbyPiano?.art.visible??false);}
   }
   finish(){
     (document.getElementById('pause-toggle') as HTMLButtonElement).disabled=true;
