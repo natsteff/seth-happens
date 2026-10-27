@@ -2,7 +2,9 @@
 
 ![Seth Happens - Beer Run, Elevator Out of Order](public/assets/title-logo.png)
 
-**[Play in your browser](https://natsteff.github.io/seth-happens/)** · Fullscreen highly recommended.
+[![Play Now! Launch Seth Happens Beer Run](docs/play-now.svg)](https://natsteff.github.io/seth-happens/)
+
+Fullscreen highly recommended.
 
 One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and Ellowyn before the three-minute deadline.
 
@@ -11,8 +13,9 @@ One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and
 | Action | Key |
 | --- | --- |
 | Move | A / D or ← / → |
-| Jump | Space, W or ↑; hold for height, tap for a short hop |
+| Jump | Space, W or ↑; release for a regular hop, hold 0.65s to charge a mega jump |
 | Sprint | Hold Shift |
+| Pause / resume | P or Pause button |
 | Photo / finish / enter elevator | F |
 | Return to a missed photo | B |
 | Sound | S |
@@ -32,7 +35,7 @@ Rolling and walking obstacles patrol the whole floor. Pianos, anvils, window AC 
 - Each fall, squish or bump: −10, counting each incident once.
 - Finish under **120 seconds**: +100 for each whole second saved. A 90-second finish earns +3,000. Fractional seconds round up before calculating the bonus.
 - At 180 seconds, the run fails and no score is saved.
-- Intro and high-score dialogs pause the clock; ordinary play, photo recovery and the elevator journey use time.
+- Intro and high-score dialogs pause the clock. P pauses gameplay, countdown, animations and audio, including a synchronized elevator ride. Resume continues from the same point.
 
 Names and scores stay in that browser, including earlier versions’ records. The top 10 and full history show dates, times, objectives and mishaps. Clearing requires the configured password and confirmation. The browser stores a password verifier, not the readable password; this deters casual clearing but is not server authentication. Browser storage can be cleared independently.
 

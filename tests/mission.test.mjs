@@ -98,3 +98,20 @@ test('patrols sweep both ends and stay inside every platform',async()=>{
     for(let ms=0;ms<10000;ms+=113)assert.ok(patrolX(floor,ms,0)>=floor.x+24&&patrolX(floor,ms,0)<=floor.x+floor.width-24);
   }
 });
+
+test('regular hop stays default until the longer mega threshold, and both clear the floor rise',async()=>{
+  const {jumpChoice,MEGA_CHARGE_MS,REGULAR_JUMP_SPEED,MEGA_JUMP_SPEED}=await import('../src/mission.mjs');
+  assert.equal(jumpChoice(80,true),'regular');
+  assert.equal(jumpChoice(MEGA_CHARGE_MS-1,true),'regular');
+  assert.equal(jumpChoice(MEGA_CHARGE_MS-1,false),'charging');
+  assert.equal(jumpChoice(MEGA_CHARGE_MS,false),'mega');
+  assert.ok(REGULAR_JUMP_SPEED**2/(2*1050)>76);
+  assert.ok(MEGA_JUMP_SPEED>REGULAR_JUMP_SPEED);
+});
+test('countdown formats three minutes, final seconds and timeout',async()=>{
+  const {countdownLabel}=await import('../src/mission.mjs');
+  assert.equal(countdownLabel(0),'3:00');
+  assert.equal(countdownLabel(42000),'2:18');
+  assert.equal(countdownLabel(179200),'0:01');
+  assert.equal(countdownLabel(180000),'0:00');
+});

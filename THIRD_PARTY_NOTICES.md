@@ -9,3 +9,5 @@ Build tools: Vite 8.3.5 (MIT), TypeScript 7.0.2 (Apache-2.0). These are developm
 Original source/art: project-owned; no additional redistribution license is granted. Third-party rights remain with their respective owners.
 
 The title logo and five additional WAV recordings (elevator, goal, crashing, quick jump, cheater) were supplied by the project owner October 26, 2026. The quiet final tower and impact debris are original code-drawn artwork.
+
+The realistic six-pack pickup (public/assets/beer-pickup.png) was generated with the built-in image-generation tool from an original prompt: six amber bottles in a tan cardboard carrier, transparent background, no commercial branding. The Play Now graphic is original SVG artwork.

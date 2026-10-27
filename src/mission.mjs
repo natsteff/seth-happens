@@ -69,3 +69,15 @@ export function fallDecision(floor,bottom,velocityY){
   return {scream:dropping&&bottom>floors[floor].y+12,retry:dropping&&bottom>floors[floor].y+60};
 }
 export function runExpired(elapsedMs){return elapsedMs>=RUN_LIMIT_MS;}
+
+export const MEGA_CHARGE_MS=650;
+export const REGULAR_JUMP_SPEED=490;
+export const MEGA_JUMP_SPEED=650;
+export function jumpChoice(heldMs,released){
+  if(heldMs>=MEGA_CHARGE_MS)return 'mega';
+  return released?'regular':'charging';
+}
+export function countdownLabel(elapsedMs){
+  const seconds=Math.max(0,Math.ceil((RUN_LIMIT_MS-elapsedMs)/1000));
+  return `${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`;
+}

@@ -3,6 +3,8 @@ type Cue = 'jump' | 'photo' | 'pickup' | 'impact' | 'miss' | 'win' | 'piano' | '
 /** Original synthesized effects; nothing downloaded and no audio service. */
 class GameAudio {
   private context?: AudioContext;
+  private paused=false;
+  private pausedAt=0;
   private master?: GainNode;
   private effects?: GainNode;
   private noise?: AudioBuffer;
@@ -34,9 +36,15 @@ class GameAudio {
       const data = this.noise.getChannelData(0);
       for (let i=0;i<data.length;i++) data[i] = (Math.random()*2-1)*(1-i/data.length);
     }
-    if (this.context.state === 'suspended') await this.context.resume();
+    if (this.context.state === 'suspended'&&!this.paused) await this.context.resume();
     this.syncButton();
     await this.loadVoices();
+  }
+  async setPaused(paused:boolean){
+    if(this.paused===paused)return;
+    this.paused=paused;
+    if(paused){this.pausedAt=performance.now();if(this.context?.state==='running')await this.context.suspend();}
+    else{if(this.voiceSource)this.voiceUntil+=performance.now()-this.pausedAt;if(this.context?.state==='suspended')await this.context.resume();}
   }
   toggle() { this.muted = !this.muted;if(this.muted){if(this.activeKind!=='start'&&this.activeKind!=='hero')this.stopVoice();this.stopLocations();} if(this.master&&this.context)this.master.gain.setValueAtTime(this.muted?0:.8,this.context.currentTime);this.syncButton(); }
   private syncButton() {
@@ -44,7 +52,7 @@ class GameAudio {
     if(button){button.textContent=`Sound: ${this.muted?'Off':'On'} · S`;button.setAttribute('aria-pressed',String(!this.muted));button.dataset.context=this.state;}
   }
   beginRun(){
-    this.cancelRide();this.stopVoice();this.stopLocations();this.lastSpoken='';this.lastLocation='';
+    void this.setPaused(false);this.cancelRide();this.stopVoice();this.stopLocations();this.lastSpoken='';this.lastLocation='';
   }
   private stopLocations(){for(const source of this.locationSources)source.stop();this.locationSources.clear();}
   playLocation(kind:LocationCue){
