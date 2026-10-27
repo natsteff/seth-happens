@@ -39,7 +39,7 @@ Rolling and walking obstacles patrol the whole floor. Pianos, anvils, window AC 
 - At 180 seconds, the run fails and no score is saved.
 - Intro and high-score dialogs pause the clock. P pauses gameplay, countdown, animations and audio. Resume continues from the same point.
 
-Names and scores stay in that browser, including earlier versions’ records. The top 10 and full history show dates, times, objectives and mishaps. Clearing requires the configured password and confirmation. The browser stores a password verifier, not the readable password; this deters casual clearing but is not server authentication. Browser storage can be cleared independently.
+High scores are shared by everyone playing the same deployment and stored on its server. Each separately hosted copy uses its own database. A separate **This PC High Scores** list preserves browser records. New runs attempt both lists; save results are reported separately. The top 10 and full history show dates, times, objectives and mishaps. Clearing requires server-side password verification and confirmation. See [server setup](docs/leaderboard-server.md).
 
 
 ## Screenshots
@@ -59,6 +59,6 @@ pnpm test
 pnpm build
 ```
 
-The repository uses relative asset URLs for GitHub Pages. Source is on main; the compiled playable site is on gh-pages. No backend, accounts, analytics or shared scoreboard.
+The repository uses relative asset URLs for GitHub Pages. Source is on main; the compiled playable site is on gh-pages. The shared leaderboard requires the server setup above; GitHub Pages hosts only the game files. No player accounts or analytics.
 
 Owner-supplied character references, logo and audio; generated character artwork and original code-drawn props/effects. The Minnesota United crest is owner supplied for an unofficial fan scene; no affiliation or endorsement. Raw reference photographs are not included. See [asset and dependency notices](THIRD_PARTY_NOTICES.md).
