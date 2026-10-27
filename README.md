@@ -12,6 +12,8 @@
 
 One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and Ellowyn before the three-minute deadline. See if you can find the 'easter egg'!
 
+🎵 **[Listen to the entire video game soundtrack](https://suno.com/playlist/0ef61d61-9481-48f2-b67f-989cffdc9cca)**.
+
 ## Fun Things to Explore
 
 - **GO FULL SCREEN!** Bigger Seth, bigger jumps, bigger questionable decisions.
