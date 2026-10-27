@@ -32,6 +32,8 @@ Copied unchanged from Nate’s supplied Downloads files. The full eleven-file se
 - `hero.wav`: copied unchanged from Nate’s `my hero.wav` (1.23s). Plays once on first landing on floor 26. Delivery is locked until the actual playback-end event; mute silences it without shortening the lock. Higher priority prevents grunts interrupting the line. Restart clears the arrival gate safely.
 - `squish.wav`: copied unchanged from Nate’s `squish sfx.wav`. A piano hitting Seth uses this clip instead of the ordinary object-bump reaction. Other objects keep random ouch/ahh, people keep excuse-you, and the early ledge-fall scream remains separate.
 
-Intro autoplay is attempted immediately; browser policy may require a first gesture. S toggles all sound. Original supplied files are untouched and nothing is uploaded.
+Intro autoplay is attempted immediately; browser policy may require a first gesture. S toggles all sound. Original supplied files are untouched and runtime recordings are included in the public game.
 
 Additional owner recordings: elevator.wav (ride, arrival synchronized to end), goal.wav (Easter egg kick), crashing.wav (cooler debris), quick-jump.wav (tap jump), cheater.wav (shortcut arrival). Originals preserved.
+
+Soundtrack: owner-supplied unmodified MP3 files in music/ (Arcade Staircase, The Beer of Destiny, Twenty-Six Floors of Celts, Go Seth Go, The Haunted Happy Hour). Runtime copies from Nate’s provided files; original intake hashes are retained privately by the project owner. No third-party download in this update. Countdown/outcome tracks are also owner supplied: The Final Warning, System Failure Imminent, Failure - Twenty-Six Floors for Nothing, Big Stupid Cheater, 26 Floors of Glory, Eye of the Stairwell. All runtime MP3s preserve supplied bytes; no Beer Delivery World Champion track is used.
