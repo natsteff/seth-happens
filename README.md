@@ -1,14 +1,25 @@
 # Seth Happens - Beer Run, Elevator Out of Order
 
+**Version 0.3.0**
+
 ![Seth Happens - Beer Run, Elevator Out of Order](public/assets/title-logo.png)
 
 <p align="center">
-  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Launch Seth Happens Beer Run"></a>
+  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 0.3.0"></a>
 </p>
 
-Fullscreen highly recommended. **Play Now on GitHub Pages uses local browser high scores only. Server-wide high scores cannot run on GitHub Pages; they require a server-enabled installation.**
+**Play version 0.3.0** — Fullscreen highly recommended. **Play Now on GitHub Pages uses local browser high scores only. Server-wide high scores cannot run on GitHub Pages; they require a server-enabled installation.**
 
 One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and Ellowyn before the three-minute deadline. See if you can find the 'easter egg'!
+
+## Fun Things to Explore
+
+- **GO FULL SCREEN!** Bigger Seth, bigger jumps, bigger questionable decisions.
+- Find the **easter egg cheat**—see if you can discover it yourself!
+- Experiment with the **radio stations and tracks**.
+- Try different **30-second warning** and **Champion Track** selections.
+- **Don’t fall…or do, because it’s hilarious.**
+- **Let time run out and see what happens.**
 
 ## Controls
 
@@ -17,17 +28,23 @@ One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and
 | Move | A / D or ← / → |
 | Jump | Space, W or ↑ jumps immediately; press twice within 0.3s for Mega Jump. Holding has no extra effect |
 | Sprint | Hold Shift |
+| Optional controller | Left stick/D-pad move; A/Cross jump (double-press Mega Jump); RT/R2 sprint; X/Square interact; B/Circle recall; Menu/Options pause |
 | Pause / resume | P or Pause button |
 | Photo / finish | F |
 | Return to a missed photo | B |
 | Sound | S |
 | Fullscreen | V or fullscreen button; Esc exits |
-| Jump clues | C |
 | Restart | Hold R |
 
 Floor 01 is the first rooftop. Returning to a lower rooftop is safe. Missing the rooftops and falling toward the road from Floor 02 or higher screams, costs one fall penalty, and retries the last rooftop. Dropping from Floor 01 to the road remains safe.
 
-Rolling and walking obstacles patrol the whole floor. Pianos, anvils, window AC units and beer coolers drop at distinct intervals in the middle of their platforms. Watch their warning and aftermath, then choose your jump.
+Keyboard remains the default and stays active with a controller connected. Pair a supported standard-layout controller through the operating system, focus the game and press a button; release controls to neutral before play. Disconnecting the active controller pauses play. Use keyboard/mouse for menus, restarting and high-score name entry. Actual device/browser compatibility still needs hardware testing.
+
+Rolling and walking obstacles patrol the whole floor. Pianos, anvils, window AC units and beer coolers drop at distinct intervals in the middle of their platforms. Watch their warning and aftermath, then choose your jump. Falling objects can squish you during descent; once landed they are safe to touch but solid, so jump over them.
+
+## Music radio
+
+Five backing tracks are selectable in the SETH FM bar. **Arcade Staircase** is default; keys **1–5** select songs, **0** turns music off, and **[ previous · ] next** select previous/next with wraparound. New players start at **75%** music volume; preferences persist between sessions. The music slider reaches silence without changing voices/effects. **S** mutes all sound. Gameplay songs loop and pause with play/score dialogs. At run end, outcome music replaces them; completion music continues through score entry. Music starts after the intro and appears in fullscreen too.
 
 ## Scoring and records
 
@@ -39,7 +56,7 @@ Rolling and walking obstacles patrol the whole floor. Pianos, anvils, window AC 
 - At 180 seconds, the run fails and no score is saved.
 - Intro and high-score dialogs pause the clock. P pauses gameplay, countdown, animations and audio. Resume continues from the same point.
 
-## New in version 0.2.2: optional server high scores
+## Optional server high scores
 
 High Scores opens your existing local browser list directly by default, including on the **Play Now** GitHub Pages version. Server scores default off in `public/game-config.json` (deployed as `game-config.json`).
 
@@ -56,7 +73,7 @@ Server-wide scores require a running score service; GitHub Pages cannot provide 
 
 ## Local development
 
-Node 22.12+ and pnpm 11.25.0:
+Node 22.13+ and pnpm 11.25.0:
 
 ```sh
 pnpm install
@@ -68,3 +85,27 @@ pnpm build
 The repository uses relative asset URLs for GitHub Pages. Source is on main; the compiled playable site is on gh-pages. The shared leaderboard requires the server setup above; GitHub Pages hosts only the game files. No player accounts or analytics.
 
 Owner-supplied character references, logo and audio; generated character artwork and original code-drawn props/effects. The Minnesota United crest is owner supplied for an unofficial fan scene; no affiliation or endorsement. Raw reference photographs are not included. See [asset and dependency notices](THIRD_PARTY_NOTICES.md).
+
+## Final-warning and champion music
+
+The **30sec Remaining Track** selector offers **The Final Warning** (default) and **System Failure Imminent**. At30 seconds remaining, gameplay music crossfades into your selected warning track over **1.25 seconds**; the radio turns red and station switching locks.
+
+**Champion Track** selects **26 Floors of Glory** (default) or **Eye of the Stairwell**. It loops after successful completion and through high-score entry. Timeout has a separate looping failure track. Music volume/mute still apply, and effects play over the music.
+
+Gameplay station, warning/champion selections, music volume, music on/off and overall sound are remembered in this browser. A saved volume overrides the **75%** first-visit default. Clearing site data removes preferences.
+
+## Music, sound and voice credits
+
+- Music created by **[BT-AI](https://suno.com/@bt_ai)**.
+- Select sound effects from **[Pixabay](https://pixabay.com/sound-effects/)**, alongside original synthesized game effects.
+- Voices built using **[ElevenLabs](https://elevenlabs.io/)**.
+
+🎵 **[Listen to the entire video game soundtrack](https://suno.com/playlist/0ef61d61-9481-48f2-b67f-989cffdc9cca)**.
+
+## What’s new in 0.3.0
+
+- Five-track SETH FM radio with saved preferences, independent volume, warning-track crossfade and selectable completion music.
+- Optional standard-layout gamepad support alongside keyboard controls (physical controller acceptance still pending).
+- Updated walking/falling/carrying sprites, faster sprint cadence, earlier fall audio and solid landed hazards.
+- Richer timeout presentation, clearer controls/layout and removal of the old jump-clue toggle.
+- Existing browser high scores remain preserved; Play Now still uses local-only scores.

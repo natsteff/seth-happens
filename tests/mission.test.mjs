@@ -47,7 +47,7 @@ test('lower rooftops are safe; only missing roofs toward road triggers a fall', 
   const {fallDecision,roadLandingIsFall,GROUND_Y}=await import('../src/mission.mjs');
   assert.deepEqual(fallDecision(1,ROAD.y,450),{scream:false,retry:false});
   for(let floor=2;floor<=26;floor++){
-    assert.deepEqual(fallDecision(floor,floors[floor-1].y,450),{scream:false,retry:false});
+    assert.deepEqual(fallDecision(floor,floors[floor-1].y,450,floors[floor-1].x+100),{scream:false,retry:false});
     assert.equal(fallDecision(floor,GROUND_Y+13,450).scream,true);
     assert.equal(fallDecision(floor,GROUND_Y+61,450).retry,true);
     assert.equal(roadLandingIsFall(floor),true);
@@ -115,4 +115,46 @@ test('countdown formats three minutes, final seconds and timeout',async()=>{
   assert.equal(countdownLabel(42000),'2:18');
   assert.equal(countdownLabel(179200),'0:01');
   assert.equal(countdownLabel(180000),'0:00');
+});
+
+test('fall audio starts high up only after reachable roofs are missed',async()=>{
+  const {fallDecision,fallingPose,SPRINT_SPEED}=await import('../src/mission.mjs');
+  for(const floor of [2,12,25]){
+    const roof=floors[floor],lower=floors[floor-1];
+    assert.equal(fallDecision(floor,roof.y+30,250,lower.x+100).scream,false);
+    assert.equal(fallDecision(floor,roof.y+30,250,roof.x+roof.width+30).scream,true);
+    assert.equal(fallDecision(floor,roof.y+30,250,roof.x+roof.width+30).retry,false);
+    assert.equal(fallingPose(floor,roof.y+30,250),true);
+    assert.equal(fallingPose(floor,roof.y-20,250),false);
+    assert.equal(fallingPose(floor,roof.y+30,-250),false);
+  }
+  assert.equal(fallDecision(1,floors[1].y+30,250,500).scream,false);
+});
+test('timer beeps every red-countdown second and never outside it',async()=>{
+  const {timerWarningSecond}=await import('../src/mission.mjs');
+  for(let seconds=30;seconds>=1;seconds--)assert.equal(timerWarningSecond((180-seconds)*1000),seconds);
+  for(const seconds of [180,31,0])assert.equal(timerWarningSecond((180-seconds)*1000),null);
+});
+
+test('falling objects only hurt in descent, never warning/landed/cooldown',async()=>{
+  const {fallingObjectHurts,fallingStep,dropProfiles}=await import('../src/mission.mjs');
+  for(const kind of ['piano','anvil','ac','cooler']){
+    const p=dropProfiles[kind],state={startedAt:0,readyAt:Infinity,serial:1};
+    assert.equal(fallingObjectHurts(fallingStep(state,p.warning-1,false,kind)),false);
+    assert.equal(fallingObjectHurts(fallingStep(state,p.warning+1,false,kind)),true);
+    assert.equal(fallingObjectHurts(fallingStep(state,p.warning+p.fall+1,false,kind)),false);
+  }
+});
+
+test('landed falling objects are solid only while landed, with no contact damage',async()=>{
+  const {fallingObjectSolid,fallingObjectHurts,fallingStep,dropProfiles}=await import('../src/mission.mjs');
+  assert.equal(fallingObjectSolid(undefined),false);
+  for(const kind of ['piano','anvil','ac','cooler']){
+    const p=dropProfiles[kind],state={startedAt:0,readyAt:Infinity,serial:1};
+    for(const [time,solid,hurt] of [[p.warning-1,false,false],[p.warning+1,false,true],[p.warning+p.fall+1,true,false],[p.warning+p.fall+p.landed+1,false,false]]){
+      const motion=fallingStep(state,time,false,kind);
+      assert.equal(fallingObjectSolid(motion),solid,kind+' at '+time);
+      assert.equal(fallingObjectHurts(motion),hurt,kind+' at '+time);
+    }
+  }
 });

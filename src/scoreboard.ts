@@ -1,3 +1,4 @@
+import {gameAudio} from './audio';
 import { rankScores,readScores,saveScore,verifyClearPassword,SCORE_KEY } from './scores.mjs';
 type Result={score:number;falls:number;squishes:number;bumps:number;photos:number;latePhotos:number;beer:boolean;elapsedMs?:number;bonus?:number;cheater?:boolean};
 const dialog=document.createElement('dialog');
@@ -45,10 +46,11 @@ function render(){
   const draft=dialog.querySelector('[name="player"]') as HTMLInputElement|null;
   if(draft)nameDraft=draft.value;
   dialog.innerHTML=`<div class="score-heading"><span class="score-eyebrow">THE ROOFTOP RECORD BOOK</span><h2 id="scores-title">HIGH SCORES</h2></div>${serverEnabled?'':'<!--'}<div class="score-actions"><button id="server-scores" aria-pressed="${scope==='server'}">Server High Scores</button><button id="local-scores" aria-pressed="${scope==='local'}">This PC High Scores</button></div>${serverEnabled?'':'-->'}<p>${scope==='server'?'Shared by this deployment.':'Saved only in this browser on this PC.'} Ties favor the earliest run. First five CHEATER runs sit below every legitimate score.</p>
-  <form id="score-entry" ${pending?'':'hidden'}><label>Name or initials <input name="player" maxlength="16" required autocomplete="off"></label><button>Save score</button></form>
+  <p id="score-music" aria-live="polite"></p><form id="score-entry" ${pending?'':'hidden'}><label>Name or initials <input name="player" maxlength="16" required autocomplete="off"></label><button>Save score</button></form>
   <p role="status" aria-live="polite"></p><div class="score-list"></div>
   <div class="score-actions"><button id="all-scores">${all?'Show top 10':'Show all scores'}</button><button id="clear-scores">Clear high scores</button><button id="close-scores">Close</button></div>
   <form id="clear-form" hidden><label>Clear password <input name="password" type="password" required autocomplete="off"></label><label><input name="confirm" type="checkbox" required> Permanently delete all ${scope==='server'?'server':'this browser’s'} scores</label><button>Confirm clear</button></form>`;
+  updateScoreMusic();
   dialog.setAttribute('aria-labelledby','scores-title');
   (dialog.querySelector('[name="player"]') as HTMLInputElement).value=nameDraft;
   message(notice||'Loading scores…');
@@ -131,3 +133,6 @@ export function offerScore(result:Result){notice='';nameDraft='';pending={...res
 export function resetScoreEntry(){nameDraft='';pending=null;if(dialog.open)dialog.close();}
 document.getElementById('high-scores')!.addEventListener('click',openScores);
 dialog.addEventListener('close',()=>returnFocus?.focus());
+
+function updateScoreMusic(){const label=dialog.querySelector('#score-music');if(label)label.textContent=gameAudio.music.outcome?`Music: ${gameAudio.music.track.title} · ${gameAudio.music.status}`:'';}
+gameAudio.music.subscribe(updateScoreMusic);

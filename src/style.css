@@ -4,13 +4,13 @@
 
 .sound-row{display:flex;align-items:center;gap:12px;margin:-5px 0 12px;color:#93acbf;font-size:11px}.sound-row button{background:#203d51;color:#a4f0da;border:1px solid #54798a;border-radius:6px;padding:7px 12px;font-weight:700;cursor:pointer}.sound-row button:focus-visible{outline:2px solid #ffd08b;outline-offset:3px}
 
-#game:fullscreen{width:100vw;height:100vh;border:0;border-radius:0;box-shadow:none;background:#101d30;position:relative}
+#play-area:fullscreen{width:100vw;height:100vh;border:0;border-radius:0;box-shadow:none;background:#101d30;position:relative}
 #fullscreen-exit{display:none}
-#game:fullscreen #fullscreen-exit{display:block;position:absolute;right:16px;bottom:12px;z-index:10;background:#102137bb;color:#c9dde7;border:1px solid #54798a;border-radius:5px;padding:7px 10px;cursor:pointer}
+#play-area:fullscreen #fullscreen-exit{display:block;position:absolute;right:16px;bottom:12px;z-index:10;background:#102137bb;color:#c9dde7;border:1px solid #54798a;border-radius:5px;padding:7px 10px;cursor:pointer}
 .sound-row{flex-wrap:wrap}
 .sound-row button:disabled{opacity:.5;cursor:default}
 
-#fullscreen-recommendation{text-align:center;color:#ffd08b;font-weight:bold;margin:0 0 20px}
+#fullscreen-recommendation{text-align:right;color:#ffd08b;font-weight:bold;margin:0 0 0 24px;max-width:290px}
 .score-dialog{background:#12253c;color:#e8f0ef;border:2px solid #79dec5;border-radius:12px;width:min(850px,94vw);max-height:90vh;padding:24px}
 .score-dialog::backdrop{background:#081322cc}
 .score-dialog h2{color:#ffd08b;margin-top:0}.score-dialog p{font-size:14px}
@@ -20,7 +20,7 @@
 .score-list{max-height:45vh;overflow:auto}.score-list table{width:100%;border-collapse:collapse;font-size:14px}
 .score-list th,.score-list td{text-align:left;padding:10px;border-bottom:1px solid #40556b}
 .score-list td:last-child{font-size:12px}.score-dialog [role=status]{color:#ffd08b}
-#game:fullscreen .score-dialog{font-size:18px}
+#play-area:fullscreen .score-dialog{font-size:18px}
 
 .score-dialog{width:min(1050px,96vw);padding:28px}
 .score-heading h2{font-size:30px;margin:6px 0 10px;letter-spacing:1px}
@@ -37,3 +37,33 @@
 @media(max-width:700px){.run-details{grid-template-columns:repeat(2,minmax(80px,1fr));gap:10px}.score-dialog{padding:14px}.score-list td{padding:12px 7px}.score-points{font-size:16px}}
 
 header .game-subtitle{text-align:left;color:#ffd08b;font-size:16px;margin:8px 0 0} .score-dialog:focus-visible{outline:none}
+
+#controller-status{font-size:12px;color:#a8b9ca;margin:0 0 12px}
+
+.controller-help{font-size:12px;color:#a8b9ca;margin-bottom:12px}.controller-help summary{cursor:pointer}.controller-help p{line-height:1.6}
+
+#radio{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:14px 18px;background:#173348;border:1px solid #54798a;border-radius:12px 12px 0 0;color:#d9e9ee}
+.radio-brand{font-weight:bold;font-size:17px;letter-spacing:2px;color:#7ee0c5}.radio-brand span{display:block;font-weight:normal;font-size:10px;letter-spacing:0;margin-top:5px;color:#a9c0d0}
+.radio-now{display:flex;flex:1;min-width:200px;flex-direction:column;gap:3px}.radio-now strong{font-size:16px;color:#ffd08b}.radio-now>span{font-size:12px;color:#b9d1db}#radio-state{font-size:10px;color:#7ee0c5}
+.radio-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.radio-actions button{background:#24485b;color:#d3f4e9;border:1px solid #628d9b;border-radius:5px;padding:8px;cursor:pointer}.radio-actions label{font-size:11px;color:#bbd3df}.radio-actions output{display:block}.radio-actions input{width:90px;accent-color:#7ee0c5}.radio-actions :focus-visible{outline:2px solid #ffd08b;outline-offset:2px}
+#play-area #game{border-top:0;border-radius:0 0 12px 12px}
+#play-area:fullscreen{display:flex;flex-direction:column;overflow:hidden}#play-area:fullscreen #radio{flex:none;width:100%;border-radius:0}#play-area:fullscreen #game{flex:1;min-height:0;width:100%;border:0;border-radius:0;position:relative;box-shadow:none}
+
+#radio[data-countdown="true"]{border-color:#ef7777;background:#361e29}#radio[data-countdown="true"] .radio-brand,#radio[data-countdown="true"] .radio-now strong,#radio[data-countdown="true"] .radio-now>span,#radio[data-countdown="true"] .radio-actions button,#radio[data-countdown="true"] .radio-actions label{color:#ff9b9b}#radio[data-countdown="true"] .radio-brand span{display:none}#radio[data-countdown="true"] input{accent-color:#ff7777}.radio-actions button:disabled{opacity:.55;cursor:default}#radio-countdown{font-size:10px}#radio-countdown-title{display:block;font-size:12px;margin-top:3px}
+
+#radio-countdown{width:180px;flex:0 0 180px;box-sizing:border-box;white-space:normal}#radio-countdown-title{white-space:nowrap}
+
+/* Shared control boxes keep radio actions aligned without changing slider behavior. */
+.radio-actions button,.radio-actions input,.radio-actions label{height:36px;box-sizing:border-box;margin:0}
+.radio-actions button{display:inline-flex;align-items:center;justify-content:center;padding:0 10px}
+.radio-actions label{display:flex;flex-direction:column;justify-content:center;line-height:14px}
+
+.sound-row button{height:46px;box-sizing:border-box;display:inline-flex;flex-direction:column;justify-content:center;align-items:center}#radio-champion{width:180px;flex:0 0 180px;font-size:10px}#radio-champion-title{display:block;white-space:nowrap;font-size:12px;margin-top:3px}#radio[data-finished="true"] .radio-brand span{display:none}#score-music{color:#80e5ce;font-size:13px}
+
+@media(max-width:700px){header{flex-wrap:wrap;gap:12px}#fullscreen-recommendation:not([hidden]){display:block;text-align:left;margin:0;max-width:none}}
+/* Reserve longest toggle labels so changing state cannot reflow nearby buttons. */
+#sound-toggle{width:116px;flex:0 0 116px}
+#pause-toggle{width:104px;flex:0 0 104px}
+.sound-row>span{flex:0 0 100%}
+.sound-row{column-gap:8px}
+.sound-row button{white-space:nowrap}

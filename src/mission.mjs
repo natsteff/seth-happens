@@ -64,9 +64,25 @@ export function patrolX(floor,time,phase,speed=85){
 }
 export const EGG={guitarX:LEVEL_WIDTH-590,ampX:LEVEL_WIDTH-480,ballX:LEVEL_WIDTH-355,goalX:LEVEL_WIDTH-190,elevatorX:LEVEL_WIDTH-78};
 
-export function fallDecision(floor,bottom,velocityY){
+export function fallingPose(floor,bottom,velocityY){
+  return velocityY>120&&bottom>floors[floor].y+12;
+}
+export function fallDecision(floor,bottom,velocityY,x){
   const dropping=floor>=2&&velocityY>120;
-  return {scream:dropping&&bottom>GROUND_Y+12,retry:dropping&&bottom>GROUND_Y+60};
+  // Stay silent while any lower roof remains reachable, even with a direction change.
+  // After missing them, start audio near departure rather than waiting for ground level.
+  const reachable=Number.isFinite(x)&&floors.slice(1).some(roof=>{
+    if(roof.y<bottom)return false;
+    const seconds=(-velocityY+Math.sqrt(velocityY**2+2*1050*(roof.y-bottom)))/1050;
+    const reach=SPRINT_SPEED*seconds+12;
+    return x+reach>=roof.x&&x-reach<=roof.x+roof.width;
+  });
+  return {scream:dropping&&bottom>floors[floor].y+12&&!reachable,
+    retry:dropping&&bottom>GROUND_Y+60};
+}
+export function timerWarningSecond(elapsedMs){
+  const remaining=Math.max(0,Math.ceil((RUN_LIMIT_MS-elapsedMs)/1000));
+  return remaining>0&&remaining<=30?remaining:null;
 }
 export function runExpired(elapsedMs){return elapsedMs>=RUN_LIMIT_MS;}
 
@@ -82,3 +98,7 @@ export function countdownLabel(elapsedMs){
   const seconds=Math.max(0,Math.ceil((RUN_LIMIT_MS-elapsedMs)/1000));
   return `${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`;
 }
+
+export function fallingObjectHurts(motion){return motion.dropping===true;}
+
+export function fallingObjectSolid(motion){return motion?.landed===true;}

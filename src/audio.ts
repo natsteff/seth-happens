@@ -1,7 +1,10 @@
+import {loadSettings,saveSettings} from './preferences.mjs';
+import { MusicRadio } from './music';
 import { recordedClips, type VoiceReaction, type LocationCue, type AudioClip } from './voice-clips';
-type Cue = 'jump' | 'photo' | 'pickup' | 'impact' | 'miss' | 'win' | 'piano' | 'clown';
+type Cue = 'jump' | 'photo' | 'pickup' | 'impact' | 'miss' | 'win' | 'piano' | 'clown' | 'timer';
 /** Original synthesized effects; nothing downloaded and no audio service. */
 class GameAudio {
+  readonly music=new MusicRadio();
   private context?: AudioContext;
   private paused=false;
   private pausedAt=0;
@@ -17,41 +20,43 @@ class GameAudio {
   private activeKind?:VoiceReaction;
   private locationSources=new Set<AudioBufferSourceNode>();
   lastLocation='';
-  muted = false;
+  muted = loadSettings().muted;
   lastCue = '';
   lastSpoken='';
   playedKinds=new Set<AudioClip>();
   get loadedVoiceCount(){return this.voiceBuffers.size;}
   voiceStatus='not-loaded';
   voiceName='owner WAV recordings';
+  constructor(){this.syncButton();}
   get state() { return this.context?.state ?? 'locked'; }
   async unlock() {
     if (!this.context) {
       this.context = new AudioContext();
       this.master = this.context.createGain();
       this.master.gain.value = this.muted ? 0 : 0.8;
-      this.master.connect(this.context.destination);
+      this.master.connect(this.context.destination);this.music.attach(this.context,this.master);
       this.effects=this.context.createGain();this.effects.gain.value=.18;this.effects.connect(this.master);
       this.noise = this.context.createBuffer(1, this.context.sampleRate * .15, this.context.sampleRate);
       const data = this.noise.getChannelData(0);
       for (let i=0;i<data.length;i++) data[i] = (Math.random()*2-1)*(1-i/data.length);
     }
     if (this.context.state === 'suspended'&&!this.paused) await this.context.resume();
-    this.syncButton();
+    this.syncButton();this.music.refresh();
     await this.loadVoices();
   }
   async setPaused(paused:boolean){
     if(this.paused===paused)return;
-    this.paused=paused;
+    this.paused=paused;this.music.setHold('pause',paused);
     if(paused){this.pausedAt=performance.now();if(this.context?.state==='running')await this.context.suspend();}
-    else{if(this.voiceSource)this.voiceUntil+=performance.now()-this.pausedAt;if(this.context?.state==='suspended')await this.context.resume();}
+    else{if(this.voiceSource)this.voiceUntil+=performance.now()-this.pausedAt;if(this.context?.state==='suspended')await this.context.resume();this.music.refresh();}
   }
-  toggle() { this.muted = !this.muted;if(this.muted){if(this.activeKind!=='start'&&this.activeKind!=='hero')this.stopVoice();this.stopLocations();} if(this.master&&this.context)this.master.gain.setValueAtTime(this.muted?0:.8,this.context.currentTime);this.syncButton(); }
+  toggle() { this.muted = !this.muted;saveSettings({muted:this.muted});if(this.muted){if(this.activeKind!=='start'&&this.activeKind!=='hero')this.stopVoice();this.stopLocations();} if(this.master&&this.context)this.master.gain.setValueAtTime(this.muted?0:.8,this.context.currentTime);this.music.setMuted(this.muted);this.syncButton(); }
   private syncButton() {
     const button=document.getElementById('sound-toggle');
     if(button){button.textContent=`Sound: ${this.muted?'Off':'On'} · S`;button.setAttribute('aria-pressed',String(!this.muted));button.dataset.context=this.state;}
   }
   beginRun(){
+    this.music.beginRun();
     void this.setPaused(false);this.cancelRide();this.stopVoice();this.stopLocations();this.lastSpoken='';this.lastLocation='';
   }
   private stopLocations(){for(const source of this.locationSources)source.stop();this.locationSources.clear();}
@@ -106,15 +111,16 @@ class GameAudio {
     this.lastSpoken=text;this.playedKinds.add(kind);this.activeKind=kind;this.voiceSource=source;this.voiceStatus='playing';this.voiceUntil=now+buffer.duration/rate*1000;this.voicePriority=priority;
     source.onended=()=>{source.disconnect();if(this.voiceSource===source){this.voiceSource=undefined;this.activeKind=undefined;this.voiceStatus='ended';}finished?.();};
   }
-  play(cue:Cue) {
+  play(cue:Cue,urgent=false) {
     this.lastCue=cue;
     if(this.muted||!this.context||!this.master||this.context.state!=='running')return;
     const ctx=this.context, start=ctx.currentTime;
     const tone=(f:number,duration:number,delay=0,type:OscillatorType='sine',end=f)=>{
       const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=type;osc.frequency.setValueAtTime(f,start+delay);osc.frequency.exponentialRampToValueAtTime(Math.max(end,20),start+delay+duration);
-      gain.gain.setValueAtTime(.001,start+delay);gain.gain.linearRampToValueAtTime(.5,start+delay+.008);gain.gain.exponentialRampToValueAtTime(.001,start+delay+duration);
-      osc.connect(gain);gain.connect(this.effects!);osc.start(start+delay);osc.stop(start+delay+duration+.02);osc.onended=()=>{osc.disconnect();gain.disconnect();};
+      gain.gain.setValueAtTime(.001,start+delay);gain.gain.linearRampToValueAtTime(cue==='timer'?(urgent?.42:.3):.5,start+delay+.008);gain.gain.exponentialRampToValueAtTime(.001,start+delay+duration);
+      osc.connect(gain);gain.connect(cue==='timer'?this.master!:this.effects!);osc.start(start+delay);osc.stop(start+delay+duration+.02);osc.onended=()=>{osc.disconnect();gain.disconnect();};
     };
+    if(cue==='timer'){tone(urgent?1100:880,.09,0,'sine');if(urgent)tone(1100,.09,.16,'sine');}
     if(cue==='jump'){tone(105,.10,0,'triangle',65);}
     if(cue==='photo'){
       const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=this.noise!;gain.gain.value=.65;source.connect(gain);gain.connect(this.effects!);source.start();source.onended=()=>{source.disconnect();gain.disconnect();};tone(1150,.03);tone(660,.04,.065);
