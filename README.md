@@ -8,7 +8,7 @@
 
 Fullscreen highly recommended.
 
-One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and Ellowyn before the three-minute deadline.
+One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and Ellowyn before the three-minute deadline. See if you can find the 'easter egg'!
 
 ## Controls
 
@@ -18,7 +18,7 @@ One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and
 | Jump | Space, W or ↑ jumps immediately; press twice within 0.3s for Mega Jump. Holding has no extra effect |
 | Sprint | Hold Shift |
 | Pause / resume | P or Pause button |
-| Photo / finish / enter elevator | F |
+| Photo / finish | F |
 | Return to a missed photo | B |
 | Sound | S |
 | Fullscreen | V or fullscreen button; Esc exits |
@@ -37,25 +37,16 @@ Rolling and walking obstacles patrol the whole floor. Pianos, anvils, window AC 
 - Each fall, squish or bump: −10, counting each incident once.
 - Finish under **120 seconds**: +100 for each whole second saved. A 90-second finish earns +3,000. Fractional seconds round up before calculating the bonus.
 - At 180 seconds, the run fails and no score is saved.
-- Intro and high-score dialogs pause the clock. P pauses gameplay, countdown, animations and audio, including a synchronized elevator ride. Resume continues from the same point.
+- Intro and high-score dialogs pause the clock. P pauses gameplay, countdown, animations and audio. Resume continues from the same point.
 
 Names and scores stay in that browser, including earlier versions’ records. The top 10 and full history show dates, times, objectives and mishaps. Clearing requires the configured password and confirmation. The browser stores a password verifier, not the readable password; this deters casual clearing but is not server authentication. Browser storage can be cleared independently.
 
-<details>
-<summary>Roadside Easter egg</summary>
-
-At the far end of the bottom road, jump the guitar and amp, then kick the ball into the goal. Enter the revealed elevator with F. The ride goes straight up the ghosted tower, arriving as the elevator audio ends.
-
-Taking this shortcut gives a fixed **−10,000** score with **CHEATER** added to the displayed name, regardless of bonuses. Only the first five shortcut entries are retained, in achievement order beneath all legitimate scores.
-
-</details>
 
 ## Screenshots
 
 ![New logo start screen](docs/screenshots/start-screen.png)
 ![Rooftop beer run](docs/screenshots/beer-run.png)
 ![Organized run details and scores](docs/screenshots/high-scores.png)
-![Elevator ascending the final tower](docs/screenshots/elevator.png)
 
 ## Local development
 
