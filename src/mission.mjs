@@ -66,7 +66,7 @@ export const EGG={guitarX:LEVEL_WIDTH-590,ampX:LEVEL_WIDTH-480,ballX:LEVEL_WIDTH
 
 export function fallDecision(floor,bottom,velocityY){
   const dropping=floor>=2&&velocityY>120;
-  return {scream:dropping&&bottom>floors[floor].y+12,retry:dropping&&bottom>floors[floor].y+60};
+  return {scream:dropping&&bottom>GROUND_Y+12,retry:dropping&&bottom>GROUND_Y+60};
 }
 export function runExpired(elapsedMs){return elapsedMs>=RUN_LIMIT_MS;}
 

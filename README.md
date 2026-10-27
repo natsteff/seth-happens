@@ -6,7 +6,7 @@
   <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Launch Seth Happens Beer Run"></a>
 </p>
 
-Fullscreen highly recommended.
+Fullscreen highly recommended. **Play Now on GitHub Pages uses local browser high scores only. Server-wide high scores cannot run on GitHub Pages; they require a server-enabled installation.**
 
 One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and Ellowyn before the three-minute deadline. See if you can find the 'easter egg'!
 
@@ -25,7 +25,7 @@ One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and
 | Jump clues | C |
 | Restart | Hold R |
 
-Floor 01 is the first rooftop. Only its drop to the road is safe. Falling from any higher floor screams, costs one fall penalty, and retries that rooftop. The road stays open beneath the route.
+Floor 01 is the first rooftop. Returning to a lower rooftop is safe. Missing the rooftops and falling toward the road from Floor 02 or higher screams, costs one fall penalty, and retries the last rooftop. Dropping from Floor 01 to the road remains safe.
 
 Rolling and walking obstacles patrol the whole floor. Pianos, anvils, window AC units and beer coolers drop at distinct intervals in the middle of their platforms. Watch their warning and aftermath, then choose your jump.
 
@@ -39,7 +39,13 @@ Rolling and walking obstacles patrol the whole floor. Pianos, anvils, window AC 
 - At 180 seconds, the run fails and no score is saved.
 - Intro and high-score dialogs pause the clock. P pauses gameplay, countdown, animations and audio. Resume continues from the same point.
 
-High scores are shared by everyone playing the same deployment and stored on its server. Each separately hosted copy uses its own database. A separate **This PC High Scores** list preserves browser records. New runs attempt both lists; save results are reported separately. The top 10 and full history show dates, times, objectives and mishaps. Clearing requires server-side password verification and confirmation. See [server setup](docs/leaderboard-server.md).
+## New in version 0.2.2: optional server high scores
+
+High Scores opens your existing local browser list directly by default, including on the **Play Now** GitHub Pages version. Server scores default off in `public/game-config.json` (deployed as `game-config.json`).
+
+Server installations can enable **Server High Scores** alongside **This PC High Scores**. New runs attempt both lists, with separate save results. Existing local records automatically sync to that deployment’s server when enabled, without deleting local scores or duplicating imports. Failed syncs retry when reopening scores or reconnecting. Older untimed runs retain their original score and date without an invented timer bonus. Each hosted copy has its own shared records.
+
+Server-wide scores require a running score service; GitHub Pages cannot provide it. See [server setup](docs/leaderboard-server.md). Clearing acts on the selected list only and requires its password and confirmation.
 
 
 ## Screenshots

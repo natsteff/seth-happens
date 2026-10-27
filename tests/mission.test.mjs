@@ -43,15 +43,14 @@ test('non-person impacts select both supplied reactions', async () => {
   assert.equal(objectImpactReaction(0.9), 'ahh');
 });
 
-test('only floor 1 may drop safely; every higher-floor drop screams then retries', async () => {
-  const {fallDecision,roadLandingIsFall}=await import('../src/mission.mjs');
+test('lower rooftops are safe; only missing roofs toward road triggers a fall', async () => {
+  const {fallDecision,roadLandingIsFall,GROUND_Y}=await import('../src/mission.mjs');
   assert.deepEqual(fallDecision(1,ROAD.y,450),{scream:false,retry:false});
-  assert.equal(roadLandingIsFall(1),false);
   for(let floor=2;floor<=26;floor++){
+    assert.deepEqual(fallDecision(floor,floors[floor-1].y,450),{scream:false,retry:false});
+    assert.equal(fallDecision(floor,GROUND_Y+13,450).scream,true);
+    assert.equal(fallDecision(floor,GROUND_Y+61,450).retry,true);
     assert.equal(roadLandingIsFall(floor),true);
-    assert.deepEqual(fallDecision(floor,floors[floor].y+20,350),{scream:true,retry:false});
-    assert.deepEqual(fallDecision(floor,floors[floor].y+65,450),{scream:true,retry:true});
-    assert.deepEqual(fallDecision(floor,floors[floor].y+20,-100),{scream:false,retry:false});
   }
 });
 

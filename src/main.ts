@@ -477,7 +477,7 @@ class Errand extends Phaser.Scene {
         this.lastGround=time;
         const landed=floors.find(f=>this.player.x>f.x+8&&this.player.x<f.x+f.width-8&&Math.abs(body.bottom-f.y)<8);
         if(landed){
-          if(landed.floor<this.floor&&roadLandingIsFall(this.floor)){this.retry(time,'Back to the rooftop.','fall');}
+          if(landed.floor===0&&roadLandingIsFall(this.floor)){this.retry(time,'Back to the rooftop.','fall');}
           else{this.fallSoundPlayed=false;this.onRoad=landed.floor===0;this.floor=landed.floor;this.checkpoint={x:landed.floor===0?this.player.x:landed.x+50,y:landed.y-24};}
         }
       }
