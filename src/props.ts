@@ -22,12 +22,26 @@ export function steelKeg(scene:Phaser.Scene,x:number,y:number){
 }
 export function sixPack(scene:Phaser.Scene,x:number,y:number){
   const g=scene.add.graphics();
-  for(const row of [-3,2])for(const bx of [-7,0,7]){
-    g.fillStyle(row===-3?0x653b16:0x91521d).fillRoundedRect(bx-2.8,row-10,5.6,14,1.6).fillRect(bx-1.6,row-16,3.2,7);
-    g.fillStyle(0xd7bc74).fillRect(bx-1.9,row-17,3.8,2);g.fillStyle(0xf1dfaf).fillRect(bx-2.2,row-6,4.4,6);g.fillStyle(0xffffff,.3).fillRect(bx-1.2,row-14,.8,14);
+  g.fillStyle(0x102137,.3).fillEllipse(0,13,36,6);
+  // Six amber glass bottles in two rows, matching Seth's tan cardboard carrier.
+  for(const [row,shade] of [[-5,0x593316],[1,0x844718]]){
+    for(const bx of [-10,0,10]){
+      g.fillStyle(0x291b13).fillRoundedRect(bx-3.8,row-18,7.6,25,2.7);
+      g.fillStyle(shade).fillRoundedRect(bx-3,row-17,6,23,2);
+      g.fillStyle(0x613916).fillRect(bx-1.8,row-27,3.6,11);
+      g.fillStyle(0xd5b576).fillEllipse(bx,row-27,4.5,2);
+      g.fillStyle(0xf1dfb5).fillRoundedRect(bx-3,row-9,6,9,1);
+      g.fillStyle(0x284a3d).fillCircle(bx,row-5,1.8);
+      g.fillStyle(0xffe7a1,.35).fillRect(bx-1.9,row-22,.8,25);
+    }
   }
-  g.fillStyle(0xad7945).fillRoundedRect(-12,-3,24,13,2);g.fillStyle(0xd6aa70).fillRect(-10,-2,19,10);
-  g.lineStyle(3,0xc99c63).strokeRoundedRect(-4,-18,8,17,3);g.lineStyle(.5,0xf2d5a5).lineBetween(-10,0,9,0);
-  g.fillStyle(0x294f4b).fillRoundedRect(-6,2,12,5,1);
+  g.fillStyle(0x9d693b).fillRoundedRect(-18,-3,36,18,2);
+  g.fillStyle(0xd1a569).fillPoints([{x:-17,y:-2},{x:11,y:1},{x:11,y:15},{x:-17,y:12}],true);
+  g.fillStyle(0xb68047).fillPoints([{x:11,y:1},{x:18,y:-3},{x:18,y:11},{x:11,y:15}],true);
+  g.lineStyle(4,0xbb8b50).strokeRoundedRect(-4,-28,8,26,3);
+  g.lineStyle(1,0xf0c88d).lineBetween(-16,-1,9,2).lineBetween(-16,11,9,14);
+  g.fillStyle(0x2b3e32).fillCircle(-3,6,5.5);
+  g.lineStyle(.6,0xe9ce8e).strokeCircle(-3,6,5.5);
+  g.fillStyle(0xdec077).fillEllipse(-3,6,3,5);
   return scene.add.container(x,y,[g]);
 }

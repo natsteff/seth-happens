@@ -21,3 +21,19 @@
 .score-list th,.score-list td{text-align:left;padding:10px;border-bottom:1px solid #40556b}
 .score-list td:last-child{font-size:12px}.score-dialog [role=status]{color:#ffd08b}
 #game:fullscreen .score-dialog{font-size:18px}
+
+.score-dialog{width:min(1050px,96vw);padding:28px}
+.score-heading h2{font-size:30px;margin:6px 0 10px;letter-spacing:1px}
+.score-eyebrow{font-size:10px;letter-spacing:2px;color:#80e5ce}
+.score-list th{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#9fb9cb}
+.score-list td{vertical-align:top;padding:16px 10px}
+.score-points{font-size:20px;font-weight:bold;color:#ffd08b;white-space:nowrap}
+.run-details{display:grid;grid-template-columns:repeat(3,minmax(95px,1fr));gap:14px 20px}
+.run-details div{display:flex;flex-direction:column;gap:5px}
+.run-details span{color:#9fb9cb;font-size:9px;letter-spacing:1px}
+.run-details strong{font-size:12px;font-weight:normal;color:#e7efed}
+.cheater-badge{display:block;color:#ffac8c;font-size:10px;letter-spacing:1px;margin-top:6px}
+.cheater-row{background:#42293855}.cheater-row .score-points{color:#ffac8c}
+@media(max-width:700px){.run-details{grid-template-columns:repeat(2,minmax(80px,1fr));gap:10px}.score-dialog{padding:14px}.score-list td{padding:12px 7px}.score-points{font-size:16px}}
+
+header .game-subtitle{text-align:left;color:#ffd08b;font-size:16px;margin:8px 0 0} .score-dialog:focus-visible{outline:none}

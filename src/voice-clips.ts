@@ -1,9 +1,11 @@
 /** Owner-provided local WAV recordings. Originals remain untouched in Downloads. */
-export type VoiceReaction = 'grunt' | 'fall' | 'person' | 'beer' | 'start' | 'win' | 'ouch' | 'ahh' | 'hero' | 'squish';
-export type LocationCue = 'soccer' | 'concert' | 'jet';
+export type VoiceReaction = 'grunt' | 'fall' | 'person' | 'beer' | 'start' | 'win' | 'ouch' | 'ahh' | 'hero' | 'squish' | 'quick' | 'cheater';
+export type LocationCue = 'soccer' | 'concert' | 'jet' | 'goal' | 'crashing' | 'elevator';
 export type AudioClip = VoiceReaction | LocationCue;
 const base = `${import.meta.env.BASE_URL}audio/`;
 export const voiceClips: Record<VoiceReaction,string> = {
+  quick: `${base}quick-jump.wav`,
+  cheater: `${base}cheater.wav`,
   grunt: `${base}grunt.wav`,
   fall: `${base}fall.wav`,
   person: `${base}person.wav`,
@@ -16,5 +18,5 @@ export const voiceClips: Record<VoiceReaction,string> = {
   squish: `${base}squish.wav`,
 };
 
-export const locationClips: Record<LocationCue,string> = { soccer:`${base}soccer.wav`, concert:`${base}concert.wav`, jet:`${base}jet.wav` };
+export const locationClips: Record<LocationCue,string> = { goal:`${base}goal.wav`, crashing:`${base}crashing.wav`, elevator:`${base}elevator.wav`, soccer:`${base}soccer.wav`, concert:`${base}concert.wav`, jet:`${base}jet.wav` };
 export const recordedClips = { ...voiceClips, ...locationClips };

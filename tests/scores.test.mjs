@@ -25,3 +25,14 @@ test('storage failures and corrupt records do not overwrite previous data',()=>{
 test('wrong clear password is rejected',async()=>{
   assert.equal(await verifyClearPassword('incorrect'),false);
 });
+
+test('old scores survive; timer bonuses are valid and only first five cheaters are saved last',()=>{
+  let data=null;const storage={getItem:()=>data,setItem:(_key,value)=>{data=value;}};
+  saveScore(storage,entry('legacy',2000));
+  saveScore(storage,{...entry('fast',9500),elapsedMs:45000,bonus:7500});
+  for(let i=0;i<7;i++)saveScore(storage,{...entry('c'+i,-10000),cheater:true,date:new Date(Date.UTC(2026,9,26,13,i)).toISOString()});
+  const scores=readScores(storage);
+  assert.equal(scores.length,7);
+  assert.deepEqual(scores.slice(0,2).map(s=>s.id),['fast','legacy']);
+  assert.deepEqual(scores.slice(2).map(s=>s.id),['c0','c1','c2','c3','c4']);
+});

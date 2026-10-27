@@ -7,3 +7,5 @@ Runtime dependency: Phaser 3.90.0 (MIT), Copyright (c) 2013-2025 Phaser Studio I
 Build tools: Vite 8.3.5 (MIT), TypeScript 7.0.2 (Apache-2.0). These are development dependencies; their license texts and transitive dependency notices remain in installed packages. Lockfile pins exact resolution. Phaser transitively uses eventemitter3 (MIT). Retained full notice in `licenses/eventemitter3-MIT.txt`.
 
 Original source/art: project-owned; no additional redistribution license is granted. Third-party rights remain with their respective owners.
+
+The title logo and five additional WAV recordings (elevator, goal, crashing, quick jump, cheater) were supplied by the project owner October 26, 2026. The quiet final tower and impact debris are original code-drawn artwork.

@@ -10,6 +10,7 @@ class GameAudio {
   private voicePriority=0;
   private voiceBuffers=new Map<AudioClip,AudioBuffer>();
   private voiceSource?:AudioBufferSourceNode;
+  private rideSource?:AudioBufferSourceNode;
   private loadingVoices?:Promise<void>;
   private activeKind?:VoiceReaction;
   private locationSources=new Set<AudioBufferSourceNode>();
@@ -43,7 +44,7 @@ class GameAudio {
     if(button){button.textContent=`Sound: ${this.muted?'Off':'On'} · S`;button.setAttribute('aria-pressed',String(!this.muted));button.dataset.context=this.state;}
   }
   beginRun(){
-    this.stopVoice();this.stopLocations();this.lastSpoken='';this.lastLocation='';
+    this.cancelRide();this.stopVoice();this.stopLocations();this.lastSpoken='';this.lastLocation='';
   }
   private stopLocations(){for(const source of this.locationSources)source.stop();this.locationSources.clear();}
   playLocation(kind:LocationCue){
@@ -75,16 +76,26 @@ class GameAudio {
     started?.();
     await new Promise<void>(resolve=>this.speak('Let’s go!','start',resolve,true));
   }
+  cancelRide(){this.rideSource?.stop();this.rideSource=undefined;}
+  duration(kind:AudioClip){return (this.voiceBuffers.get(kind)?.duration??10)*1000;}
+  playRide():Promise<void>{
+    const buffer=this.voiceBuffers.get('elevator');
+    if(!this.context||!this.master||!buffer)return new Promise(resolve=>setTimeout(resolve,10000));
+    return new Promise(resolve=>{
+      const source=this.context!.createBufferSource();source.buffer=buffer;source.connect(this.master!);
+      source.onended=()=>{source.disconnect();if(this.rideSource===source)this.rideSource=undefined;resolve();};this.rideSource=source;source.start();this.playedKinds.add('elevator');
+    });
+  }
   async playHero():Promise<void>{await this.unlock();if(!this.voiceBuffers.has('hero'))return;await new Promise<void>(resolve=>this.speak('My hero!','hero',resolve,true));}
-  speak(text:string,kind:VoiceReaction,finished?:()=>void,allowMuted=false) {
+  speak(text:string,kind:VoiceReaction,finished?:()=>void,allowMuted=false,rate=1) {
     if((this.muted&&!allowMuted)||!this.context||!this.master)return;
     const buffer=this.voiceBuffers.get(kind);
     if(!buffer){this.voiceStatus='not-loaded';return;}
-    const priority=kind==='grunt'?0:kind==='start'?1:kind==='win'?5:kind==='hero'?4:kind==='fall'?3:2,now=performance.now();
+    const priority=kind==='grunt'||kind==='quick'?0:kind==='start'?1:kind==='win'?5:kind==='hero'?4:kind==='fall'?3:2,now=performance.now();
     if(now<this.voiceUntil&&priority<this.voicePriority)return;
     this.stopVoice();
-    const source=this.context.createBufferSource();source.buffer=buffer;source.connect(this.master);source.start();
-    this.lastSpoken=text;this.playedKinds.add(kind);this.activeKind=kind;this.voiceSource=source;this.voiceStatus='playing';this.voiceUntil=now+buffer.duration*1000;this.voicePriority=priority;
+    const source=this.context.createBufferSource();source.buffer=buffer;source.playbackRate.value=rate;source.connect(this.master);source.start();
+    this.lastSpoken=text;this.playedKinds.add(kind);this.activeKind=kind;this.voiceSource=source;this.voiceStatus='playing';this.voiceUntil=now+buffer.duration/rate*1000;this.voicePriority=priority;
     source.onended=()=>{source.disconnect();if(this.voiceSource===source){this.voiceSource=undefined;this.activeKind=undefined;this.voiceStatus='ended';}finished?.();};
   }
   play(cue:Cue) {
@@ -96,7 +107,7 @@ class GameAudio {
       gain.gain.setValueAtTime(.001,start+delay);gain.gain.linearRampToValueAtTime(.5,start+delay+.008);gain.gain.exponentialRampToValueAtTime(.001,start+delay+duration);
       osc.connect(gain);gain.connect(this.effects!);osc.start(start+delay);osc.stop(start+delay+duration+.02);osc.onended=()=>{osc.disconnect();gain.disconnect();};
     };
-    if(cue==='jump'){tone(105,.10,0,'triangle',65);this.speak('Jump grunt','grunt');}
+    if(cue==='jump'){tone(105,.10,0,'triangle',65);}
     if(cue==='photo'){
       const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=this.noise!;gain.gain.value=.65;source.connect(gain);gain.connect(this.effects!);source.start();source.onended=()=>{source.disconnect();gain.disconnect();};tone(1150,.03);tone(660,.04,.065);
     }

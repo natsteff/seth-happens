@@ -1,20 +1,28 @@
 import { readScores, saveScore, rankScores, verifyClearPassword, SCORE_KEY } from './scores.mjs';
-type Result={score:number;falls:number;squishes:number;bumps:number;photos:number;latePhotos:number;beer:boolean};
+type Result={score:number;falls:number;squishes:number;bumps:number;photos:number;latePhotos:number;beer:boolean;elapsedMs?:number;bonus?:number;cheater?:boolean};
 const dialog=document.createElement('dialog');
 dialog.className='score-dialog';
 document.getElementById('game')!.append(dialog);
 let pending:(Result&{id:string;date:string})|null=null;
 let all=false;
 let returnFocus:HTMLElement|null=null;
+let nameDraft='';
 export function scoresOpen(){return dialog.open;}
+// Prevent Phaser's window listeners from capturing letters while a dialog is open.
+for(const type of ['keydown','keyup'])document.addEventListener(type,event=>{
+  if(dialog.open)event.stopPropagation();
+},true);
 function message(text:string){dialog.querySelector('[role="status"]')!.textContent=text;}
 function render(){
-  dialog.innerHTML=`<h2 id="scores-title">HIGH SCORES</h2><p>Saved in this browser only. Ties favor the earliest run.</p>
+  const draft=dialog.querySelector('[name="player"]') as HTMLInputElement|null;
+  if(draft)nameDraft=draft.value;
+  dialog.innerHTML=`<div class="score-heading"><span class="score-eyebrow">THE ROOFTOP RECORD BOOK</span><h2 id="scores-title">HIGH SCORES</h2></div><p>Saved in this browser. Ties favor the earliest run. First five CHEATER runs sit below every legitimate score.</p>
   <form id="score-entry" ${pending?'':'hidden'}><label>Name or initials <input name="player" maxlength="16" required autocomplete="off"></label><button>Save score</button></form>
   <p role="status" aria-live="polite"></p><div class="score-list"></div>
   <div class="score-actions"><button id="all-scores">${all?'Show top 10':'Show all scores'}</button><button id="clear-scores">Clear high scores</button><button id="close-scores">Close</button></div>
   <form id="clear-form" hidden><label>Clear password <input name="password" type="password" required autocomplete="off"></label><label><input name="confirm" type="checkbox" required> Permanently delete all scores in this browser</label><button>Confirm clear</button></form>`;
   dialog.setAttribute('aria-labelledby','scores-title');
+  (dialog.querySelector('[name="player"]') as HTMLInputElement).value=nameDraft;
   try{
     const scores=rankScores(readScores(localStorage));
     const list=dialog.querySelector('.score-list')!;
@@ -23,9 +31,23 @@ function render(){
       const table=document.createElement('table');
       table.innerHTML='<thead><tr><th>Rank</th><th>Name</th><th>Score</th><th>Run details</th></tr></thead>';
       const body=table.createTBody();
-      (all?scores:scores.slice(0,10)).forEach((s:any,i:number)=>{
+      (all?scores:[...scores.filter((s:any)=>!s.cheater).slice(0,10),...scores.filter((s:any)=>s.cheater)]).forEach((s:any,i:number)=>{
         const row=body.insertRow();
-        [String(i+1),s.name,s.score.toLocaleString(),`${new Date(s.date).toLocaleDateString()} · Photos ${s.photos}/2 (${s.latePhotos} recovered) · Beer ${s.beer?'yes':'no'} · Falls ${s.falls}, squishes ${s.squishes}, bumps ${s.bumps}`].forEach(text=>{row.insertCell().textContent=text;});
+        row.className=s.cheater?'cheater-row':'';
+        row.insertCell().textContent=s.cheater?'—':String(i+1);
+        const player=row.insertCell();player.textContent=s.name;
+        if(s.cheater){const badge=document.createElement('span');badge.className='cheater-badge';badge.textContent='CHEATER';player.append(badge);}
+        const points=row.insertCell();points.className='score-points';points.textContent=s.score.toLocaleString();
+        const details=row.insertCell();details.className='run-details';
+        const facts=[
+          ['DATE',new Date(s.date).toLocaleDateString()],
+          ['TIME',s.elapsedMs===undefined?'Legacy run':(s.elapsedMs/1000).toFixed(1)+'s'],
+          ['PHOTOS',`${s.photos}/2${s.latePhotos?' · '+s.latePhotos+' recovered':''}`],
+          ['SIX-PACK',s.beer?'Delivered':'Not delivered'],
+          ['MISHAPS',`${s.falls} falls · ${s.squishes} squishes · ${s.bumps} bumps`],
+          ['TIME BONUS',s.cheater?'Shortcut: fixed score':'+'+(s.bonus??0).toLocaleString()]
+        ];
+        for(const [label,value] of facts){const fact=document.createElement('div'),title=document.createElement('span'),text=document.createElement('strong');title.textContent=label;text.textContent=value;fact.append(title,text);details.append(fact);}
       });
       list.append(table);
     }
@@ -35,7 +57,7 @@ function render(){
     const form=event.currentTarget as HTMLFormElement;
     const name=String(new FormData(form).get('player')??'').trim();
     if(!name){message('Enter a name or initials.');return;}
-    try{saveScore(localStorage,{...pending,name});pending=null;render();message('Score saved!');}
+    try{const id=pending.id;const saved=saveScore(localStorage,{...pending,name});pending=null;nameDraft='';render();message(saved.some((s:any)=>s.id===id)?'Score saved!':'First five CHEATER slots are already filled. This run was not added.');}
     catch{message('Could not save. Browser storage may be unavailable or full. Your result is still available; try again.');}
   });
   dialog.querySelector('#all-scores')!.addEventListener('click',()=>{all=!all;render();});
@@ -61,7 +83,7 @@ function openScores(){
   returnFocus=document.activeElement as HTMLElement;render();
   if(!dialog.open)dialog.showModal();
 }
-export function offerScore(result:Result){pending={...result,id:crypto.randomUUID(),date:new Date().toISOString()};openScores();}
-export function resetScoreEntry(){pending=null;if(dialog.open)dialog.close();}
+export function offerScore(result:Result){nameDraft='';pending={...result,id:crypto.randomUUID(),date:new Date().toISOString()};openScores();}
+export function resetScoreEntry(){nameDraft='';pending=null;if(dialog.open)dialog.close();}
 document.getElementById('high-scores')!.addEventListener('click',openScores);
 dialog.addEventListener('close',()=>returnFocus?.focus());
