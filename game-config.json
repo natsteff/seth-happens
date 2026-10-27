@@ -1,0 +1,4 @@
+{
+  "serverHighScores": false,
+  "scoreApiUrl": "/api/scores"
+}
