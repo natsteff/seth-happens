@@ -1,3 +1,4 @@
+import { SummitReminder, REMINDER_MS } from './reminders.mjs';
 import { checkForUpdate } from './updates.mjs';
 import { loadSettings, saveSettings } from './preferences.mjs';
 import { mobileTrackLabel } from './mobile-track.mjs';
@@ -46,6 +47,7 @@ class Errand extends Phaser.Scene {
   mishaps={falls:0,squishes:0,bumps:0}; restartSince:number|null=null;touchRestartSince:number|null=null;
   fallSoundPlayed=false;lastTimerBeep=0;
   heroHeard=false;heroPlaying=false;runVersion=0;
+  summitReminder=new SummitReminder();reminder!:Phaser.GameObjects.Text;reminderAt=-Infinity;
   introActive=true;introStarted=false;introOverlay!:Phaser.GameObjects.Container;introCaption!:Phaser.GameObjects.Text;
   failurePhase='none';timeoutAngel?:Phaser.GameObjects.Sprite;
   heardLocations=new Set<string>();
@@ -74,6 +76,7 @@ class Errand extends Phaser.Scene {
     this.elapsedMs=0;this.lastTimerBeep=0;this.failed=false;this.cheater=false;this.riding=false;this.rideTween=undefined;
     this.jumpStarted=-1;this.megaUsed=false;this.jumpCount=0;this.paused=false;this.eggStage=0;this.eggPreviousX=75;this.eggBlocks=[];
     this.mishaps={falls:0,squishes:0,bumps:0};this.restartSince=null;this.touchRestartSince=null;
+    this.summitReminder=new SummitReminder();this.reminderAt=-Infinity;
     this.runVersion++;this.onRoad=true;this.fallSoundPlayed=false;this.heroHeard=false;this.heroPlaying=false;
     gameAudio.beginRun();this.introActive=true;this.introStarted=false;
     this.latePhotos = new Set();
@@ -165,6 +168,7 @@ class Errand extends Phaser.Scene {
     this.mobileTrack=this.label(590,5,'','#a8d8cf',12).setScrollFactor(0).setDepth(13).setWordWrapWidth(230).setPadding(8,4).setBackgroundColor('#183b47').setVisible(false);
     this.toast=this.add.text(W/2,112,'Allison is waiting on Floor 26. Bring beer and two photos. The elevator is out of order.',{fontFamily:'Arial',fontSize:'15px',color:'#ffe0a3',backgroundColor:'#16283e',padding:{x:14,y:10},align:'center'}).setOrigin(.5).setScrollFactor(0).setDepth(12);
     this.prompt=this.add.text(W/2,555,'',{fontFamily:'Arial',fontSize:'16px',color:'#102c39',backgroundColor:'#7ce3c5',padding:{x:14,y:9},align:'center'}).setOrigin(.5).setScrollFactor(0).setDepth(12).setVisible(false);
+    this.reminder=this.add.text(W/2,190,'',{fontFamily:'Arial',fontSize:'22px',fontStyle:'bold',color:'#ffe2aa',backgroundColor:'#24485b',padding:{x:18,y:12},align:'center',wordWrap:{width:760}}).setOrigin(.5).setScrollFactor(0).setDepth(30).setVisible(false);
     this.showIntro();
     this.sharpenDisplay();
 
@@ -363,6 +367,7 @@ class Errand extends Phaser.Scene {
     if(isFalling(kind))this.physics.add.collider(this.player,body,undefined,()=>fallingObjectSolid(hazard.piano));
   }
   say(t:string){this.toast.setText(t);}
+  flashReminder(text:string){this.reminderAt=this.elapsedMs;this.reminder.setText(text).setAlpha(1).setVisible(true);}
   retry(time:number,reason:string,reaction:'fall'|'person'|'object'|'squish'='object'){
     this.mishaps=recordMishap(this.mishaps,reaction);
     this.jumpStarted=-1;this.megaUsed=false;
@@ -423,7 +428,7 @@ class Errand extends Phaser.Scene {
     if(this.failed||this.won)return;
     (document.getElementById('pause-toggle') as HTMLButtonElement).disabled=true;
     gameAudio.music.finishRun('failure');this.failed=true;this.failurePhase='falling';gameAudio.cancelRide();this.riding=false;this.rideTween?.stop();this.eggLift.setVisible(false);
-    this.player.setVelocity(0,0);this.walking=false;this.physics.world.pause();this.prompt.setVisible(false);this.cameras.main.stopFollow();
+    this.player.setVelocity(0,0);this.walking=false;this.physics.world.pause();this.prompt.setVisible(false);this.reminder.setVisible(false);this.cameras.main.stopFollow();
     this.hero.setPosition(this.player.x,this.player.y).setAlpha(1);this.portrait.anims.timeScale=1;
     this.portrait.play(this.beer?`fall-beer-${this.facing<0?'left':'right'}`:'fall-empty',true);
     if(!this.fallSoundPlayed)gameAudio.speak('Aaaaaah!','fall');
@@ -659,14 +664,13 @@ class Errand extends Phaser.Scene {
       const home=this.floor===26;
       if(home&&!this.heroHeard){
         this.heroHeard=true;this.heroPlaying=true;const run=this.runVersion;
-        this.say('Allison: “My hero!” • Let her finish, then press F to deliver.');
+        this.say('Allison: “My hero!”');
         void gameAudio.playHero().then(()=>{if(this.runVersion===run)this.heroPlaying=false;});
       }
       const beerNearby=this.floor===12&&!this.beer;
       const beerInReach=!this.beer&&Math.abs(this.player.x-beerSpot.x)<43&&Math.abs(this.player.y-beerSpot.y)<65;
-      this.prompt.setVisible(stop>=0||home||beerNearby);
+      this.prompt.setVisible(stop>=0||beerNearby);
       if(stop>=0)this.prompt.setText(this.photos.has(stop)?'✓ Photo saved. Upward, photographer.':this.heroHeard?'[ F ] RECOVER PHOTO • +125 points (half value)':'[ F ] PHOTO OPPORTUNITY • +250 points');
-      else if(home)this.prompt.setText(this.heroPlaying?'Allison: “My hero!” • Delivery unlocks after this line':this.beer?'[ F ] Deliver six-pack & finish • B returns to missed photos':'[ F ] Finish without beer • B returns to missed photos');
       if(beerNearby)this.prompt.setText(beerInReach?'[ Action ] Pick up the six-pack':`GET THE BEER ${this.player.x<beerSpot.x?'→':'←'} Move closer, then press Action`);
       if(Phaser.Input.Keyboard.JustDown(this.keys.F)||controller.interact){
         if(beerInReach){this.beer=true;gameAudio.play('pickup');this.crate.setVisible(false);this.beerHint.setVisible(false);this.prompt.setVisible(false);this.say('SIX-PACK IN HAND. Only fourteen floors of foam management left.');}
@@ -674,7 +678,7 @@ class Errand extends Phaser.Scene {
         else if(home&&!this.heroPlaying)this.finish();
       }
       for(const i of missedPhotos(this.player.x,this.photos))if(!this.warned.has(i)){
-        this.warned.add(i);gameAudio.play('miss');this.say(`MISSED PHOTO: ${photoStops[i].short.toUpperCase()}! Press B to return. Watch the persistent photo tracker.`);this.cameras.main.flash(180,255,135,60);
+        this.warned.add(i);gameAudio.play('miss');this.say(`MISSED PHOTO: ${photoStops[i].short.toUpperCase()}!`);this.flashReminder(touch.enabled?'Missing photo: Menu → Recall missed photo':'Missing photo: press B to recall');
       }
     }
     this.hero.setPosition(this.player.x,this.player.y);
@@ -691,15 +695,19 @@ class Errand extends Phaser.Scene {
     this.updateHud();
     const indicator=photoIndicator(this.player.x,this.photos),hasMissed=missedPhotos(this.player.x,this.photos).length>0;
     this.photoHud.setText(indicator).setColor(hasMissed?'#ffac8c':'#80e5ce');
+    const reminder=this.summitReminder.update(this.elapsedMs,{home:this.floor===26,ready:!this.heroPlaying,finished:this.won||this.failed,beer:this.beer,missed:hasMissed,mobile:touch.enabled});
+    if(reminder)this.flashReminder(reminder);
+    const age=this.elapsedMs-this.reminderAt;
+    this.reminder.setVisible(!this.won&&!this.failed&&age<REMINDER_MS).setAlpha(Math.floor(age/450)%2===0?1:.4);
     const status=document.getElementById('live-status');
-    const summary=`${this.hud.text}. ${indicator}. ${this.toast.text}${this.won?' Mission complete.':''}`;
+    const summary=`${this.hud.text}. ${indicator}. ${this.toast.text} ${this.reminder.visible?this.reminder.text:''}${this.won?' Mission complete.':''}`;
     if(status){status.dataset.paused='false';const drop=this.hazards.find(h=>isFalling(h.kind)&&h.floor===this.floor);status.dataset.dropPhase=drop?.piano?.dropping?'dropping':drop?.piano?.landed?'landed':drop?.piano?.warning?'warning':'idle';status.dataset.heroFlipped=String(this.portrait.flipX);status.dataset.heroAnimation=this.portrait.anims.currentAnim?.key??'idle';status.dataset.heroAnimationRate=String(this.portrait.anims.timeScale);status.dataset.heroFilter='nearest';status.dataset.heroTexture=this.portrait.texture.key;status.dataset.timerBeeps=String(this.lastTimerBeep);status.dataset.megaJump=String(this.megaUsed);status.dataset.floor=String(this.floor);status.dataset.elapsed=String(Math.round(this.elapsedMs));status.dataset.eggStage=String(this.eggStage);status.dataset.riding=String(this.riding);status.dataset.failed=String(this.failed);status.dataset.failurePhase=this.failurePhase;status.dataset.score=String(finalScore(this.beer,this.photos,this.mishaps,this.latePhotos,this.elapsedMs,this.cheater));status.dataset.falls=String(this.mishaps.falls);status.dataset.squishes=String(this.mishaps.squishes);status.dataset.bumps=String(this.mishaps.bumps);status.dataset.won=String(this.won);status.dataset.intro='false';status.dataset.heroPlaying=String(this.heroPlaying);status.dataset.fallSound=String(this.fallSoundPlayed);if(status.textContent!==summary)status.textContent=summary;status.dataset.x=String(Math.round(this.player.x));status.dataset.y=String(Math.round(this.player.y));status.dataset.grounded=String(body.blocked.down);status.dataset.walkFrame=String(this.portrait.frame.name);status.dataset.walkFrames=[...this.visitedWalkFrames].sort().join(',');status.dataset.carrying=String(this.beer);status.dataset.sound=gameAudio.state;status.dataset.muted=String(gameAudio.muted);status.dataset.lastCue=gameAudio.lastCue;status.dataset.voiceLine=gameAudio.lastSpoken;status.dataset.voiceStatus=gameAudio.voiceStatus;status.dataset.voiceName=gameAudio.voiceName;status.dataset.loadedVoices=String(gameAudio.loadedVoiceCount);status.dataset.playedVoices=[...gameAudio.playedKinds].sort().join(',');status.dataset.locationCue=gameAudio.lastLocation;status.dataset.heardLocations=[...this.heardLocations].sort().join(',');const nearbyPiano=this.hazards.find(h=>h.kind==='piano'&&h.floor===this.floor);status.dataset.pianoDrops=String(nearbyPiano?.piano?.serial??0);status.dataset.pianoVisible=String(nearbyPiano?.art.visible??false);}
     }finally{this.refreshControlCopy();}
   }
   finish(){
     gameAudio.music.finishRun(this.cheater?'cheater':'success');
     (document.getElementById('pause-toggle') as HTMLButtonElement).disabled=true;
-    if(this.cheater)gameAudio.speak('Cheater!','cheater');else gameAudio.play('win');this.won=true;this.player.setVelocity(0,0);this.walking=false;this.prompt.setVisible(false);this.say('Allison: “You’re home! The elevator just got fixed.”');
+    if(this.cheater)gameAudio.speak('Cheater!','cheater');else gameAudio.play('win');this.won=true;this.player.setVelocity(0,0);this.walking=false;this.prompt.setVisible(false);this.reminder.setVisible(false);this.say('Allison: “You’re home! The elevator just got fixed.”');
     this.add.rectangle(W/2,H/2,880,410,0x12253c,.98).setStrokeStyle(2,0x79dec5).setScrollFactor(0).setDepth(20);
     this.add.text(W/2,160,'26 FLOORS. SETH HAPPENED.',{fontFamily:'Arial',fontSize:'34px',fontStyle:'bold',color:'#ffd08b'}).setOrigin(.5).setScrollFactor(0).setDepth(21);
     const score=finalScore(this.beer,this.photos,this.mishaps,this.latePhotos,this.elapsedMs,this.cheater);
@@ -803,7 +811,7 @@ function openTouchMenu(){
   const scene=game.scene.scenes[0] as Errand;
   if(!scene||(scene.introActive&&scene.introStarted)||scoresOpen()||touchMenu.open||controlSettings?.open||installHelp?.open)return;
   touch.clear();if(!scene.introActive&&!scene.paused&&!scene.won&&!scene.failed)scene.togglePause();
-  (document.getElementById('touch-recall') as HTMLButtonElement).disabled=scene.introActive||scene.won||scene.failed;
+  (document.getElementById('touch-recall') as HTMLButtonElement).disabled=scene.introActive||scene.won||scene.failed||missedPhotos(scene.player.x,scene.photos).length===0;
   document.querySelectorAll<HTMLButtonElement>('[data-proxy]').forEach(button=>{button.textContent=controlCopy(Array.from(document.getElementById(button.dataset.proxy!)!.childNodes).map(node=>node.nodeName==='BR'?'\n':node.textContent??'').join(''),touch.enabled);});
   const resume=document.getElementById('touch-resume') as HTMLButtonElement;
   const restart=touchMenu.querySelector<HTMLButtonElement>('[data-proxy="restart-run"]')!;
