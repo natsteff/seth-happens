@@ -1,14 +1,14 @@
 # Seth Happens - Beer Run, Elevator Out of Order
 
-**Version 0.3.7**
+**Version 0.3.8**
 
 ![Seth Happens - Beer Run, Elevator Out of Order](public/assets/title-logo.png)
 
 <p align="center">
-  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 0.3.7"></a>
+  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 0.3.8"></a>
 </p>
 
-**Play version 0.3.7** — Fullscreen highly recommended.
+**Play version 0.3.8** — Fullscreen highly recommended.
 
 **Now with mobile gameplay support!** Choose Default left/right arrows, Sliding Speed Runner or Game Stick. Customize arrow spacing and save your preferred setup. Select **Customize Controls** at the mobile start prompt or in the game menu. **For the best mobile experience, add the game as a Home Screen app and launch its icon in landscape. Direct mobile browser-tab play is not supported for further fixes.** See [How to add as a mobile app](#how-to-add-as-a-mobile-app).
 
@@ -36,6 +36,8 @@ Home Screen launch removes browser controls in supported app mode, giving the ga
 On iPhone, open the game in Safari, tap **Share → Add to Home Screen**, enable **Open as Web App** if offered, then **Add**. Launch the new icon and rotate to landscape. Chrome on iPhone also offers **Share → Add to Home Screen**; use Safari if unavailable. Android Chrome offers **Add to Home screen / Install app** in its menu when supported. Browser labels vary; a normal browser tab may retain its address bar.
 
 The game supplies its own Seth / BEER RUN app icon for iPhone/iPad and Android, plus a simplified Seth favicon for browser tabs. Your browser chooses the appropriate icon when you add the game. Existing Home Screen icons may need to be removed and added again to pick up updated artwork.
+
+Auto update on launch is enabled by default in the mobile menu. A confirmed newer release reloads immediately, even if a run is in progress. You can disable automatic checks or use Check for updates manually; neither clears scores or settings. An older cached release must first load a version containing this feature.
 
 This is an online Home Screen web app, not an offline download. Scores and preferences may be separate between browsers and the Home Screen app. See [Apple instructions](https://support.apple.com/guide/iphone/iphea86e5236/ios) and [Chrome instructions](https://support.google.com/chrome/answer/9658361?co=GENIE.Platform%3DiOS).
 
@@ -131,6 +133,12 @@ Gameplay station, warning/champion selections, music volume, music on/off and ov
 - Voices built using **[ElevenLabs](https://elevenlabs.io/)**.
 
 🎵 **[Listen to the entire video game soundtrack](https://suno.com/playlist/0ef61d61-9481-48f2-b67f-989cffdc9cca)**.
+
+## What’s new in 0.3.8
+
+- Auto update on launch defaults to enabled. On launch or return to the app, a confirmed newer release reloads immediately, including during a run. Turn it off in the mobile menu if preferred.
+- The menu includes Check for updates and the running version/check status. Failed checks keep the current page usable; scores and settings are preserved.
+- Older cached releases must load this update once before automatic checks become available.
 
 ## What’s new in 0.3.7
 

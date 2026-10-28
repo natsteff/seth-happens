@@ -1,3 +1,5 @@
+import { checkForUpdate } from './updates.mjs';
+import { loadSettings, saveSettings } from './preferences.mjs';
 import { mobileTrackLabel } from './mobile-track.mjs';
 import { installOpeningGuard } from './dialog-input.mjs';
 import { controlCopy } from './control-copy.mjs';
@@ -878,3 +880,27 @@ game.scale.on('resize',()=>requestAnimationFrame(positionStartGame));
 
 window.addEventListener('blur',clearPlayPointers);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)clearPlayPointers();});
+
+// Check on launch and when returning to the app. Confirmed updates reload even
+// during a run, as requested; failed/offline checks leave the page intact.
+const updateToggle=document.getElementById('auto-update') as HTMLInputElement;
+const updateStatus=document.getElementById('update-status')!;
+const updateButton=document.getElementById('check-updates') as HTMLButtonElement;
+updateToggle.checked=loadSettings().autoUpdate;
+let updateChecking=false,lastUpdateCheck=0;
+async function checkUpdates(manual=false){
+ if(updateChecking||(!manual&&!updateToggle.checked))return;
+ if(!manual&&Date.now()-lastUpdateCheck<10000)return;
+ updateChecking=true;lastUpdateCheck=Date.now();updateButton.disabled=true;
+ const current=document.getElementById('game-version')!.textContent!.replace(/^v/,'');
+ updateStatus.textContent=`v${current} · Checking…`;
+ let storage:Storage|undefined;try{storage=sessionStorage;}catch{/* URL guard remains available. */}
+ const result=await checkForUpdate({current,url:location.href,storage,manual,navigate:(url:string)=>location.replace(url)});
+ updateStatus.textContent=`v${current} · ${result==='updating'?'Updating…':result==='current'?'Up to date':result==='stale'?'Reload still returned an older page. Try Check for updates.':'Could not check. Try again online.'}`;
+ updateButton.disabled=false;updateChecking=false;
+}
+updateToggle.addEventListener('change',()=>{saveSettings({autoUpdate:updateToggle.checked});if(updateToggle.checked)void checkUpdates(true);});
+updateButton.addEventListener('click',()=>{void checkUpdates(true);});
+window.addEventListener('pageshow',()=>{void checkUpdates();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)void checkUpdates();});
+void checkUpdates();

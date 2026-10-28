@@ -235,3 +235,5 @@ html.touch-play-locked main>*:not(#play-area){visibility:hidden}
 #touch-menu #radio .radio-brand span{display:none}
 #touch-menu #radio .radio-now{padding:5px 8px;min-width:120px}
 #touch-menu #radio .radio-now:before{font-size:8px;letter-spacing:1px}
+
+#update-settings{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:8px;font-size:12px;color:#b9d1db}#update-settings input{accent-color:#7ee0c5}#update-settings button{min-height:36px;padding:5px 10px}#update-status{font-size:11px}

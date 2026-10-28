@@ -5,7 +5,7 @@ function store(){const data=new Map([['high-scores','preserve']]);return{data,ge
 test('preferences default to 75%, persist all options independently, leave scores untouched',()=>{
  const s=store();assert.equal(readPreferences(s).volume,.75);
  assert.equal(savePreferences(s,{track:4,countdownTrack:1,championTrack:1,volume:0,musicEnabled:false,muted:true}),true);
- assert.deepEqual(readPreferences(s),{track:4,countdownTrack:1,championTrack:1,volume:0,musicEnabled:false,muted:true});
+ assert.deepEqual(readPreferences(s),{track:4,countdownTrack:1,championTrack:1,volume:0,musicEnabled:false,muted:true,autoUpdate:true});
  savePreferences(s,{volume:.4});assert.equal(readPreferences(s).track,4);assert.equal(readPreferences(s).volume,.4);assert.equal(s.data.get('high-scores'),'preserve');
 });
 test('invalid values fall back safely, unavailable/corrupt storage does not break or overwrite',()=>{
