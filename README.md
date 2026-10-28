@@ -27,6 +27,12 @@ One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and
 - **Don’t fall…or do, because it’s hilarious.**
 - **Let time run out and see what happens.**
 
+## How to add as app
+
+For more room on iPhone, open the game in Safari, tap **Share → Add to Home Screen**, enable **Open as Web App** if offered, then **Add**. Launch the new icon and rotate to landscape. Chrome on iPhone also offers **Share → Add to Home Screen**; use Safari if unavailable. Android Chrome offers **Add to Home screen / Install app** in its menu when supported. Browser labels vary; a normal browser tab may retain its address bar.
+
+This is an online Home Screen web app, not an offline download. Scores and preferences may be separate between browsers and the Home Screen app. See [Apple instructions](https://support.apple.com/guide/iphone/iphea86e5236/ios) and [Chrome instructions](https://support.google.com/chrome/answer/9658361?co=GENIE.Platform%3DiOS).
+
 ## Controls
 
 | Action | Key |
@@ -47,6 +53,21 @@ Floor 01 is the first rooftop. Returning to a lower rooftop is safe. Missing the
 Keyboard remains the default and stays active with a controller connected. Pair a supported standard-layout controller through the operating system, focus the game and press a button; release controls to neutral before play. Disconnecting the active controller pauses play. Use keyboard/mouse for menus, restarting and high-score name entry. Actual device/browser compatibility still needs hardware testing.
 
 Rolling and walking obstacles patrol the whole floor. Pianos, anvils, window AC units and beer coolers drop at distinct intervals in the middle of their platforms. Watch their warning and aftermath, then choose your jump. Falling objects can squish you during descent; once landed they are safe to touch but solid, so jump over them.
+
+### Mobile touch controls
+
+Phones and tablets are offered optional touch controls. You can also enable them with **Touch controls**. Landscape is recommended. Fullscreen starts from your tap; browsers without fullscreen use expanded view instead. The game keeps its full framing, with translucent controls over the lower corners.
+
+Slide the left pad left or right without lifting your thumb; the center stops movement and either outer edge activates sprint. Use the round **Jump** button (double-tap within 300ms for Mega Jump) and **Action** for photos, finish and elevator. Release the pad to stop.
+
+The **☰** button pauses play and opens the menu: return to play, recall a missed photo, restart, scores, sound, music/volume/tracks and fullscreen exit. Keyboard and standard controllers remain available. Physical iOS/Android acceptance is pending.
+
+
+Expanded/fullscreen touch play hides page scrollbars and keeps controls away from screen edges. Gameplay touch gestures are reserved for the game; menus and score entry keep normal scrolling and input behavior. Leaving expanded view restores page scrolling.
+
+Browser-owned address/tool bars can remain when native fullscreen is unavailable. For a view without browser bars on iPhone, use Safari’s **Share → Add to Home Screen**, enable **Open as Web App** where offered, and launch that icon. Other browsers may offer a similar Home Screen option. The game includes a standalone web-app manifest; it still loads online. See [Apple’s Home Screen instructions](https://support.apple.com/guide/iphone/iphea86e5236/ios).
+
+Mobile controls offer **Default** walking arrows (no sprint), **Sliding Speed Runner**, or **Game Stick**. Choose **Customize Controls** before play or in the mobile pause menu. Arrow spacing has five settings; your choice is saved in this browser. Game Stick vertical movement does not trigger actions. Select **Start Game** to begin the intro; gameplay starts after the intro finishes.
 
 ## Music radio
 
@@ -70,7 +91,6 @@ Server installations can enable **Server High Scores** alongside **This PC High 
 
 Server-wide scores require a running score service; GitHub Pages cannot provide it. See [server setup](docs/leaderboard-server.md). Clearing acts on the selected list only and requires its password and confirmation.
 
-
 ## Screenshots
 
 Desktop captures from the 0.3 series. Game shots use 2560×1440 fullscreen (16:9); settings are shown in the normal desktop view.
@@ -83,21 +103,6 @@ Desktop captures from the 0.3 series. Game shots use 2560×1440 fullscreen (16:9
 ![Desktop controls, radio and settings](docs/screenshots/desktop-settings.png)
 
 ![Angel Seth after time runs out](docs/screenshots/timeout-angel.png)
-
-## Local development
-
-Node 22.13+ and pnpm 11.25.0:
-
-```sh
-pnpm install
-pnpm dev
-pnpm test
-pnpm build
-```
-
-The repository uses relative asset URLs for GitHub Pages. Source is on main; the compiled playable site is on gh-pages. The shared leaderboard requires the server setup above; GitHub Pages hosts only the game files. No player accounts or analytics.
-
-Owner-supplied character references, logo and audio; generated character artwork and original code-drawn props/effects. The Minnesota United crest is owner supplied for an unofficial fan scene; no affiliation or endorsement. Raw reference photographs are not included. See [asset and dependency notices](THIRD_PARTY_NOTICES.md).
 
 ## Final-warning and champion music
 
@@ -142,24 +147,17 @@ Gameplay station, warning/champion selections, music volume, music on/off and ov
 - Richer timeout presentation, clearer controls/layout and removal of the old jump-clue toggle.
 - Existing browser high scores remain preserved; Play Now still uses local-only scores.
 
-### Mobile touch controls
+## Local development
 
-Phones and tablets are offered optional touch controls. You can also enable them with **Touch controls**. Landscape is recommended. Fullscreen starts from your tap; browsers without fullscreen use expanded view instead. The game keeps its full framing, with translucent controls over the lower corners.
+Node 22.13+ and pnpm 11.25.0:
 
-Slide the left pad left or right without lifting your thumb; the center stops movement and either outer edge activates sprint. Use the round **Jump** button (double-tap within 300ms for Mega Jump) and **Action** for photos, finish and elevator. Release the pad to stop.
+```sh
+pnpm install
+pnpm dev
+pnpm test
+pnpm build
+```
 
-The **☰** button pauses play and opens the menu: return to play, recall a missed photo, restart, scores, sound, music/volume/tracks and fullscreen exit. Keyboard and standard controllers remain available. Physical iOS/Android acceptance is pending.
+The repository uses relative asset URLs for GitHub Pages. Source is on main; the compiled playable site is on gh-pages. The shared leaderboard requires the server setup above; GitHub Pages hosts only the game files. No player accounts or analytics.
 
-
-Expanded/fullscreen touch play hides page scrollbars and keeps controls away from screen edges. Gameplay touch gestures are reserved for the game; menus and score entry keep normal scrolling and input behavior. Leaving expanded view restores page scrolling.
-
-Browser-owned address/tool bars can remain when native fullscreen is unavailable. For a view without browser bars on iPhone, use Safari’s **Share → Add to Home Screen**, enable **Open as Web App** where offered, and launch that icon. Other browsers may offer a similar Home Screen option. The game includes a standalone web-app manifest; it still loads online. See [Apple’s Home Screen instructions](https://support.apple.com/guide/iphone/iphea86e5236/ios).
-
-
-### How to add as app
-
-For more room on iPhone, open the game in Safari, tap **Share → Add to Home Screen**, enable **Open as Web App** if offered, then **Add**. Launch the new icon and rotate to landscape. Chrome on iPhone also offers **Share → Add to Home Screen**; use Safari if unavailable. Android Chrome offers **Add to Home screen / Install app** in its menu when supported. Browser labels vary; a normal browser tab may retain its address bar.
-
-This is an online Home Screen web app, not an offline download. Scores and preferences may be separate between browsers and the Home Screen app. See [Apple instructions](https://support.apple.com/guide/iphone/iphea86e5236/ios) and [Chrome instructions](https://support.google.com/chrome/answer/9658361?co=GENIE.Platform%3DiOS).
-
-Mobile controls offer **Default** walking arrows (no sprint), **Sliding Speed Runner**, or **Game Stick**. Choose **Customize Controls** before play or in the mobile pause menu. Arrow spacing has five settings; your choice is saved in this browser. Game Stick vertical movement does not trigger actions. Select **Start Game** to begin the intro; gameplay starts after the intro finishes.
+Owner-supplied character references, logo and audio; generated character artwork and original code-drawn props/effects. The Minnesota United crest is owner supplied for an unofficial fan scene; no affiliation or endorsement. Raw reference photographs are not included. See [asset and dependency notices](THIRD_PARTY_NOTICES.md).
