@@ -10,7 +10,7 @@
 
 **Play version 0.3.4** — Fullscreen highly recommended.
 
-**Now with mobile gameplay support!** Choose Default left/right arrows, Sliding Speed Runner or Game Stick. Customize arrow spacing and save your preferred setup. Select **Customize Controls** at the mobile start prompt or in the game menu. Play in landscape; launch from a Home Screen icon for more screen space. See [How to add as a mobile app](#how-to-add-as-a-mobile-app).
+**Now with mobile gameplay support!** Choose Default left/right arrows, Sliding Speed Runner or Game Stick. Customize arrow spacing and save your preferred setup. Select **Customize Controls** at the mobile start prompt or in the game menu. **For the best mobile experience, add the game as a Home Screen app and launch its icon in landscape. Direct mobile browser-tab play is not supported for further fixes.** See [How to add as a mobile app](#how-to-add-as-a-mobile-app).
 
 **Play Now on GitHub Pages uses local browser high scores only. Server-wide high scores cannot run on GitHub Pages; they require a server-enabled installation.**
 
@@ -29,9 +29,11 @@ One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and
 
 ## How to add as a mobile app
 
-Launching from a Home Screen icon can remove the browser’s address and tool bars, giving the game and touch controls more usable screen space and reducing accidental interactions with browser controls. It also provides one-tap access. The gameplay, controls and features are the same; this does not add new interactions or guarantee faster performance.
+**For the best mobile experience, use the Home Screen app. This is the only recommended mobile play mode.** Add the game using the steps below, then launch its icon and play in landscape. Direct browser-tab play on phones may have persistent browser bars, reduced play space or uneven centering; further fixes for that mode are not planned.
 
-For more room on iPhone, open the game in Safari, tap **Share → Add to Home Screen**, enable **Open as Web App** if offered, then **Add**. Launch the new icon and rotate to landscape. Chrome on iPhone also offers **Share → Add to Home Screen**; use Safari if unavailable. Android Chrome offers **Add to Home screen / Install app** in its menu when supported. Browser labels vary; a normal browser tab may retain its address bar.
+Home Screen launch removes browser controls in supported app mode, giving the game more usable space and avoiding accidental browser interactions. Owner testing confirmed that this resolved gameplay and centering issues encountered in Chrome on iOS. It also provides one-tap access. Game features remain the same; this is not a promise of faster performance on every device.
+
+On iPhone, open the game in Safari, tap **Share → Add to Home Screen**, enable **Open as Web App** if offered, then **Add**. Launch the new icon and rotate to landscape. Chrome on iPhone also offers **Share → Add to Home Screen**; use Safari if unavailable. Android Chrome offers **Add to Home screen / Install app** in its menu when supported. Browser labels vary; a normal browser tab may retain its address bar.
 
 The game supplies its own Seth / BEER RUN app icon for iPhone/iPad and Android, plus a simplified Seth favicon for browser tabs. Your browser chooses the appropriate icon when you add the game. Existing Home Screen icons may need to be removed and added again to pick up updated artwork.
 
@@ -60,11 +62,11 @@ Rolling and walking obstacles patrol the whole floor. Pianos, anvils, window AC 
 
 ### Mobile touch controls
 
-Phones and tablets are offered optional touch controls. You can also enable them with **Touch controls**. Landscape is recommended. Fullscreen starts from your tap; browsers without fullscreen use expanded view instead. The game keeps its full framing, with translucent controls over the lower corners.
+**Launch the Home Screen app in landscape for mobile play**—see [How to add as a mobile app](#how-to-add-as-a-mobile-app). Phones and tablets are offered optional touch controls, also available through **Touch controls**. The game keeps its full framing, with translucent controls over the lower corners. Direct mobile browser-tab layout issues are not being pursued further.
 
 Slide the left pad left or right without lifting your thumb; the center stops movement and either outer edge activates sprint. Use the round **Jump** button (double-tap within 300ms for Mega Jump) and **Action** for photos, finish and elevator. Release the pad to stop.
 
-The **☰** button pauses play and opens the menu: return to play, recall a missed photo, restart, scores, sound, music/volume/tracks and fullscreen exit. Keyboard and standard controllers remain available. Physical iOS/Android acceptance is pending.
+The **☰** button pauses play and opens the menu: return to play, recall a missed photo, restart, scores, sound, music/volume/tracks and fullscreen exit. Keyboard and standard controllers remain available. Owner testing confirmed successful iOS Home Screen gameplay; Android device acceptance remains pending.
 
 
 Expanded/fullscreen touch play hides page scrollbars and keeps controls away from screen edges. Gameplay touch gestures are reserved for the game; menus and score entry keep normal scrolling and input behavior. Leaving expanded view restores page scrolling.
