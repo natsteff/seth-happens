@@ -73,6 +73,8 @@ Desktop captures from the 0.3 series. Game shots use 2560×1440 fullscreen (16:9
 
 ![Fullscreen title screen](docs/screenshots/start-screen.png)
 ![Fullscreen rooftop beer run](docs/screenshots/beer-run.png)
+![Concert photo requirement on Floor 17](docs/screenshots/concert-photo.png)
+![Allison, Oakey and Ellowyn at the Floor 26 finish](docs/screenshots/final-floor.png)
 ![Seth falling while holding the beer](docs/screenshots/falling.png)
 ![Desktop controls, radio and settings](docs/screenshots/desktop-settings.png)
 
