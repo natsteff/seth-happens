@@ -75,3 +75,29 @@ test('Game Stick clamps diagonal travel radially and vertical alone never moves 
  slider.listeners.pointercancel(e(1,108,54));assert.equal(input.vertical,0);assert.equal(input.sample().move,0);
  delete document.getElementById;
 });
+test('quick sprint requires a released short same-arrow double-tap; release requires a fresh pair',async()=>{
+ const {QuickSprint}=await import('../src/touch.mjs');const sprint=new QuickSprint();
+ sprint.press(1,'right',0);assert.equal(sprint.active,false);sprint.release(1,60);
+ sprint.press(2,'right',200);assert.equal(sprint.active,true);sprint.release(2,500);
+ sprint.press(3,'right',550);assert.equal(sprint.active,false);sprint.release(3,590);
+ sprint.press(4,'right',700);assert.equal(sprint.active,true);sprint.clear();assert.equal(sprint.active,false);
+});
+test('slow taps, long first holds, alternating arrows and overlapping fingers cannot trigger sprint',async()=>{
+ const {QuickSprint}=await import('../src/touch.mjs');
+ for(const [firstRelease,secondTime,direction] of [[50,251,'right'],[210,240,'right'],[50,150,'left']]){
+  const sprint=new QuickSprint();sprint.press(1,'right',0);sprint.release(1,firstRelease);sprint.press(2,direction,secondTime);assert.equal(sprint.active,false);
+ }
+ const sprint=new QuickSprint();sprint.press(1,'right',0);sprint.press(2,'right',100);assert.equal(sprint.active,false);sprint.release(1,120);sprint.release(2,130);assert.equal(sprint.lastTap,null);
+ sprint.press(3,'right',200);sprint.release(3,220,true);sprint.press(4,'right',230);assert.equal(sprint.active,false);
+});
+test('Default quick sprint is opt-in, Jump independent, and reverse/dialog cancellation removes active sprint',()=>{
+ const make=action=>({dataset:{touch:action},listeners:{},addEventListener(name,fn){this.listeners[name]=fn;},setPointerCapture(){},removeAttribute(){}});
+ const right=make('right'),left=make('left'),jump=make('jump');buttons.push(right,left,jump);const input=new TouchInput();input.style='default';input.enabled=true;
+ const down=(button,id,time)=>button.listeners.pointerdown({pointerId:id,timeStamp:time,preventDefault(){}});
+ const up=(button,id,time)=>button.listeners.pointerup({pointerId:id,timeStamp:time,type:'pointerup'});
+ down(right,1,0);up(right,1,40);down(right,2,100);assert.equal(input.sample().sprint,false);up(right,2,130);
+ input.clear();input.quickSprintEnabled=true;down(right,3,200);up(right,3,230);down(right,4,300);assert.equal(input.sample().sprint,true);
+ down(jump,5,320);assert.equal(input.sample().jump,true);assert.equal(input.sample().sprint,true);up(jump,5,330);
+ down(left,6,350);assert.equal(input.sample().sprint,false);up(right,4,360);assert.equal(input.sample().move,-1);assert.equal(input.sample().sprint,false);
+ input.sample(true);assert.equal(input.quickSprint.active,false);assert.equal(input.quickSprint.lastTap,null);buttons.length=0;
+});

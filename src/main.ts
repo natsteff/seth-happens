@@ -1,3 +1,4 @@
+import { controlCopy } from './control-copy.mjs';
 import Phaser from 'phaser';
 import { ControllerInput, keyboardOrControllerMove } from './controller.mjs';
 import './style.css';
@@ -31,6 +32,7 @@ class Errand extends Phaser.Scene {
   crate!: Phaser.GameObjects.Container; hero!: Phaser.GameObjects.Container; portrait!: Phaser.GameObjects.Sprite;
   elapsedMs=0;failed=false;cheater=false;riding=false;rideTween?:Phaser.Tweens.Tween;
   jumpStarted=-1;megaUsed=false;jumpCount=0;
+  controlCopies=new WeakMap<Phaser.GameObjects.Text,{raw:string,rendered:string,mobile:boolean}>();
   paused=false;pauseStarted=0;pauseOverlay!:Phaser.GameObjects.Container;
   timerText!:Phaser.GameObjects.Text;
   eggStage=0;eggPreviousX=75;eggBall!:Phaser.GameObjects.Container;eggLift!:Phaser.GameObjects.Container;
@@ -181,10 +183,11 @@ class Errand extends Phaser.Scene {
   showIntro(){
     this.physics.world.pause();
     const backdrop=this.add.rectangle(W/2,H/2,W,H,0x102137,.97);
-    const logo=this.add.image(W/2,285,'title-logo').setDisplaySize(750,500);
+    const logo=this.add.image(W/2,270,'title-logo').setDisplaySize(690,460);
     this.introCaption=this.add.text(W/2,560,'',{fontFamily:'Arial',fontSize:'16px',fontStyle:'bold',color:'#ffe2aa',backgroundColor:'#102137',padding:{x:12,y:7}}).setOrigin(.5);
     this.introOverlay=this.add.container(0,0,[backdrop,logo,this.introCaption]).setScrollFactor(0).setDepth(50);
     document.getElementById('start-game')!.hidden=false;
+    requestAnimationFrame(positionStartGame);
   }
   async startIntro(){
     if(this.introStarted||!this.introActive||document.querySelector('dialog[open]'))return;
@@ -257,7 +260,7 @@ class Errand extends Phaser.Scene {
     soccerBall(this,soccer.x+201,soccer.y-10);
     const brew=at(12);this.label(brew.x+12,brew.y-165,'HOP & HOPE', '#ffcc84',23);this.label(brew.x+12,brew.y-136,'SIX BOTTLES. TWELVE FLOORS. NO REFUNDS.','#b1c6d4',10);
     this.crate=this.add.container(beerSpot.x,brew.y,[this.add.image(0,0,'beer-pickup').setOrigin(.5,1).setDisplaySize(52,52)]);
-    this.beerHint=this.label(beerSpot.x-78,brew.y-67,'GRAB THE BEER!','#ffda78',16).setDepth(6);
+    this.beerHint=this.label(beerSpot.x-78,brew.y-67,'ACTION / F: GRAB BEER','#ffda78',16).setDepth(6);
     this.tweens.add({targets:this.beerHint,alpha:.3,duration:400,yoyo:true,repeat:-1});
     const concert=at(17);this.label(concert.x+8,concert.y-204,'THE EXPOSURE TRIANGLE', '#d5b6f2',17);this.label(concert.x+8,concert.y-180,'LIVE MUSIC BREAK','#9fb9cb',10);
     this.add.triangle(concert.x+155,concert.y-85,0,90,30,0,60,90,0xbda0ed,.17);
@@ -358,6 +361,19 @@ class Errand extends Phaser.Scene {
     this.jumpStarted=-1;this.megaUsed=false;
     this.retries++;(this.player.body as Phaser.Physics.Arcade.Body).reset(this.checkpoint.x,this.checkpoint.y);this.player.setVelocity(0,0);this.immuneUntil=time+1400;this.lastGround=-1000;this.jumpUntil=0;
     gameAudio.play('impact');if(reaction==='fall'&&!this.fallSoundPlayed)gameAudio.speak('Aaaaaah!','fall');if(reaction==='squish')gameAudio.speak('Squish!','squish');if(reaction==='person')gameAudio.speak('Well, excuse you.','person');if(reaction==='object'){const kind=objectImpactReaction(Math.random());gameAudio.speak(kind==='ouch'?'Ouch!':'Ahh!',kind);}this.cameras.main.shake(100,.003);this.say(reason+' Beer and photos saved.');this.fallSoundPlayed=false;
+  }
+  refreshControlCopy(){
+    const visit=(objects:Phaser.GameObjects.GameObject[])=>{for(const object of objects){
+      if(object instanceof Phaser.GameObjects.Text){
+        const prior=this.controlCopies.get(object);
+        if(prior?.rendered===object.text&&prior.mobile===touch.enabled)continue;
+        const raw=prior?.rendered===object.text?prior.raw:object.text;
+        const rendered=controlCopy(raw,touch.enabled);
+        if(object.text!==rendered)object.setText(rendered);
+        this.controlCopies.set(object,{raw,rendered,mobile:touch.enabled});
+      }else if(object instanceof Phaser.GameObjects.Container)visit(object.list);
+    }};
+    visit(this.children.list);
   }
   togglePause(){
     if(this.introActive||this.won||this.failed||scoresOpen())return;
@@ -513,6 +529,7 @@ class Errand extends Phaser.Scene {
 
   update(time:number,delta:number){
     if(!this.player)return;
+    try{
     gameAudio.music.setHold('scores',scoresOpen());
     let pads:readonly (Gamepad|null)[]=[];try{pads=navigator.getGamepads?.()??[];}catch{/* Keyboard remains usable if gamepad access is blocked. */}
     const controller=this.controller.sample(Array.from(pads),document.hasFocus()&&!scoresOpen()&&!(document.getElementById('touch-menu') as HTMLDialogElement).open&&document.activeElement?.id!=='radio-volume');const mobile=touch.sample(scoresOpen()||document.hidden||!!document.querySelector('dialog[open]'));
@@ -525,7 +542,7 @@ class Errand extends Phaser.Scene {
     const controllerStatus=document.getElementById('controller-status');if(controllerStatus&&controllerStatus.textContent!==controller.label)controllerStatus.textContent=controller.label;
     if(controller.disconnected&&!this.paused){this.player.setVelocityX(0);this.togglePause();}
     if(Phaser.Input.Keyboard.JustDown(this.keys.P)||controller.pause)this.togglePause();
-    if(this.paused){const live=document.getElementById('live-status');if(live){live.dataset.paused='true';live.dataset.sound=gameAudio.state;live.textContent='Paused. Press P to resume.';}return;}
+    if(this.paused){const live=document.getElementById('live-status');if(live){live.dataset.paused='true';live.dataset.sound=gameAudio.state;live.textContent=controlCopy('Paused. Press P to resume.',touch.enabled);}return;}
     if(scoresOpen()){this.physics.world.pause();this.input.keyboard!.enabled=false;this.scorePaused=true;return;}
     if(this.scorePaused){this.input.keyboard!.enabled=true;this.scorePaused=false;for(const key of Object.values(this.keys))key.reset();if(!this.introActive&&!this.failed&&!this.won)this.physics.world.resume();}
     if(Phaser.Input.Keyboard.JustDown(this.keys.S))gameAudio.toggle();
@@ -544,7 +561,7 @@ class Errand extends Phaser.Scene {
       this.restartSince??=time;
       if(time-this.restartSince>=RESTART_HOLD_MS){this.scene.restart();return;}
     }else this.restartSince=null;
-    if(this.failed){this.updateHud();const live=document.getElementById('live-status');if(live){live.dataset.failed='true';live.dataset.failurePhase=this.failurePhase;live.dataset.angelX=String(Math.round(this.timeoutAngel?.x??0));live.dataset.angelY=String(Math.round(this.timeoutAngel?.y??0));live.dataset.falls=String(this.mishaps.falls);live.dataset.squishes=String(this.mishaps.squishes);live.dataset.bumps=String(this.mishaps.bumps);live.textContent=`Time expired. No score saved. ${this.failurePhase==='angel'?'Angel Seth is fluttering.':'Seth’s final flight.'} Hold R or press Restart for a new run.`;}return;}
+    if(this.failed){this.updateHud();const live=document.getElementById('live-status');if(live){live.dataset.failed='true';live.dataset.failurePhase=this.failurePhase;live.dataset.angelX=String(Math.round(this.timeoutAngel?.x??0));live.dataset.angelY=String(Math.round(this.timeoutAngel?.y??0));live.dataset.falls=String(this.mishaps.falls);live.dataset.squishes=String(this.mishaps.squishes);live.dataset.bumps=String(this.mishaps.bumps);live.textContent=controlCopy(`Time expired. No score saved. ${this.failurePhase==='angel'?'Angel Seth is fluttering.':'Seth’s final flight.'} Hold R or press Restart for a new run.`,touch.enabled);}return;}
     const body=this.player.body as Phaser.Physics.Arcade.Body;
     if(!this.won&&!this.failed){
       const missed=missedPhotos(this.player.x,this.photos);
@@ -620,7 +637,6 @@ class Errand extends Phaser.Scene {
       for(const spot of locations)if(this.floor===spot.floor&&!this.heardLocations.has(spot.id)){
         this.heardLocations.add(spot.id);gameAudio.playLocation(spot.kind);
       }
-      if(!this.beer&&Math.abs(this.player.x-beerSpot.x)<43&&Math.abs(this.player.y-beerSpot.y)<65){this.beer=true;gameAudio.play('pickup');this.crate.setVisible(false);this.beerHint.setVisible(false);this.say('SIX-PACK IN HAND. Only fourteen floors of foam management left.');}
       this.updateEgg();
       if(this.riding)return;
       const stop=photoStops.findIndex(s=>Math.abs(this.player.x-s.x)<100&&Math.abs(this.player.y-s.y)<90);
@@ -631,12 +647,14 @@ class Errand extends Phaser.Scene {
         void gameAudio.playHero().then(()=>{if(this.runVersion===run)this.heroPlaying=false;});
       }
       const beerNearby=this.floor===12&&!this.beer;
+      const beerInReach=!this.beer&&Math.abs(this.player.x-beerSpot.x)<43&&Math.abs(this.player.y-beerSpot.y)<65;
       this.prompt.setVisible(stop>=0||home||beerNearby);
       if(stop>=0)this.prompt.setText(this.photos.has(stop)?'✓ Photo saved. Upward, photographer.':this.heroHeard?'[ F ] RECOVER PHOTO • +125 points (half value)':'[ F ] PHOTO OPPORTUNITY • +250 points');
       else if(home)this.prompt.setText(this.heroPlaying?'Allison: “My hero!” • Delivery unlocks after this line':this.beer?'[ F ] Deliver six-pack & finish • B returns to missed photos':'[ F ] Finish without beer • B returns to missed photos');
-      if(beerNearby)this.prompt.setText(`GRAB THE BEER! ${this.player.x<beerSpot.x?'→':'←'} Walk into the six-pack`);
+      if(beerNearby)this.prompt.setText(beerInReach?'[ Action / F ] Pick up the six-pack':`GET THE BEER ${this.player.x<beerSpot.x?'→':'←'} Move closer, then press Action / F`);
       if(Phaser.Input.Keyboard.JustDown(this.keys.F)||controller.interact){
-        if(stop>=0&&!this.photos.has(stop)){this.photos.add(stop);if(this.heroHeard)this.latePhotos.add(stop);gameAudio.play('photo');this.cameras.main.flash(140,255,255,255);this.say(`PHOTO SAVED • +${this.latePhotos.has(stop)?125:250} points • ${photoStops[stop].caption}`);}
+        if(beerInReach){this.beer=true;gameAudio.play('pickup');this.crate.setVisible(false);this.beerHint.setVisible(false);this.prompt.setVisible(false);this.say('SIX-PACK IN HAND. Only fourteen floors of foam management left.');}
+        else if(stop>=0&&!this.photos.has(stop)){this.photos.add(stop);if(this.heroHeard)this.latePhotos.add(stop);gameAudio.play('photo');this.cameras.main.flash(140,255,255,255);this.say(`PHOTO SAVED • +${this.latePhotos.has(stop)?125:250} points • ${photoStops[stop].caption}`);}
         else if(home&&!this.heroPlaying)this.finish();
       }
       for(const i of missedPhotos(this.player.x,this.photos))if(!this.warned.has(i)){
@@ -660,6 +678,7 @@ class Errand extends Phaser.Scene {
     const status=document.getElementById('live-status');
     const summary=`${this.hud.text}. ${indicator}. ${this.toast.text}${this.won?' Mission complete.':''}`;
     if(status){status.dataset.paused='false';const drop=this.hazards.find(h=>isFalling(h.kind)&&h.floor===this.floor);status.dataset.dropPhase=drop?.piano?.dropping?'dropping':drop?.piano?.landed?'landed':drop?.piano?.warning?'warning':'idle';status.dataset.heroFlipped=String(this.portrait.flipX);status.dataset.heroAnimation=this.portrait.anims.currentAnim?.key??'idle';status.dataset.heroAnimationRate=String(this.portrait.anims.timeScale);status.dataset.heroFilter='nearest';status.dataset.heroTexture=this.portrait.texture.key;status.dataset.timerBeeps=String(this.lastTimerBeep);status.dataset.megaJump=String(this.megaUsed);status.dataset.floor=String(this.floor);status.dataset.elapsed=String(Math.round(this.elapsedMs));status.dataset.eggStage=String(this.eggStage);status.dataset.riding=String(this.riding);status.dataset.failed=String(this.failed);status.dataset.failurePhase=this.failurePhase;status.dataset.score=String(finalScore(this.beer,this.photos,this.mishaps,this.latePhotos,this.elapsedMs,this.cheater));status.dataset.falls=String(this.mishaps.falls);status.dataset.squishes=String(this.mishaps.squishes);status.dataset.bumps=String(this.mishaps.bumps);status.dataset.won=String(this.won);status.dataset.intro='false';status.dataset.heroPlaying=String(this.heroPlaying);status.dataset.fallSound=String(this.fallSoundPlayed);if(status.textContent!==summary)status.textContent=summary;status.dataset.x=String(Math.round(this.player.x));status.dataset.y=String(Math.round(this.player.y));status.dataset.grounded=String(body.blocked.down);status.dataset.walkFrame=String(this.portrait.frame.name);status.dataset.walkFrames=[...this.visitedWalkFrames].sort().join(',');status.dataset.carrying=String(this.beer);status.dataset.sound=gameAudio.state;status.dataset.muted=String(gameAudio.muted);status.dataset.lastCue=gameAudio.lastCue;status.dataset.voiceLine=gameAudio.lastSpoken;status.dataset.voiceStatus=gameAudio.voiceStatus;status.dataset.voiceName=gameAudio.voiceName;status.dataset.loadedVoices=String(gameAudio.loadedVoiceCount);status.dataset.playedVoices=[...gameAudio.playedKinds].sort().join(',');status.dataset.locationCue=gameAudio.lastLocation;status.dataset.heardLocations=[...this.heardLocations].sort().join(',');const nearbyPiano=this.hazards.find(h=>h.kind==='piano'&&h.floor===this.floor);status.dataset.pianoDrops=String(nearbyPiano?.piano?.serial??0);status.dataset.pianoVisible=String(nearbyPiano?.art.visible??false);}
+    }finally{this.refreshControlCopy();}
   }
   finish(){
     gameAudio.music.finishRun(this.cheater?'cheater':'success');
@@ -729,6 +748,7 @@ function setTouch(enabled:boolean){
   document.getElementById('touch-controls')!.hidden=!enabled;
   gameElement.classList.toggle('touch-mode',enabled);
   touchViewport.sync();
+  (game.scene.scenes[0] as Errand)?.refreshControlCopy();
   const radio=document.getElementById('radio')!;
   if(enabled)document.getElementById('touch-radio-slot')!.append(radio);else gameElement.insertBefore(radio,document.getElementById('game'));
   if(!enabled)(document.getElementById('touch-menu') as HTMLDialogElement).close();
@@ -745,7 +765,7 @@ window.addEventListener('resize',()=>{touch.clear();requestAnimationFrame(()=>ga
 
 document.querySelectorAll<HTMLButtonElement>('[data-proxy]').forEach(button=>{
   const source=document.getElementById(button.dataset.proxy!) as HTMLButtonElement;
-  const sync=()=>{button.textContent=source.innerText;button.disabled=source.disabled;if(source.hasAttribute('aria-pressed'))button.setAttribute('aria-pressed',source.getAttribute('aria-pressed')!);};
+  const sync=()=>{button.textContent=controlCopy(Array.from(source.childNodes).map(node=>node.nodeName==='BR'?'\n':node.textContent??'').join(''),touch.enabled);button.disabled=source.disabled;if(source.hasAttribute('aria-pressed'))button.setAttribute('aria-pressed',source.getAttribute('aria-pressed')!);};
   sync();new MutationObserver(sync).observe(source,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['disabled','aria-pressed']});
   button.addEventListener('click',()=>{touch.clear();if(['restart-run','high-scores'].includes(source.id))closeTouchMenu(source.id!=='restart-run');source.click();button.blur();});
 });
@@ -756,13 +776,27 @@ function closeTouchMenu(resume=true){
   const scene=game.scene.scenes[0] as Errand;
   if(resume&&scene?.paused)scene.togglePause();
 }
-document.getElementById('touch-menu-open')!.addEventListener('click',()=>{
+const menuButton=document.getElementById('touch-menu-open') as HTMLButtonElement;
+function openTouchMenu(){
   const scene=game.scene.scenes[0] as Errand;
-  if(!scene||scene.introActive||scoresOpen())return;
+  if(!scene||scene.introActive||scoresOpen()||touchMenu.open||controlSettings?.open||installHelp?.open)return;
   touch.clear();if(!scene.paused&&!scene.won&&!scene.failed)scene.togglePause();
   (document.getElementById('touch-recall') as HTMLButtonElement).disabled=scene.won||scene.failed;
+  document.querySelectorAll<HTMLButtonElement>('[data-proxy]').forEach(button=>{button.textContent=controlCopy(Array.from(document.getElementById(button.dataset.proxy!)!.childNodes).map(node=>node.nodeName==='BR'?'\n':node.textContent??'').join(''),touch.enabled);});
   touchMenu.showModal();
+}
+let menuPointer:number|null=null;
+menuButton.addEventListener('pointerdown',event=>{
+ if(menuButton.disabled||menuPointer!==null)return;
+ event.preventDefault();event.stopPropagation();menuPointer=event.pointerId;menuButton.setPointerCapture(event.pointerId);
 });
+menuButton.addEventListener('pointerup',event=>{
+ if(event.pointerId!==menuPointer)return;menuPointer=null;event.preventDefault();event.stopPropagation();
+ const box=menuButton.getBoundingClientRect();
+ if(event.clientX>=box.left&&event.clientX<=box.right&&event.clientY>=box.top&&event.clientY<=box.bottom)openTouchMenu();
+});
+for(const type of ['pointercancel','lostpointercapture'])menuButton.addEventListener(type,()=>{menuPointer=null;});
+menuButton.addEventListener('click',event=>{event.stopPropagation();if(event.detail===0)openTouchMenu();});
 document.getElementById('touch-resume')!.addEventListener('click',()=>closeTouchMenu());
 document.getElementById('touch-recall')!.addEventListener('click',()=>{closeTouchMenu();touch.edges.add('recall');});
 touchMenu.addEventListener('cancel',event=>{event.preventDefault();closeTouchMenu();});
@@ -772,24 +806,25 @@ for(const type of ['keydown','keyup'])document.addEventListener(type,event=>{if(
 const controlSettings=document.getElementById('control-settings') as HTMLDialogElement;
 const styleSelect=document.getElementById('control-style') as HTMLSelectElement;
 const spacingInput=document.getElementById('control-spacing') as HTMLInputElement;
-let controlStyle='default',controlSpacing=3,customizeFromOffer=false;
-try{const saved=JSON.parse(localStorage.getItem('seth-touch-controls')||'null');if(saved&&['default','slider','stick'].includes(saved.style))controlStyle=saved.style;if(Number.isInteger(saved?.spacing)&&saved.spacing>=1&&saved.spacing<=5)controlSpacing=saved.spacing;}catch{/* Defaults remain available. */}
+const quickSprintInput=document.getElementById('control-quick-sprint') as HTMLInputElement;
+let controlStyle='default',controlSpacing=3,controlQuickSprint=false,customizeFromOffer=false;
+try{const saved=JSON.parse(localStorage.getItem('seth-touch-controls')||'null');if(saved&&['default','slider','stick'].includes(saved.style))controlStyle=saved.style;controlQuickSprint=saved?.quickSprint===true;if(Number.isInteger(saved?.spacing)&&saved.spacing>=1&&saved.spacing<=5)controlSpacing=saved.spacing;}catch{/* Defaults remain available. */}
 function applyControls(){
- touch.clear();touch.style=controlStyle;
+ touch.clear();touch.style=controlStyle;touch.quickSprintEnabled=controlQuickSprint;
  gameElement.dataset.controlStyle=controlStyle;
  gameElement.style.setProperty('--arrow-gap',`${8+(controlSpacing-1)*8}px`);
- document.getElementById('touch-style-help')!.textContent=controlStyle==='default'?'Default arrows walk only; no sprint. Release to stop. Double-tap Jump for Mega Jump.':'Slide through the center to reverse without lifting. Release to stop. Push left/right to the edge to sprint. Double-tap Jump for Mega Jump.';
+ document.getElementById('touch-style-help')!.textContent=controlStyle==='default'?(controlQuickSprint?'Double-tap the same arrow, holding the second press to sprint. Release or change direction to cancel. Double-tap Jump for Mega Jump.':'Default arrows walk only; no sprint. Release to stop. Double-tap Jump for Mega Jump.'):'Slide through the center to reverse without lifting. Release to stop. Push left/right to the edge to sprint. Double-tap Jump for Mega Jump.';
  document.getElementById('touch-arrows')!.hidden=controlStyle!=='default';
  document.getElementById('touch-stick')!.hidden=controlStyle==='default';
- document.querySelector('.touch-hint')!.textContent=controlStyle==='default'?'Left / right · release to stop':controlStyle==='stick'?'Game Stick · edges sprint':'Slide to move · edges sprint';
+ document.querySelector('.touch-hint')!.textContent=controlStyle==='default'?(controlQuickSprint?'Double-tap + hold arrow · sprint':'Left / right · release to stop'):controlStyle==='stick'?'Game Stick · edges sprint':'Slide to move · edges sprint';
 }
-function previewControls(){document.getElementById('spacing-value')!.textContent=spacingInput.value;document.getElementById('spacing-preview')!.style.gap=`${8+(Number(spacingInput.value)-1)*8}px`;spacingInput.disabled=styleSelect.value!=='default';}
-function openControls(first=false){document.getElementById('controls-save')!.textContent=first?'Save and continue':'Save controls';customizeFromOffer=first;touch.clear();styleSelect.value=controlStyle;spacingInput.value=String(controlSpacing);previewControls();controlSettings.showModal();}
+function previewControls(){document.getElementById('spacing-value')!.textContent=spacingInput.value;document.getElementById('spacing-preview')!.style.gap=`${8+(Number(spacingInput.value)-1)*8}px`;spacingInput.disabled=styleSelect.value!=='default';quickSprintInput.disabled=styleSelect.value!=='default';}
+function openControls(first=false){document.getElementById('controls-save')!.textContent=first?'Save and continue':'Save controls';customizeFromOffer=first;touch.clear();styleSelect.value=controlStyle;spacingInput.value=String(controlSpacing);quickSprintInput.checked=controlQuickSprint;previewControls();controlSettings.showModal();}
 document.getElementById('touch-customize-first')!.addEventListener('click',()=>{touchOffer.close();openControls(true);});
 document.getElementById('touch-customize')!.addEventListener('click',()=>openControls());
 spacingInput.addEventListener('input',previewControls);styleSelect.addEventListener('change',previewControls);
-document.getElementById('controls-reset')!.addEventListener('click',()=>{styleSelect.value='default';spacingInput.value='3';previewControls();});
-document.getElementById('controls-save')!.addEventListener('click',()=>{controlStyle=styleSelect.value;controlSpacing=Number(spacingInput.value);applyControls();try{localStorage.setItem('seth-touch-controls',JSON.stringify({style:controlStyle,spacing:controlSpacing}));}catch{/* Session controls still work. */}controlSettings.close();if(customizeFromOffer){setTouch(true);void toggleFullscreen();}});
+document.getElementById('controls-reset')!.addEventListener('click',()=>{styleSelect.value='default';spacingInput.value='3';quickSprintInput.checked=false;previewControls();});
+document.getElementById('controls-save')!.addEventListener('click',()=>{controlStyle=styleSelect.value;controlSpacing=Number(spacingInput.value);controlQuickSprint=quickSprintInput.checked;applyControls();try{localStorage.setItem('seth-touch-controls',JSON.stringify({style:controlStyle,spacing:controlSpacing,quickSprint:controlQuickSprint}));}catch{/* Session controls still work. */}controlSettings.close();if(customizeFromOffer){setTouch(true);void toggleFullscreen();}});
 controlSettings.addEventListener('cancel',()=>{if(customizeFromOffer)requestAnimationFrame(()=>touchOffer.showModal());});
 const installHelp=document.getElementById('install-help') as HTMLDialogElement;
 document.querySelectorAll('[data-install-help]').forEach(button=>button.addEventListener('click',()=>{touch.clear();installHelp.showModal();}));
@@ -797,3 +832,14 @@ document.getElementById('install-close')!.addEventListener('click',()=>installHe
 for(const type of ['keydown','keyup'])document.addEventListener(type,event=>{if(controlSettings.open||installHelp.open||touchOffer.open)event.stopPropagation();},true);
 document.getElementById('start-game')!.addEventListener('click',()=>{gameAudio.unlock();const scene=game.scene.scenes[0] as Errand;void scene?.startIntro();});
 applyControls();
+
+// Follow the fitted canvas, rather than the radio + game wrapper or letterbox.
+function positionStartGame(){
+ const button=document.getElementById('start-game')!;
+ const canvas=document.querySelector('#game canvas');
+ if(!canvas)return;
+ const frame=canvas.getBoundingClientRect(),parent=document.getElementById('game')!.getBoundingClientRect();
+ button.style.left=`${frame.left-parent.left+frame.width/2}px`;
+ button.style.top=`${frame.top-parent.top+frame.height*.94}px`;
+}
+game.scale.on('resize',()=>requestAnimationFrame(positionStartGame));

@@ -12,7 +12,24 @@ export class SlidingMovement {
   clear(){this.pointer=null;this.axis=0;this.sprint=false;}
   get direction(){return Math.abs(this.axis)<=.18?0:Math.sign(this.axis);}
 }
+// A short, released tap followed by the same arrow within 250ms.
+export class QuickSprint {
+ pointer=null;direction=null;started=0;lastTap=null;active=false;
+ press(pointer,direction,time){
+  if(this.pointer!==null){this.clear();return;}
+  this.active=this.lastTap?.direction===direction&&time>=this.lastTap.time&&time-this.lastTap.time<=250;
+  this.lastTap=null;this.pointer=pointer;this.direction=direction;this.started=time;
+ }
+ release(pointer,time,cancelled=false){
+  if(pointer!==this.pointer)return;
+  const tap=!cancelled&&!this.active&&time>=this.started&&time-this.started<=200;
+  this.lastTap=tap?{direction:this.direction,time:this.started}:null;
+  this.pointer=null;this.direction=null;this.active=false;
+ }
+ clear(){this.pointer=null;this.direction=null;this.lastTap=null;this.active=false;}
+}
 export class TouchInput {
+  quickSprintEnabled=false;quickSprint=new QuickSprint();
   style='slider';vertical=0;enabled=false;held=new Map();edges=new Set();movement=new SlidingMovement();
   paintStick(){
     const stick=document.getElementById?.('touch-stick');if(!stick)return;
@@ -22,11 +39,12 @@ export class TouchInput {
     stick.setAttribute('aria-valuenow',String(Math.round(this.movement.axis*100)));
     stick.setAttribute('aria-valuetext',this.movement.direction?`${this.movement.sprint?'Sprinting':'Moving'} ${this.movement.direction<0?'left':'right'}`:'Stopped');
   }
-  clear(){this.vertical=0;this.held.clear();this.edges.clear();this.movement.clear();this.paintStick();document.querySelectorAll('[data-touch]').forEach(el=>el.removeAttribute('data-held'));}
+  paintSprint(){const arrows=document.getElementById?.('touch-arrows');if(arrows)arrows.dataset.sprint=String(this.quickSprint.active);}
+  clear(){this.quickSprint.clear();this.paintSprint();this.vertical=0;this.held.clear();this.edges.clear();this.movement.clear();this.paintStick();document.querySelectorAll('[data-touch]').forEach(el=>el.removeAttribute('data-held'));}
   sample(blocked=false){
     if(blocked||!this.enabled){this.clear();return {move:0,jump:false,interact:false,recall:false,pause:false,sprint:false,restart:false};}
     const down=(key)=>[...this.held.values()].includes(key);
-    const result={move:(this.style==='default'?0:this.movement.direction)||Number(down('right'))-Number(down('left')),jump:this.edges.has('jump'),interact:this.edges.has('interact'),recall:this.edges.has('recall'),pause:this.edges.has('pause'),sprint:this.style!=='default'&&(this.movement.sprint||down('sprint')),restart:down('restart')};
+    const result={move:(this.style==='default'?0:this.movement.direction)||Number(down('right'))-Number(down('left')),jump:this.edges.has('jump'),interact:this.edges.has('interact'),recall:this.edges.has('recall'),pause:this.edges.has('pause'),sprint:this.style==='default'?this.quickSprintEnabled&&this.quickSprint.active&&(down('left')!==down('right')):this.movement.sprint||down('sprint'),restart:down('restart')};
     this.edges.clear();return result;
   }
   constructor(){
@@ -34,9 +52,9 @@ export class TouchInput {
       button.addEventListener('pointerdown',event=>{
         if(!this.enabled)return;
         event.preventDefault();button.setPointerCapture(event.pointerId);
-        const action=button.dataset.touch;this.held.set(event.pointerId,action);this.edges.add(action);button.dataset.held='true';
+        const action=button.dataset.touch;if(this.style==='default'&&this.quickSprintEnabled&&['left','right'].includes(action)){this.quickSprint.press(event.pointerId,action,event.timeStamp);this.paintSprint();}this.held.set(event.pointerId,action);this.edges.add(action);button.dataset.held='true';
       });
-      const release=(event)=>{this.held.delete(event.pointerId);if(![...this.held.values()].includes(button.dataset.touch))button.removeAttribute('data-held');};
+      const release=(event)=>{this.quickSprint.release(event.pointerId,event.timeStamp,event.type!=='pointerup');this.paintSprint();this.held.delete(event.pointerId);if(![...this.held.values()].includes(button.dataset.touch))button.removeAttribute('data-held');};
       button.addEventListener('pointerup',release);button.addEventListener('pointercancel',release);button.addEventListener('lostpointercapture',release);
       button.addEventListener('contextmenu',event=>event.preventDefault());
     });

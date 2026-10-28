@@ -1,14 +1,14 @@
 # Seth Happens - Beer Run, Elevator Out of Order
 
-**Version 0.3.4**
+**Version 0.3.5**
 
 ![Seth Happens - Beer Run, Elevator Out of Order](public/assets/title-logo.png)
 
 <p align="center">
-  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 0.3.4"></a>
+  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 0.3.5"></a>
 </p>
 
-**Play version 0.3.4** — Fullscreen highly recommended.
+**Play version 0.3.5** — Fullscreen highly recommended.
 
 **Now with mobile gameplay support!** Choose Default left/right arrows, Sliding Speed Runner or Game Stick. Customize arrow spacing and save your preferred setup. Select **Customize Controls** at the mobile start prompt or in the game menu. **For the best mobile experience, add the game as a Home Screen app and launch its icon in landscape. Direct mobile browser-tab play is not supported for further fixes.** See [How to add as a mobile app](#how-to-add-as-a-mobile-app).
 
@@ -60,20 +60,24 @@ Keyboard remains the default and stays active with a controller connected. Pair 
 
 Rolling and walking obstacles patrol the whole floor. Pianos, anvils, window AC units and beer coolers drop at distinct intervals in the middle of their platforms. Watch their warning and aftermath, then choose your jump. Falling objects can squish you during descent; once landed they are safe to touch but solid, so jump over them.
 
+Beer pickup requires **Action** (mobile), **F** (keyboard) or the controller interact button while next to the six-pack. Running past it does not collect it.
+
 ### Mobile touch controls
+
+Portrait mode groups the complete game view and touch controls together, with an accessible menu and a reminder to rotate. Landscape remains the recommended way to play. Mobile instructions use Action and menu names rather than keyboard letters.
 
 **Launch the Home Screen app in landscape for mobile play**—see [How to add as a mobile app](#how-to-add-as-a-mobile-app). Phones and tablets are offered optional touch controls, also available through **Touch controls**. The game keeps its full framing, with translucent controls over the lower corners. Direct mobile browser-tab layout issues are not being pursued further.
 
-Slide the left pad left or right without lifting your thumb; the center stops movement and either outer edge activates sprint. Use the round **Jump** button (double-tap within 300ms for Mega Jump) and **Action** for photos, finish and elevator. Release the pad to stop.
+Slide the left pad left or right without lifting your thumb; the center stops movement and either outer edge activates sprint. Use the round **Jump** button (double-tap within 300ms for Mega Jump) and **Action** for beer pickup, photos, finish and elevator. Release the pad to stop.
 
-The **☰** button pauses play and opens the menu: return to play, recall a missed photo, restart, scores, sound, music/volume/tracks and fullscreen exit. Keyboard and standard controllers remain available. Owner testing confirmed successful iOS Home Screen gameplay; Android device acceptance remains pending.
+The **☰** button pauses play and opens the menu: Resume, recall a missed photo, restart, scores, sound, music/volume/tracks and fullscreen exit. Keyboard and standard controllers remain available. Owner testing confirmed successful iOS Home Screen gameplay; Android device acceptance remains pending.
 
 
 Expanded/fullscreen touch play hides page scrollbars and keeps controls away from screen edges. Gameplay touch gestures are reserved for the game; menus and score entry keep normal scrolling and input behavior. Leaving expanded view restores page scrolling.
 
 Browser-owned address/tool bars can remain when native fullscreen is unavailable. For a view without browser bars on iPhone, use Safari’s **Share → Add to Home Screen**, enable **Open as Web App** where offered, and launch that icon. Other browsers may offer a similar Home Screen option. The game includes a standalone web-app manifest; it still loads online. See [Apple’s Home Screen instructions](https://support.apple.com/guide/iphone/iphea86e5236/ios).
 
-Mobile controls offer **Default** walking arrows (no sprint), **Sliding Speed Runner**, or **Game Stick**. Choose **Customize Controls** before play or in the mobile pause menu. Arrow spacing has five settings; your choice is saved in this browser. Game Stick vertical movement does not trigger actions. Select **Start Game** to begin the intro; gameplay starts after the intro finishes.
+Mobile controls offer **Default** walking arrows (sprint off by default), **Sliding Speed Runner**, or **Game Stick**. Choose **Customize Controls** before play or in the mobile pause menu. Arrow spacing has five settings; your choice is saved in this browser. **Double-tap to sprint** is optional and off by default for Default arrows: tap the same arrow twice within 250 ms, holding the second press to sprint. Release or change direction to cancel; the next press walks normally. Enable it in Customize Controls. Game Stick vertical movement does not trigger actions. Select **Start Game** to begin the intro; gameplay starts after the intro finishes.
 
 ## Music radio
 
@@ -125,6 +129,16 @@ Gameplay station, warning/champion selections, music volume, music on/off and ov
 - Voices built using **[ElevenLabs](https://elevenlabs.io/)**.
 
 🎵 **[Listen to the entire video game soundtrack](https://suno.com/playlist/0ef61d61-9481-48f2-b67f-989cffdc9cca)**.
+
+## What’s new in 0.3.5
+
+- Start Game sits beneath the logo and follows the game canvas when resized.
+- Default arrows offer optional double-tap-and-hold sprint, off by default and remembered in this browser.
+- Beer pickup requires Action / F / controller interact while nearby.
+- Mobile hints name touch controls and menu actions; the pause menu uses Resume.
+- Portrait app play groups game and controls together, keeps the menu nearby and removes page-header bleed.
+- Menu taps use a larger target and direct pointer handling, including while paused.
+- Mobile startup puts landscape and Home Screen app guidance first.
 
 ## What’s new in 0.3.4
 
