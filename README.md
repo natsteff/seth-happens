@@ -1,14 +1,14 @@
 # Seth Happens - Beer Run, Elevator Out of Order
 
-**Version 0.3.1**
+**Version 0.3.2**
 
 ![Seth Happens - Beer Run, Elevator Out of Order](public/assets/title-logo.png)
 
 <p align="center">
-  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 0.3.1"></a>
+  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 0.3.2"></a>
 </p>
 
-**Play version 0.3.1** — Fullscreen highly recommended. **Play Now on GitHub Pages uses local browser high scores only. Server-wide high scores cannot run on GitHub Pages; they require a server-enabled installation.**
+**Play version 0.3.2** — Fullscreen highly recommended. **Play Now on GitHub Pages uses local browser high scores only. Server-wide high scores cannot run on GitHub Pages; they require a server-enabled installation.**
 
 One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and Ellowyn before the three-minute deadline. See if you can find the 'easter egg'!
 
@@ -69,7 +69,7 @@ Server-wide scores require a running score service; GitHub Pages cannot provide 
 
 ## Screenshots
 
-Desktop captures from version 0.3.1. Game shots use 2560×1440 fullscreen (16:9); settings are shown in the normal desktop view.
+Desktop captures from the 0.3 series. Game shots use 2560×1440 fullscreen (16:9); settings are shown in the normal desktop view.
 
 ![Fullscreen title screen](docs/screenshots/start-screen.png)
 ![Fullscreen rooftop beer run](docs/screenshots/beer-run.png)
@@ -109,6 +109,12 @@ Gameplay station, warning/champion selections, music volume, music on/off and ov
 
 🎵 **[Listen to the entire video game soundtrack](https://suno.com/playlist/0ef61d61-9481-48f2-b67f-989cffdc9cca)**.
 
+## What’s new in 0.3.2
+
+- Sliding movement pad: reverse without lifting; outer edges sprint.
+- Two round action buttons over the game, with the radio and secondary controls in a pause menu.
+- More screen space for the game while keeping the complete HUD and route visible.
+
 ## What’s new in 0.3.1
 
 - Optional mobile touch D-pad, Jump/Action, Sprint, Recall, Pause and held Restart.
@@ -125,6 +131,8 @@ Gameplay station, warning/champion selections, music volume, music on/off and ov
 
 ### Mobile touch controls
 
-Touch-capable devices are offered optional touch controls. You can also use the **Touch controls** button. Landscape is recommended. Enable touch controls to request fullscreen from your tap; browsers without fullscreen use an expanded view instead. **Expand / Exit** returns to the page.
+Phones and tablets are offered optional touch controls. You can also enable them with **Touch controls**. Landscape is recommended. Fullscreen starts from your tap; browsers without fullscreen use expanded view instead. The game keeps its full framing, with translucent controls over the lower corners.
 
-Use the left/right D-pad to move, **Jump** to hop (double-tap within 300ms for Mega Jump), **Action** for photos/finish/elevator, and hold **Sprint** while moving. **Recall photo**, **Pause / Resume**, and **Hold Restart** (0.65 seconds) are also available. Touch controls support multiple fingers and release held actions on cancellation, lost focus, resizing or score dialogs. Keyboard and standard controllers remain available. Physical iOS/Android acceptance is pending. Landscape is the recommended way to play on a phone. Open **Settings / Scores** inside the touch deck for sound, outcome tracks and high scores; the radio provides music controls.
+Slide the left pad left or right without lifting your thumb; the center stops movement and either outer edge activates sprint. Use the round **Jump** button (double-tap within 300ms for Mega Jump) and **Action** for photos, finish and elevator. Release the pad to stop.
+
+The **☰** button pauses play and opens the menu: return to play, recall a missed photo, restart, scores, sound, music/volume/tracks and fullscreen exit. Keyboard and standard controllers remain available. Physical iOS/Android acceptance is pending.

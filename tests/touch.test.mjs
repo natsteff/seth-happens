@@ -30,3 +30,32 @@ test('pointer handlers capture independent fingers and release on cancellation o
  sprint.listeners.lostpointercapture({pointerId:2});assert.equal(input.sample().sprint,false);
  input.clear();assert.equal(jump.dataset.held,undefined);buttons.length=0;
 });
+test('one captured thumb reverses through neutral without lifting; edges sprint with hysteresis',async()=>{
+ const {SlidingMovement}=await import('../src/touch.mjs');const stick=new SlidingMovement();
+ assert.equal(stick.start(1,-.5),true);assert.equal(stick.direction,-1);assert.equal(stick.sprint,false);
+ assert.equal(stick.start(2,1),false);stick.move(2,1);assert.equal(stick.direction,-1);
+ stick.move(1,0);assert.equal(stick.direction,0);
+ stick.move(1,.5);assert.equal(stick.direction,1);assert.equal(stick.sprint,false);
+ stick.move(1,.85);assert.equal(stick.sprint,true);stick.move(1,.7);assert.equal(stick.sprint,true);
+ stick.move(1,.6);assert.equal(stick.sprint,false);stick.move(1,-1);assert.equal(stick.direction,-1);assert.equal(stick.sprint,true);
+ stick.release(2);assert.equal(stick.direction,-1);stick.release(1);assert.equal(stick.direction,0);assert.equal(stick.sprint,false);
+ stick.start(3,1);stick.clear();assert.equal(stick.pointer,null);assert.equal(stick.axis,0);
+});
+test('sliding movement remains independent of jump presses and clears when blocked',()=>{
+ const input=new TouchInput();input.enabled=true;input.movement.start(4,-1);input.held.set(5,'jump');input.edges.add('jump');
+ assert.equal(input.sample().jump,true);const held=input.sample();assert.equal(held.move,-1);assert.equal(held.sprint,true);assert.equal(held.jump,false);
+ input.movement.move(4,.4);assert.equal(input.sample().move,1);assert.equal(input.sample().sprint,false);
+ input.sample(true);assert.equal(input.movement.pointer,null);assert.equal(input.sample().move,0);
+});
+test('slider DOM captures one finger, tracks it across directions, and resets on cancellation',()=>{
+ const slider={listeners:{},dataset:{},attrs:{},style:{setProperty(){}},addEventListener(name,fn){this.listeners[name]=fn;},getBoundingClientRect(){return {left:0,width:136};},setPointerCapture(id){this.captured=id;},setAttribute(key,value){this.attrs[key]=value;}};
+ document.getElementById=()=>slider;
+ const input=new TouchInput();input.enabled=true;
+ const event=(id,x)=>({pointerId:id,clientX:x,preventDefault(){}});
+ slider.listeners.pointerdown(event(8,68));assert.equal(slider.captured,8);assert.equal(input.sample().move,0);
+ slider.listeners.pointermove(event(8,125));assert.equal(input.sample().move,1);assert.equal(input.sample().sprint,true);
+ slider.listeners.pointerdown(event(9,10));assert.equal(slider.captured,8);
+ slider.listeners.pointermove(event(8,10));assert.equal(input.sample().move,-1);assert.equal(slider.attrs['aria-valuetext'],'Sprinting left');
+ slider.listeners.pointercancel(event(8,10));assert.equal(input.sample().move,0);assert.equal(slider.attrs['aria-valuenow'],'0');
+ delete document.getElementById;
+});
