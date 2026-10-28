@@ -69,9 +69,11 @@ Server-wide scores require a running score service; GitHub Pages cannot provide 
 
 ## Screenshots
 
-![New logo start screen](docs/screenshots/start-screen.png)
-![Rooftop beer run](docs/screenshots/beer-run.png)
-![Organized run details and scores](docs/screenshots/high-scores.png)
+Desktop captures from version 0.3.1. Title and rooftop shots were captured in fullscreen; settings are shown in the normal desktop view.
+
+![Fullscreen title screen](docs/screenshots/start-screen.png)
+![Fullscreen rooftop beer run](docs/screenshots/beer-run.png)
+![Desktop controls, radio and settings](docs/screenshots/desktop-settings.png)
 
 ## Local development
 
