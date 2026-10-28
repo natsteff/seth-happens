@@ -171,3 +171,40 @@ html.touch-play-locked main>*:not(#play-area){visibility:hidden}
  .touch-mode>#touch-menu-open{top:max(calc(env(safe-area-inset-top,0px) + 10px),calc(50% - 27.2727vw - var(--portrait-control-height)/2 - 53px))}
  .touch-mode>#portrait-hint{top:max(calc(env(safe-area-inset-top,0px) + 26px),calc(50% - 27.2727vw - var(--portrait-control-height)/2 - 37px))}
 }
+/* Compact customization pane: visible choices instead of a native popup. */
+#control-settings{width:min(740px,96vw);max-height:calc(100dvh - 16px);padding:14px;font-size:14px}
+#control-settings h2{font-size:22px;margin:0 0 10px}
+#control-settings p{font-size:12px;line-height:1.35;margin:6px 0}
+#control-settings .control-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;border:0;padding:0;margin:0 0 10px;min-width:0}
+#control-settings legend{font-size:12px;color:#b9d1db;margin-bottom:4px}
+#control-settings .control-choices label{display:flex;align-items:center;gap:6px;border:1px solid #628d9b;border-radius:8px;padding:8px;min-height:52px;margin:0;background:#203d51;font-size:13px;cursor:pointer}
+#control-settings .control-choices label:has(input:checked){border-color:#79dec5;background:#315f64;box-shadow:inset 0 0 0 1px #79dec5}
+#control-settings .control-choices small{display:block;font-size:11px;color:#c5dcdf;margin-top:3px}
+#control-settings input[type=radio],#control-settings input[type=checkbox]{flex:none;width:18px;height:18px;accent-color:#79dec5;margin:0}
+#control-settings .control-tuning{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+#control-settings .control-tuning section{min-width:0}
+#control-settings .control-tuning label{display:flex;align-items:center;gap:8px;margin:0;min-height:36px}
+#control-settings #spacing-label{flex-wrap:wrap;gap:4px 10px}
+#control-settings #control-spacing{width:100%;max-width:100%;margin:0;height:28px}
+#control-settings #spacing-preview{padding:6px;height:48px}
+#control-settings #spacing-preview span{width:36px;height:36px;border-radius:10px;font-size:18px}
+#control-settings .control-footer{display:flex;justify-content:space-between;gap:10px;margin-top:10px}
+#control-settings .control-footer button{margin:0;flex:1;min-height:44px}
+@media(max-width:480px){#control-settings .control-tuning{grid-template-columns:1fr;gap:8px}#control-settings .control-choices{gap:5px}#control-settings .control-choices label{padding:6px;align-items:flex-start;font-size:12px;gap:4px}#control-settings .control-choices small{font-size:10px}}
+@media(max-height:340px) and (orientation:landscape){#control-settings{padding:8px 12px}#control-settings h2{font-size:18px;margin-bottom:4px}#control-settings .control-choices{margin-bottom:6px}#control-settings .control-choices label{min-height:44px;padding:5px}#control-settings p{font-size:11px;margin:3px 0}#control-settings .control-footer{margin-top:6px}}
+
+/* A real portrait toolbar row reserves room above the HUD, including safe areas. */
+#touch-toolbar{display:contents}
+#play-area:not(.touch-mode) #touch-toolbar{display:none}
+@media(orientation:portrait){
+ #play-area.expanded.touch-mode,#play-area:fullscreen.touch-mode{gap:12px;padding-top:calc(env(safe-area-inset-top,0px) + 16px)}
+ .touch-mode #touch-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;height:56px;flex:none;padding:0 16px}
+ .touch-mode #touch-toolbar #touch-menu-open{position:static;flex:none;top:auto;right:auto;bottom:auto;margin:0}
+ .touch-mode #touch-toolbar #portrait-hint{display:block;position:static;flex:1;margin:0;color:#ffd08b;font-size:13px;line-height:1.35;text-align:center}
+}
+@media(orientation:landscape){
+ .touch-mode #touch-toolbar #touch-menu-open{left:var(--landscape-menu-left,auto);top:var(--landscape-menu-top,10px);right:auto;width:44px;height:44px;min-width:44px;min-height:44px;font-size:18px;border-radius:10px}
+}
+/* Draw the hamburger consistently instead of relying on a platform glyph. */
+#touch-menu-open{font-size:0!important;display:grid;place-items:center}
+#touch-menu-open::before{content:"";display:block;width:18px;height:2px;background:currentColor;box-shadow:0 -6px 0 currentColor,0 6px 0 currentColor}

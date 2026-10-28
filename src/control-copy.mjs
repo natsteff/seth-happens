@@ -7,7 +7,7 @@ export function controlCopy(text,mobile){
  .replace('Paused. Press P to resume.','Paused. Open the menu, then tap Resume to continue.')
  .replace('Tap jump • double-tap for Mega Jump • Shift sprint','Jump • double-tap for Mega Jump')
  .replace(/\[ F \]/g,'[ Action ]')
- .replace(/Action \/ F/g,'Action')
+ .replace(/(Action) \/ F/gi,'$1')
  .replace(/Press F|press F/g,'Tap Action')
  .replace(/F at photo signs/g,'Action at photo signs')
  .replace(/Press B to return\./g,'Use Recall missed photo in the menu to return.')

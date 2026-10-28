@@ -1,14 +1,14 @@
 # Seth Happens - Beer Run, Elevator Out of Order
 
-**Version 0.3.5**
+**Version 0.3.6**
 
 ![Seth Happens - Beer Run, Elevator Out of Order](public/assets/title-logo.png)
 
 <p align="center">
-  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 0.3.5"></a>
+  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 0.3.6"></a>
 </p>
 
-**Play version 0.3.5** — Fullscreen highly recommended.
+**Play version 0.3.6** — Fullscreen highly recommended.
 
 **Now with mobile gameplay support!** Choose Default left/right arrows, Sliding Speed Runner or Game Stick. Customize arrow spacing and save your preferred setup. Select **Customize Controls** at the mobile start prompt or in the game menu. **For the best mobile experience, add the game as a Home Screen app and launch its icon in landscape. Direct mobile browser-tab play is not supported for further fixes.** See [How to add as a mobile app](#how-to-add-as-a-mobile-app).
 
@@ -64,7 +64,7 @@ Beer pickup requires **Action** (mobile), **F** (keyboard) or the controller int
 
 ### Mobile touch controls
 
-Portrait mode groups the complete game view and touch controls together, with an accessible menu and a reminder to rotate. Landscape remains the recommended way to play. Mobile instructions use Action and menu names rather than keyboard letters.
+Portrait mode groups the complete game view and touch controls together, with an accessible menu and a reminder to rotate. Landscape remains the recommended way to play. Mobile instructions use Action and menu names rather than keyboard letters. The mobile HUD shows the track number/title and audio state; change music through the menu.
 
 **Launch the Home Screen app in landscape for mobile play**—see [How to add as a mobile app](#how-to-add-as-a-mobile-app). Phones and tablets are offered optional touch controls, also available through **Touch controls**. The game keeps its full framing, with translucent controls over the lower corners. Direct mobile browser-tab layout issues are not being pursued further.
 
@@ -129,6 +129,13 @@ Gameplay station, warning/champion selections, music volume, music on/off and ov
 - Voices built using **[ElevenLabs](https://elevenlabs.io/)**.
 
 🎵 **[Listen to the entire video game soundtrack](https://suno.com/playlist/0ef61d61-9481-48f2-b67f-989cffdc9cca)**.
+
+## What’s new in 0.3.6
+
+- Compact customization pane with visible control choices and protection against the opening tap carrying through.
+- Portrait menu sits in a dedicated row above gameplay; landscape menu uses reserved HUD space beside the shifted progress indicator.
+- Mobile HUD shows station number and track title, or named countdown/outcome music, with off/mute/pause state.
+- Beer pickup prompts use Action on both mobile and desktop; keyboard F still performs the action.
 
 ## What’s new in 0.3.5
 

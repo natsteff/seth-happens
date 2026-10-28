@@ -1,3 +1,5 @@
+import { mobileTrackLabel } from './mobile-track.mjs';
+import { installOpeningGuard } from './dialog-input.mjs';
 import { controlCopy } from './control-copy.mjs';
 import Phaser from 'phaser';
 import { ControllerInput, keyboardOrControllerMove } from './controller.mjs';
@@ -150,14 +152,15 @@ class Errand extends Phaser.Scene {
     pattern.forEach(([floor,kind])=>this.addHazard(floor,kind));
     this.add.rectangle(W/2,42,W,84,0x101e32,.97).setScrollFactor(0).setDepth(10);
     this.timerText=this.label(900,7,'3:00','#ffd08b',32).setScrollFactor(0).setDepth(12);
-    this.label(902,43,'TIME LEFT','#d0b58e',9).setScrollFactor(0).setDepth(12);
+    this.timerLabel=this.label(902,43,'TIME LEFT','#d0b58e',9).setScrollFactor(0).setDepth(12);
     this.hud=this.label(20,13,'','#eaf3f1',16).setScrollFactor(0).setDepth(11);
     this.photoHud=this.label(20,47,'','#80e5ce',15).setScrollFactor(0).setDepth(11);
-    this.label(620,51,'P • PAUSE  /  SHIFT • SPRINT  /  B • PHOTO','#ffcf8a',10).setScrollFactor(0).setDepth(11);
-    this.label(1064,4,'26F','#b7d4d8',9).setOrigin(.5,0).setScrollFactor(0).setDepth(12);
-    this.label(1064,68,'0F','#b7d4d8',9).setOrigin(.5,0).setScrollFactor(0).setDepth(12);
-    this.add.rectangle(1064,43,4,44,0x43586b).setScrollFactor(0).setDepth(11);
+    this.keyboardHint=this.label(620,51,'P • PAUSE  /  SHIFT • SPRINT  /  B • PHOTO','#ffcf8a',10).setScrollFactor(0).setDepth(11);
+    this.progressParts=[this.label(1064,4,'26F','#b7d4d8',9).setOrigin(.5,0).setScrollFactor(0).setDepth(12),
+    this.label(1064,68,'0F','#b7d4d8',9).setOrigin(.5,0).setScrollFactor(0).setDepth(12),
+    this.add.rectangle(1064,43,4,44,0x43586b).setScrollFactor(0).setDepth(11)];
     this.progress=this.add.rectangle(1064,65,4,44,0x7ee0c5).setOrigin(.5,1).setScrollFactor(0).setDepth(12);
+    this.mobileTrack=this.label(390,49,'','#a8d8cf',11).setScrollFactor(0).setDepth(13).setWordWrapWidth(400).setVisible(false);
     this.toast=this.add.text(W/2,112,'Allison is waiting on Floor 26. Bring beer and two photos. The elevator is out of order.',{fontFamily:'Arial',fontSize:'15px',color:'#ffe0a3',backgroundColor:'#16283e',padding:{x:14,y:10},align:'center'}).setOrigin(.5).setScrollFactor(0).setDepth(12);
     this.prompt=this.add.text(W/2,555,'',{fontFamily:'Arial',fontSize:'16px',color:'#102c39',backgroundColor:'#7ce3c5',padding:{x:14,y:9},align:'center'}).setOrigin(.5).setScrollFactor(0).setDepth(12).setVisible(false);
     this.showIntro();
@@ -260,7 +263,7 @@ class Errand extends Phaser.Scene {
     soccerBall(this,soccer.x+201,soccer.y-10);
     const brew=at(12);this.label(brew.x+12,brew.y-165,'HOP & HOPE', '#ffcc84',23);this.label(brew.x+12,brew.y-136,'SIX BOTTLES. TWELVE FLOORS. NO REFUNDS.','#b1c6d4',10);
     this.crate=this.add.container(beerSpot.x,brew.y,[this.add.image(0,0,'beer-pickup').setOrigin(.5,1).setDisplaySize(52,52)]);
-    this.beerHint=this.label(beerSpot.x-78,brew.y-67,'ACTION / F: GRAB BEER','#ffda78',16).setDepth(6);
+    this.beerHint=this.label(beerSpot.x-78,brew.y-67,'ACTION: GRAB BEER','#ffda78',16).setDepth(6);
     this.tweens.add({targets:this.beerHint,alpha:.3,duration:400,yoyo:true,repeat:-1});
     const concert=at(17);this.label(concert.x+8,concert.y-204,'THE EXPOSURE TRIANGLE', '#d5b6f2',17);this.label(concert.x+8,concert.y-180,'LIVE MUSIC BREAK','#9fb9cb',10);
     this.add.triangle(concert.x+155,concert.y-85,0,90,30,0,60,90,0xbda0ed,.17);
@@ -362,6 +365,10 @@ class Errand extends Phaser.Scene {
     this.retries++;(this.player.body as Phaser.Physics.Arcade.Body).reset(this.checkpoint.x,this.checkpoint.y);this.player.setVelocity(0,0);this.immuneUntil=time+1400;this.lastGround=-1000;this.jumpUntil=0;
     gameAudio.play('impact');if(reaction==='fall'&&!this.fallSoundPlayed)gameAudio.speak('Aaaaaah!','fall');if(reaction==='squish')gameAudio.speak('Squish!','squish');if(reaction==='person')gameAudio.speak('Well, excuse you.','person');if(reaction==='object'){const kind=objectImpactReaction(Math.random());gameAudio.speak(kind==='ouch'?'Ouch!':'Ahh!',kind);}this.cameras.main.shake(100,.003);this.say(reason+' Beer and photos saved.');this.fallSoundPlayed=false;
   }
+  mobileTrack!:Phaser.GameObjects.Text;
+  keyboardHint!:Phaser.GameObjects.Text;
+  progressParts:Phaser.GameObjects.GameObject[]=[];
+  timerLabel!:Phaser.GameObjects.Text;
   refreshControlCopy(){
     const visit=(objects:Phaser.GameObjects.GameObject[])=>{for(const object of objects){
       if(object instanceof Phaser.GameObjects.Text){
@@ -374,6 +381,11 @@ class Errand extends Phaser.Scene {
       }else if(object instanceof Phaser.GameObjects.Container)visit(object.list);
     }};
     visit(this.children.list);
+    this.keyboardHint?.setVisible(!touch.enabled);
+    if(this.mobileTrack){this.mobileTrack.setVisible(touch.enabled);this.mobileTrack.setText(mobileTrackLabel(gameAudio.music));this.mobileTrack.setColor(gameAudio.music.countdown?'#ff7e79':'#a8d8cf');}
+    const offset=(W*RENDER_SCALE-W)/2,x=(touch.enabled?980:1064)+offset;
+    for(const object of this.progressParts)(object as Phaser.GameObjects.Text).setX(x);
+    this.progress?.setX(x);this.timerText?.setX((touch.enabled?850:900)+offset);this.timerLabel?.setX((touch.enabled?852:902)+offset);
   }
   togglePause(){
     if(this.introActive||this.won||this.failed||scoresOpen())return;
@@ -651,7 +663,7 @@ class Errand extends Phaser.Scene {
       this.prompt.setVisible(stop>=0||home||beerNearby);
       if(stop>=0)this.prompt.setText(this.photos.has(stop)?'✓ Photo saved. Upward, photographer.':this.heroHeard?'[ F ] RECOVER PHOTO • +125 points (half value)':'[ F ] PHOTO OPPORTUNITY • +250 points');
       else if(home)this.prompt.setText(this.heroPlaying?'Allison: “My hero!” • Delivery unlocks after this line':this.beer?'[ F ] Deliver six-pack & finish • B returns to missed photos':'[ F ] Finish without beer • B returns to missed photos');
-      if(beerNearby)this.prompt.setText(beerInReach?'[ Action / F ] Pick up the six-pack':`GET THE BEER ${this.player.x<beerSpot.x?'→':'←'} Move closer, then press Action / F`);
+      if(beerNearby)this.prompt.setText(beerInReach?'[ Action ] Pick up the six-pack':`GET THE BEER ${this.player.x<beerSpot.x?'→':'←'} Move closer, then press Action`);
       if(Phaser.Input.Keyboard.JustDown(this.keys.F)||controller.interact){
         if(beerInReach){this.beer=true;gameAudio.play('pickup');this.crate.setVisible(false);this.beerHint.setVisible(false);this.prompt.setVisible(false);this.say('SIX-PACK IN HAND. Only fourteen floors of foam management left.');}
         else if(stop>=0&&!this.photos.has(stop)){this.photos.add(stop);if(this.heroHeard)this.latePhotos.add(stop);gameAudio.play('photo');this.cameras.main.flash(140,255,255,255);this.say(`PHOTO SAVED • +${this.latePhotos.has(stop)?125:250} points • ${photoStops[stop].caption}`);}
@@ -804,7 +816,7 @@ for(const type of ['keydown','keyup'])document.addEventListener(type,event=>{if(
 
 // Control configuration is local to this browser and never touches scores.
 const controlSettings=document.getElementById('control-settings') as HTMLDialogElement;
-const styleSelect=document.getElementById('control-style') as HTMLSelectElement;
+const styleSelect=document.getElementById('control-style') as HTMLInputElement;
 const spacingInput=document.getElementById('control-spacing') as HTMLInputElement;
 const quickSprintInput=document.getElementById('control-quick-sprint') as HTMLInputElement;
 let controlStyle='default',controlSpacing=3,controlQuickSprint=false,customizeFromOffer=false;
@@ -818,10 +830,12 @@ function applyControls(){
  document.getElementById('touch-stick')!.hidden=controlStyle==='default';
  document.querySelector('.touch-hint')!.textContent=controlStyle==='default'?(controlQuickSprint?'Double-tap + hold arrow · sprint':'Left / right · release to stop'):controlStyle==='stick'?'Game Stick · edges sprint':'Slide to move · edges sprint';
 }
-function previewControls(){document.getElementById('spacing-value')!.textContent=spacingInput.value;document.getElementById('spacing-preview')!.style.gap=`${8+(Number(spacingInput.value)-1)*8}px`;spacingInput.disabled=styleSelect.value!=='default';quickSprintInput.disabled=styleSelect.value!=='default';}
-function openControls(first=false){document.getElementById('controls-save')!.textContent=first?'Save and continue':'Save controls';customizeFromOffer=first;touch.clear();styleSelect.value=controlStyle;spacingInput.value=String(controlSpacing);quickSprintInput.checked=controlQuickSprint;previewControls();controlSettings.showModal();}
+function previewControls(){document.querySelectorAll<HTMLInputElement>('input[name=movement-style]').forEach(radio=>{radio.checked=radio.value===styleSelect.value;});document.getElementById('style-detail')!.textContent=styleSelect.value==='stick'?'Up/down has no game action. Jump and Action stay separate.':'Jump and Action stay separate.';document.getElementById('spacing-value')!.textContent=spacingInput.value;document.getElementById('spacing-preview')!.style.gap=`${8+(Number(spacingInput.value)-1)*8}px`;spacingInput.disabled=styleSelect.value!=='default';quickSprintInput.disabled=styleSelect.value!=='default';}
+const controlInputGuard=installOpeningGuard(controlSettings);
+function openControls(first=false){document.getElementById('controls-save')!.textContent=first?'Save and continue':'Save controls';customizeFromOffer=first;touch.clear();styleSelect.value=controlStyle;spacingInput.value=String(controlSpacing);quickSprintInput.checked=controlQuickSprint;previewControls();controlSettings.showModal();controlSettings.focus({preventScroll:true});controlInputGuard.arm();}
 document.getElementById('touch-customize-first')!.addEventListener('click',()=>{touchOffer.close();openControls(true);});
 document.getElementById('touch-customize')!.addEventListener('click',()=>openControls());
+document.querySelectorAll<HTMLInputElement>('input[name=movement-style]').forEach(radio=>radio.addEventListener('change',()=>{if(radio.checked){styleSelect.value=radio.value;previewControls();}}));
 spacingInput.addEventListener('input',previewControls);styleSelect.addEventListener('change',previewControls);
 document.getElementById('controls-reset')!.addEventListener('click',()=>{styleSelect.value='default';spacingInput.value='3';quickSprintInput.checked=false;previewControls();});
 document.getElementById('controls-save')!.addEventListener('click',()=>{controlStyle=styleSelect.value;controlSpacing=Number(spacingInput.value);controlQuickSprint=quickSprintInput.checked;applyControls();try{localStorage.setItem('seth-touch-controls',JSON.stringify({style:controlStyle,spacing:controlSpacing,quickSprint:controlQuickSprint}));}catch{/* Session controls still work. */}controlSettings.close();if(customizeFromOffer){setTouch(true);void toggleFullscreen();}});
@@ -839,6 +853,9 @@ function positionStartGame(){
  const canvas=document.querySelector('#game canvas');
  if(!canvas)return;
  const frame=canvas.getBoundingClientRect(),parent=document.getElementById('game')!.getBoundingClientRect();
+ const root=gameElement.getBoundingClientRect(),hudHeight=frame.height*84/H;
+ gameElement.style.setProperty('--landscape-menu-left',`${frame.right-root.left-48}px`);
+ gameElement.style.setProperty('--landscape-menu-top',`${Math.max(0,frame.top-root.top+hudHeight-48)}px`);
  button.style.left=`${frame.left-parent.left+frame.width/2}px`;
  button.style.top=`${frame.top-parent.top+frame.height*.94}px`;
 }
