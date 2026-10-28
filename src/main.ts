@@ -192,11 +192,13 @@ class Errand extends Phaser.Scene {
     this.introCaption=this.add.text(W/2,560,'',{fontFamily:'Arial',fontSize:'16px',fontStyle:'bold',color:'#ffe2aa',backgroundColor:'#102137',padding:{x:12,y:7}}).setOrigin(.5);
     this.introOverlay=this.add.container(0,0,[backdrop,logo,this.introCaption]).setScrollFactor(0).setDepth(50);
     document.getElementById('start-game')!.hidden=false;
+    (document.getElementById('touch-menu-open') as HTMLButtonElement).disabled=false;
     requestAnimationFrame(positionStartGame);
   }
   async startIntro(){
     if(this.introStarted||!this.introActive||document.querySelector('dialog[open]'))return;
     document.getElementById('start-game')!.hidden=true;
+    (document.getElementById('touch-menu-open') as HTMLButtonElement).disabled=true;
     this.introStarted=true;this.introCaption.setText('');
     try{await gameAudio.playIntro(()=>this.introCaption.setText(''));}catch{this.say('Intro audio unavailable. The beer run must go on.');}
     if(!this.sys.isActive())return;
@@ -799,14 +801,16 @@ function closeTouchMenu(resume=true){
 const menuButton=document.getElementById('touch-menu-open') as HTMLButtonElement;
 function openTouchMenu(){
   const scene=game.scene.scenes[0] as Errand;
-  if(!scene||scene.introActive||scoresOpen()||touchMenu.open||controlSettings?.open||installHelp?.open)return;
-  touch.clear();if(!scene.paused&&!scene.won&&!scene.failed)scene.togglePause();
-  (document.getElementById('touch-recall') as HTMLButtonElement).disabled=scene.won||scene.failed;
+  if(!scene||(scene.introActive&&scene.introStarted)||scoresOpen()||touchMenu.open||controlSettings?.open||installHelp?.open)return;
+  touch.clear();if(!scene.introActive&&!scene.paused&&!scene.won&&!scene.failed)scene.togglePause();
+  (document.getElementById('touch-recall') as HTMLButtonElement).disabled=scene.introActive||scene.won||scene.failed;
   document.querySelectorAll<HTMLButtonElement>('[data-proxy]').forEach(button=>{button.textContent=controlCopy(Array.from(document.getElementById(button.dataset.proxy!)!.childNodes).map(node=>node.nodeName==='BR'?'\n':node.textContent??'').join(''),touch.enabled);});
   const resume=document.getElementById('touch-resume') as HTMLButtonElement;
   const restart=touchMenu.querySelector<HTMLButtonElement>('[data-proxy="restart-run"]')!;
   const ended=scene.won||scene.failed;
   resume.hidden=ended;
+  resume.textContent=scene.introActive?'Back to Start Game':'Resume';
+  restart.hidden=scene.introActive;
   resume.classList.toggle('menu-primary',!ended);
   restart.classList.toggle('menu-primary',ended);
   const primary=ended?restart:resume;
