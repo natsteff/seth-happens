@@ -29,6 +29,8 @@ One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and
 
 ## How to add as a mobile app
 
+Launching from a Home Screen icon can remove the browser’s address and tool bars, giving the game and touch controls more usable screen space and reducing accidental interactions with browser controls. It also provides one-tap access. The gameplay, controls and features are the same; this does not add new interactions or guarantee faster performance.
+
 For more room on iPhone, open the game in Safari, tap **Share → Add to Home Screen**, enable **Open as Web App** if offered, then **Add**. Launch the new icon and rotate to landscape. Chrome on iPhone also offers **Share → Add to Home Screen**; use Safari if unavailable. Android Chrome offers **Add to Home screen / Install app** in its menu when supported. Browser labels vary; a normal browser tab may retain its address bar.
 
 This is an online Home Screen web app, not an offline download. Scores and preferences may be separate between browsers and the Home Screen app. See [Apple instructions](https://support.apple.com/guide/iphone/iphea86e5236/ios) and [Chrome instructions](https://support.google.com/chrome/answer/9658361?co=GENIE.Platform%3DiOS).
