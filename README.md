@@ -33,6 +33,8 @@ Launching from a Home Screen icon can remove the browser’s address and tool ba
 
 For more room on iPhone, open the game in Safari, tap **Share → Add to Home Screen**, enable **Open as Web App** if offered, then **Add**. Launch the new icon and rotate to landscape. Chrome on iPhone also offers **Share → Add to Home Screen**; use Safari if unavailable. Android Chrome offers **Add to Home screen / Install app** in its menu when supported. Browser labels vary; a normal browser tab may retain its address bar.
 
+The game supplies its own Seth / BEER RUN app icon for iPhone/iPad and Android, plus a simplified Seth favicon for browser tabs. Your browser chooses the appropriate icon when you add the game. Existing Home Screen icons may need to be removed and added again to pick up updated artwork.
+
 This is an online Home Screen web app, not an offline download. Scores and preferences may be separate between browsers and the Home Screen app. See [Apple instructions](https://support.apple.com/guide/iphone/iphea86e5236/ios) and [Chrome instructions](https://support.google.com/chrome/answer/9658361?co=GENIE.Platform%3DiOS).
 
 ## Controls
