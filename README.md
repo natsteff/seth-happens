@@ -1,14 +1,14 @@
 # Seth Happens - Beer Run, Elevator Out of Order
 
-**Version 0.3.11**
+**Version 0.3.12**
 
 ![Seth Happens - Beer Run, Elevator Out of Order](public/assets/title-logo.png)
 
 <p align="center">
-  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 0.3.11"></a>
+  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 0.3.12"></a>
 </p>
 
-**Play version 0.3.11** — Fullscreen highly recommended.
+**Play version 0.3.12** — Fullscreen highly recommended.
 
 **Now with mobile gameplay support!** Choose Default left/right arrows, Sliding Speed Runner or Game Stick. Customize arrow spacing and save your preferred setup. Select **Customize Controls** at the mobile start prompt or in the game menu. **For the best mobile experience, add the game as a Home Screen app and launch its icon in landscape. Direct mobile browser-tab play is not supported for further fixes.** See [How to add as a mobile app](#how-to-add-as-a-mobile-app).
 
@@ -107,20 +107,47 @@ Server-wide scores require a running score service; GitHub Pages cannot provide 
 
 ## Screenshots
 
-Desktop captures from the 0.3 series. Game shots use 2560×1440 fullscreen (16:9); settings are shown in the normal desktop view.
+Captures from **v0.3.12**, with sound and music muted. Gameplay and outcome moments are staged using the game’s own renderer; no demonstration scores were saved or submitted. Desktop game views use a 1280×720 fullscreen-style layout; desktop settings use a full-page capture.
 
-![Fullscreen title screen](docs/screenshots/start-screen.png)
-![Fullscreen rooftop beer run](docs/screenshots/beer-run.png)
-![Concert photo requirement on Floor 17](docs/screenshots/concert-photo.png)
-![Allison, Oakey and Ellowyn at the Floor 26 finish](docs/screenshots/final-floor.png)
-![Seth falling while holding the beer](docs/screenshots/falling.png)
-![Desktop controls, radio and settings](docs/screenshots/desktop-settings.png)
+Mobile images are **browser viewport previews**, not physical iPhone/Android screenshots or hardware acceptance tests. Landscape previews use 844×390; portrait previews use 390×844. Landscape Home Screen app play remains recommended. Click an image for full size.
 
-![Angel Seth after time runs out](docs/screenshots/timeout-angel.png)
+[Full screenshot gallery and capture details](docs/screenshots/README.md).
+
+### Desktop
+
+| | |
+|---|---|
+| **Start Game · version shown**<br>[![Start Game · version shown](docs/screenshots/start-screen.jpg)](docs/screenshots/start-screen.jpg) | **Pick up the six-pack with Action**<br>[![Pick up the six-pack with Action](docs/screenshots/beer-run.jpg)](docs/screenshots/beer-run.jpg) |
+| **Soccer photo stop**<br>[![Soccer photo stop](docs/screenshots/soccer-photo.jpg)](docs/screenshots/soccer-photo.jpg) | **Concert photo stop**<br>[![Concert photo stop](docs/screenshots/concert-photo.jpg)](docs/screenshots/concert-photo.jpg) |
+| **Allison, Oakey and Ellowyn**<br>[![Allison, Oakey and Ellowyn](docs/screenshots/final-floor.jpg)](docs/screenshots/final-floor.jpg) | **Falling with the beer**<br>[![Falling with the beer](docs/screenshots/falling.jpg)](docs/screenshots/falling.jpg) |
+| **Finish time and score breakdown**<br>[![Finish time and score breakdown](docs/screenshots/finish-score.jpg)](docs/screenshots/finish-score.jpg) | **Timeout · angel Seth**<br>[![Timeout · angel Seth](docs/screenshots/timeout-angel.jpg)](docs/screenshots/timeout-angel.jpg) |
+| **Desktop controls and SETH FM**<br>[![Desktop controls and SETH FM](docs/screenshots/desktop-settings.jpg)](docs/screenshots/desktop-settings.jpg) | **Local high scores · no sample entries**<br>[![Local high scores · no sample entries](docs/screenshots/high-scores.jpg)](docs/screenshots/high-scores.jpg) |
+
+### Mobile · landscape
+
+| | |
+|---|---|
+| **Start Game and settings access**<br>[![Start Game and settings access](docs/screenshots/mobile-start.jpg)](docs/screenshots/mobile-start.jpg) | **Default arrows**<br>[![Default arrows](docs/screenshots/mobile-default.jpg)](docs/screenshots/mobile-default.jpg) |
+| **Sliding Speed Runner**<br>[![Sliding Speed Runner](docs/screenshots/mobile-slider.jpg)](docs/screenshots/mobile-slider.jpg) | **Game Stick**<br>[![Game Stick](docs/screenshots/mobile-stick.jpg)](docs/screenshots/mobile-stick.jpg) |
+| **Customize controls**<br>[![Customize controls](docs/screenshots/mobile-customize.jpg)](docs/screenshots/mobile-customize.jpg) | **Game menu**<br>[![Game menu](docs/screenshots/mobile-menu.jpg)](docs/screenshots/mobile-menu.jpg) |
+| **Music and automatic updates · menu scrolled**<br>[![Music and automatic updates · menu scrolled](docs/screenshots/mobile-music-updates.jpg)](docs/screenshots/mobile-music-updates.jpg) | **Paused · menu remains accessible**<br>[![Paused · menu remains accessible](docs/screenshots/mobile-paused.jpg)](docs/screenshots/mobile-paused.jpg) |
+| **Soccer photo stop**<br>[![Soccer photo stop](docs/screenshots/mobile-soccer.jpg)](docs/screenshots/mobile-soccer.jpg) | **Concert photo stop**<br>[![Concert photo stop](docs/screenshots/mobile-concert.jpg)](docs/screenshots/mobile-concert.jpg) |
+| **Allison and the cats**<br>[![Allison and the cats](docs/screenshots/mobile-final-floor.jpg)](docs/screenshots/mobile-final-floor.jpg) | **Falling with the beer**<br>[![Falling with the beer](docs/screenshots/mobile-falling.jpg)](docs/screenshots/mobile-falling.jpg) |
+| **Brief Action delivery reminder**<br>[![Brief Action delivery reminder](docs/screenshots/mobile-delivery-reminder.jpg)](docs/screenshots/mobile-delivery-reminder.jpg) | **Recall hint · only with a missed photo**<br>[![Recall hint · only with a missed photo](docs/screenshots/mobile-recall-reminder.jpg)](docs/screenshots/mobile-recall-reminder.jpg) |
+| **Finish time and score breakdown**<br>[![Finish time and score breakdown](docs/screenshots/mobile-finish-score.jpg)](docs/screenshots/mobile-finish-score.jpg) | **Local high scores · empty browser list**<br>[![Local high scores · empty browser list](docs/screenshots/mobile-high-scores.jpg)](docs/screenshots/mobile-high-scores.jpg) |
+| **Timeout · angel Seth**<br>[![Timeout · angel Seth](docs/screenshots/mobile-timeout-angel.jpg)](docs/screenshots/mobile-timeout-angel.jpg) |  |
+
+### Mobile · portrait and installation
+
+| | |
+|---|---|
+| **Mobile setup prompt**<br>[<img src="docs/screenshots/mobile-setup.jpg" width="220" alt="Mobile setup prompt">](docs/screenshots/mobile-setup.jpg) | **How to add as a mobile app**<br>[<img src="docs/screenshots/mobile-add-as-app.jpg" width="220" alt="How to add as a mobile app">](docs/screenshots/mobile-add-as-app.jpg) |
+| **Portrait gameplay · landscape recommended**<br>[<img src="docs/screenshots/mobile-portrait.jpg" width="220" alt="Portrait gameplay · landscape recommended">](docs/screenshots/mobile-portrait.jpg) | **Portrait menu**<br>[<img src="docs/screenshots/mobile-portrait-menu.jpg" width="220" alt="Portrait menu">](docs/screenshots/mobile-portrait-menu.jpg) |
+| **Portrait customization**<br>[<img src="docs/screenshots/mobile-portrait-customize.jpg" width="220" alt="Portrait customization">](docs/screenshots/mobile-portrait-customize.jpg) |  |
 
 ## Final-warning and champion music
 
-The **30sec Remaining Track** selector offers **The Final Warning** (default) and **System Failure Imminent**. At30 seconds remaining, gameplay music crossfades into your selected warning track over **1.25 seconds**; the radio turns red and station switching locks.
+The **30sec Remaining Track** selector offers **The Final Warning** (default) and **System Failure Imminent**. At 30 seconds remaining, desktop gameplay music crossfades into your selected warning track over **1.25 seconds**; touch devices switch using the same audio element for reliability. In both cases, the radio turns red and station switching locks.
 
 **Champion Track** selects **26 Floors of Glory** (default) or **Eye of the Stairwell**. It loops after successful completion and through high-score entry. Timeout has a separate looping failure track. Music volume/mute still apply, and effects play over the music.
 
@@ -133,6 +160,11 @@ Gameplay station, warning/champion selections, music volume, music on/off and ov
 - Voices built using **[ElevenLabs](https://elevenlabs.io/)**.
 
 🎵 **[Listen to the entire video game soundtrack](https://suno.com/playlist/0ef61d61-9481-48f2-b67f-989cffdc9cca)**.
+
+## What’s new in 0.3.12
+
+- Refreshed all desktop documentation captures and added a complete mobile viewport gallery covering controls, settings, portrait, photo stops, finish and timeout.
+- Start Game stays inside the canvas on short landscape screens, with space for the version label.
 
 ## What’s new in 0.3.11
 

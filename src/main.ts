@@ -886,7 +886,7 @@ function positionStartGame(){
  gameElement.style.setProperty('--landscape-menu-left',`${frame.right-root.left-48}px`);
  gameElement.style.setProperty('--landscape-menu-top',`${Math.max(0,frame.top-root.top+hudHeight-48)}px`);
  button.style.left=`${frame.left-parent.left+frame.width/2}px`;
- button.style.top=`${frame.top-parent.top+frame.height*.94}px`;
+ button.style.top=`${frame.top-parent.top+Math.min(frame.height*.94,frame.height-button.offsetHeight/2-8)}px`;
 }
 game.scale.on('resize',()=>requestAnimationFrame(positionStartGame));
 

@@ -1,0 +1,263 @@
+{
+  "version": "0.3.12",
+  "captured": "2026-10-28",
+  "sound": "muted",
+  "music": "off",
+  "stagedGameplay": true,
+  "scoresSubmitted": false,
+  "mobileCaptureType": "browser viewport previews; not physical-device captures",
+  "images": [
+    {
+      "file": "start-screen.jpg",
+      "caption": "Start Game \u00b7 version shown",
+      "width": 1280,
+      "height": 720,
+      "platform": "desktop"
+    },
+    {
+      "file": "beer-run.jpg",
+      "caption": "Pick up the six-pack with Action",
+      "width": 1280,
+      "height": 720,
+      "platform": "desktop"
+    },
+    {
+      "file": "soccer-photo.jpg",
+      "caption": "Soccer photo stop",
+      "width": 1280,
+      "height": 720,
+      "platform": "desktop"
+    },
+    {
+      "file": "concert-photo.jpg",
+      "caption": "Concert photo stop",
+      "width": 1280,
+      "height": 720,
+      "platform": "desktop"
+    },
+    {
+      "file": "final-floor.jpg",
+      "caption": "Allison, Oakey and Ellowyn",
+      "width": 1280,
+      "height": 720,
+      "platform": "desktop"
+    },
+    {
+      "file": "falling.jpg",
+      "caption": "Falling with the beer",
+      "width": 1280,
+      "height": 720,
+      "platform": "desktop"
+    },
+    {
+      "file": "finish-score.jpg",
+      "caption": "Finish time and score breakdown",
+      "width": 1280,
+      "height": 720,
+      "platform": "desktop"
+    },
+    {
+      "file": "timeout-angel.jpg",
+      "caption": "Timeout \u00b7 angel Seth",
+      "width": 1280,
+      "height": 720,
+      "platform": "desktop"
+    },
+    {
+      "file": "delivery-reminder.jpg",
+      "caption": "Brief delivery reminder",
+      "width": 1280,
+      "height": 720,
+      "platform": "desktop"
+    },
+    {
+      "file": "desktop-settings.jpg",
+      "caption": "Desktop controls and SETH FM",
+      "width": 1265,
+      "height": 1181,
+      "platform": "desktop"
+    },
+    {
+      "file": "high-scores.jpg",
+      "caption": "Local high scores \u00b7 no sample entries",
+      "width": 1280,
+      "height": 720,
+      "platform": "desktop"
+    },
+    {
+      "file": "easter-egg.jpg",
+      "caption": "Roadside secret",
+      "width": 1280,
+      "height": 720,
+      "platform": "desktop"
+    },
+    {
+      "file": "elevator.jpg",
+      "caption": "Elevator journey",
+      "width": 1280,
+      "height": 720,
+      "platform": "desktop"
+    },
+    {
+      "file": "shortcut-finish.jpg",
+      "caption": "Fixed shortcut result",
+      "width": 1280,
+      "height": 720,
+      "platform": "desktop"
+    },
+    {
+      "file": "mobile-start.jpg",
+      "caption": "Start Game and settings access",
+      "width": 844,
+      "height": 390,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-default.jpg",
+      "caption": "Default arrows",
+      "width": 844,
+      "height": 390,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-slider.jpg",
+      "caption": "Sliding Speed Runner",
+      "width": 844,
+      "height": 390,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-stick.jpg",
+      "caption": "Game Stick",
+      "width": 844,
+      "height": 390,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-customize.jpg",
+      "caption": "Customize controls",
+      "width": 844,
+      "height": 390,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-menu.jpg",
+      "caption": "Game menu",
+      "width": 844,
+      "height": 390,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-music-updates.jpg",
+      "caption": "Music and automatic updates \u00b7 menu scrolled",
+      "width": 844,
+      "height": 390,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-paused.jpg",
+      "caption": "Paused \u00b7 menu remains accessible",
+      "width": 844,
+      "height": 390,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-soccer.jpg",
+      "caption": "Soccer photo stop",
+      "width": 844,
+      "height": 390,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-concert.jpg",
+      "caption": "Concert photo stop",
+      "width": 844,
+      "height": 390,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-final-floor.jpg",
+      "caption": "Allison and the cats",
+      "width": 844,
+      "height": 390,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-falling.jpg",
+      "caption": "Falling with the beer",
+      "width": 844,
+      "height": 390,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-delivery-reminder.jpg",
+      "caption": "Brief Action delivery reminder",
+      "width": 844,
+      "height": 390,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-recall-reminder.jpg",
+      "caption": "Recall hint \u00b7 only with a missed photo",
+      "width": 844,
+      "height": 390,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-finish-score.jpg",
+      "caption": "Finish time and score breakdown",
+      "width": 844,
+      "height": 390,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-high-scores.jpg",
+      "caption": "Local high scores \u00b7 empty browser list",
+      "width": 844,
+      "height": 390,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-timeout-angel.jpg",
+      "caption": "Timeout \u00b7 angel Seth",
+      "width": 844,
+      "height": 390,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-setup.jpg",
+      "caption": "Mobile setup prompt",
+      "width": 390,
+      "height": 844,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-add-as-app.jpg",
+      "caption": "How to add as a mobile app",
+      "width": 390,
+      "height": 844,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-portrait.jpg",
+      "caption": "Portrait gameplay \u00b7 landscape recommended",
+      "width": 390,
+      "height": 844,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-portrait-menu.jpg",
+      "caption": "Portrait menu",
+      "width": 390,
+      "height": 844,
+      "platform": "mobile preview"
+    },
+    {
+      "file": "mobile-portrait-customize.jpg",
+      "caption": "Portrait customization",
+      "width": 390,
+      "height": 844,
+      "platform": "mobile preview"
+    }
+  ]
+}
