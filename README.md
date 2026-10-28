@@ -76,12 +76,7 @@ Desktop captures from version 0.3.1. Game shots use 2560×1440 fullscreen (16:9)
 ![Seth falling while holding the beer](docs/screenshots/falling.png)
 ![Desktop controls, radio and settings](docs/screenshots/desktop-settings.png)
 
-<details>
-<summary>Timeout surprise — spoiler screenshot</summary>
-
 ![Angel Seth after time runs out](docs/screenshots/timeout-angel.png)
-
-</details>
 
 ## Local development
 
