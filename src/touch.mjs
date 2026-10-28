@@ -13,19 +13,20 @@ export class SlidingMovement {
   get direction(){return Math.abs(this.axis)<=.18?0:Math.sign(this.axis);}
 }
 export class TouchInput {
-  enabled=false;held=new Map();edges=new Set();movement=new SlidingMovement();
+  style='slider';vertical=0;enabled=false;held=new Map();edges=new Set();movement=new SlidingMovement();
   paintStick(){
     const stick=document.getElementById?.('touch-stick');if(!stick)return;
     stick.style.setProperty('--stick-x',`${this.movement.axis*(stick.getBoundingClientRect().width/2-30)}px`);
+    stick.style.setProperty('--stick-y',`${this.style==='stick'?this.vertical*(stick.getBoundingClientRect().height/2-24):0}px`);
     stick.dataset.sprint=String(this.movement.sprint);
     stick.setAttribute('aria-valuenow',String(Math.round(this.movement.axis*100)));
     stick.setAttribute('aria-valuetext',this.movement.direction?`${this.movement.sprint?'Sprinting':'Moving'} ${this.movement.direction<0?'left':'right'}`:'Stopped');
   }
-  clear(){this.held.clear();this.edges.clear();this.movement.clear();this.paintStick();document.querySelectorAll('[data-touch]').forEach(el=>el.removeAttribute('data-held'));}
+  clear(){this.vertical=0;this.held.clear();this.edges.clear();this.movement.clear();this.paintStick();document.querySelectorAll('[data-touch]').forEach(el=>el.removeAttribute('data-held'));}
   sample(blocked=false){
     if(blocked||!this.enabled){this.clear();return {move:0,jump:false,interact:false,recall:false,pause:false,sprint:false,restart:false};}
     const down=(key)=>[...this.held.values()].includes(key);
-    const result={move:this.movement.direction||Number(down('right'))-Number(down('left')),jump:this.edges.has('jump'),interact:this.edges.has('interact'),recall:this.edges.has('recall'),pause:this.edges.has('pause'),sprint:this.movement.sprint||down('sprint'),restart:down('restart')};
+    const result={move:(this.style==='default'?0:this.movement.direction)||Number(down('right'))-Number(down('left')),jump:this.edges.has('jump'),interact:this.edges.has('interact'),recall:this.edges.has('recall'),pause:this.edges.has('pause'),sprint:this.style!=='default'&&(this.movement.sprint||down('sprint')),restart:down('restart')};
     this.edges.clear();return result;
   }
   constructor(){
@@ -41,10 +42,10 @@ export class TouchInput {
     });
     const stick=document.getElementById?.('touch-stick');
     if(stick){
-      const axis=(event)=>{const rect=stick.getBoundingClientRect();return (event.clientX-rect.left-rect.width/2)/(rect.width/2-24);};
-      stick.addEventListener('pointerdown',event=>{if(!this.enabled)return;event.preventDefault();if(this.movement.start(event.pointerId,axis(event))){stick.setPointerCapture(event.pointerId);this.paintStick();}});
-      stick.addEventListener('pointermove',event=>{this.movement.move(event.pointerId,axis(event));this.paintStick();});
-      for(const type of ['pointerup','pointercancel','lostpointercapture'])stick.addEventListener(type,event=>{this.movement.release(event.pointerId);this.paintStick();});
+      const axis=(event)=>{const rect=stick.getBoundingClientRect();let x=(event.clientX-rect.left-rect.width/2)/(rect.width/2-24),y=(event.clientY-rect.top-rect.height/2)/(rect.height/2-24);if(this.style==='stick'){const magnitude=Math.max(1,Math.hypot(x,y));x/=magnitude;y/=magnitude;this.vertical=y;}else this.vertical=0;return x;};
+      stick.addEventListener('pointerdown',event=>{if(!this.enabled||this.movement.pointer!==null)return;event.preventDefault();if(this.movement.start(event.pointerId,axis(event))){stick.setPointerCapture(event.pointerId);this.paintStick();}});
+      stick.addEventListener('pointermove',event=>{if(this.movement.pointer!==event.pointerId)return;this.movement.move(event.pointerId,axis(event));this.paintStick();});
+      for(const type of ['pointerup','pointercancel','lostpointercapture'])stick.addEventListener(type,event=>{this.movement.release(event.pointerId);if(this.movement.pointer===null)this.vertical=0;this.paintStick();});
       stick.addEventListener('contextmenu',event=>event.preventDefault());
       stick.addEventListener('keydown',event=>{if(this.enabled&&['ArrowLeft','ArrowRight'].includes(event.key)){event.preventDefault();this.movement.start('keyboard',event.key==='ArrowLeft'?-1:1);this.movement.move('keyboard',event.key==='ArrowLeft'?-1:1);this.paintStick();}});
       stick.addEventListener('keyup',event=>{if(['ArrowLeft','ArrowRight'].includes(event.key)){this.movement.release('keyboard');this.paintStick();}});

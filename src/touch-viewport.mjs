@@ -40,9 +40,13 @@ export function installTouchViewport(root,{win=window,doc=document,onResize=()=>
  const types=['touchstart','touchmove','touchend','gesturestart','gesturechange','dblclick'];
  types.forEach(type=>root.addEventListener(type,guard,{passive:false}));
  win.addEventListener('resize',layout);win.visualViewport?.addEventListener('resize',layout);win.visualViewport?.addEventListener('scroll',layout);
+ // The parent can resize after a toolbar/orientation change without another
+ // visualViewport event. Refresh the scale against the settled parent box.
+ const observer=win.ResizeObserver?new win.ResizeObserver(()=>{if(locked){onCancel();onResize();}}):null;
+ observer?.observe(root);
  doc.addEventListener('fullscreenchange',sync);sync();
  return {sync,get locked(){return locked;},dispose(){
-  root.classList.remove('touch-mode');sync();types.forEach(type=>root.removeEventListener(type,guard));
+  observer?.disconnect();root.classList.remove('touch-mode');sync();types.forEach(type=>root.removeEventListener(type,guard));
   win.removeEventListener('resize',layout);win.visualViewport?.removeEventListener('resize',layout);win.visualViewport?.removeEventListener('scroll',layout);doc.removeEventListener('fullscreenchange',sync);
  }};
 }

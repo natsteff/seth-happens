@@ -59,3 +59,19 @@ test('slider DOM captures one finger, tracks it across directions, and resets on
  slider.listeners.pointercancel(event(8,10));assert.equal(input.sample().move,0);assert.equal(slider.attrs['aria-valuenow'],'0');
  delete document.getElementById;
 });
+test('Default arrows walk without sprint even at full input; style changes clear held movement',()=>{
+ const input=new TouchInput();input.enabled=true;input.style='default';input.held.set(1,'right');input.held.set(2,'sprint');input.movement.start(3,-1);
+ assert.equal(input.sample().move,1);assert.equal(input.sample().sprint,false);
+ input.clear();assert.equal(input.sample().move,0);assert.equal(input.sample().sprint,false);
+});
+test('Game Stick clamps diagonal travel radially and vertical alone never moves or jumps',()=>{
+ const slider={listeners:{},dataset:{},style:{setProperty(){}},addEventListener(name,fn){this.listeners[name]=fn;},getBoundingClientRect(){return {left:0,top:0,width:108,height:108};},setPointerCapture(){},setAttribute(){}};
+ document.getElementById=()=>slider;const input=new TouchInput();input.enabled=true;input.style='stick';
+ const e=(id,x,y)=>({pointerId:id,clientX:x,clientY:y,preventDefault(){}});
+ slider.listeners.pointerdown(e(1,54,0));assert.equal(input.sample().move,0);assert.equal(input.sample().jump,false);assert.equal(input.vertical,-1);
+ slider.listeners.pointermove(e(1,108,0));assert.ok(Math.abs(Math.hypot(input.movement.axis,input.vertical)-1)<.001);assert.equal(input.sample().sprint,false);
+ slider.listeners.pointermove(e(2,0,54));assert.equal(input.sample().move,1);
+ slider.listeners.pointermove(e(1,108,54));assert.equal(input.sample().sprint,true);
+ slider.listeners.pointercancel(e(1,108,54));assert.equal(input.vertical,0);assert.equal(input.sample().move,0);
+ delete document.getElementById;
+});

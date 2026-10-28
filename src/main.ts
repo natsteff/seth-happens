@@ -184,11 +184,11 @@ class Errand extends Phaser.Scene {
     const logo=this.add.image(W/2,285,'title-logo').setDisplaySize(750,500);
     this.introCaption=this.add.text(W/2,560,'',{fontFamily:'Arial',fontSize:'16px',fontStyle:'bold',color:'#ffe2aa',backgroundColor:'#102137',padding:{x:12,y:7}}).setOrigin(.5);
     this.introOverlay=this.add.container(0,0,[backdrop,logo,this.introCaption]).setScrollFactor(0).setDepth(50);
-    void this.startIntro();
-    if(gameAudio.state!=='running')this.introCaption.setText('Browser paused audio • click to enable sound');
+    document.getElementById('start-game')!.hidden=false;
   }
   async startIntro(){
-    if(this.introStarted||!this.introActive)return;
+    if(this.introStarted||!this.introActive||document.querySelector('dialog[open]'))return;
+    document.getElementById('start-game')!.hidden=true;
     this.introStarted=true;this.introCaption.setText('');
     try{await gameAudio.playIntro(()=>this.introCaption.setText(''));}catch{this.say('Intro audio unavailable. The beer run must go on.');}
     if(!this.sys.isActive())return;
@@ -457,8 +457,15 @@ class Errand extends Phaser.Scene {
       this.physics.add.existing(block,true);this.physics.add.collider(this.player,block);this.eggBlocks.push(block);
     }
     this.eggBall=soccerBall(this,EGG.ballX,y-9,9);
-    this.add.rectangle(EGG.goalX+12,y-34,49,68,0x9fbfc9,0).setStrokeStyle(3,0xdfece3);
-    for(let i=0;i<5;i++)this.add.line(0,0,EGG.goalX-10+i*10,y-65,EGG.goalX-10+i*10,y,0x9ab9bf,.4).setOrigin(0);
+    const net=this.add.graphics();
+    const gx=EGG.goalX-30;
+    net.fillStyle(0x9fbfc9,.12).fillPoints([{x:gx,y:y-48},{x:gx+86,y:y-48},{x:gx+105,y:y-33},{x:gx+105,y},{x:gx,y}],true);
+    net.lineStyle(1,0x9ab9bf,.55);
+    for(let i=1;i<9;i++)net.lineBetween(gx+i*10,y-48,gx+i*10,y);
+    for(let i=1;i<5;i++)net.lineBetween(gx,y-i*10,gx+86,y-i*10);
+    net.lineStyle(3,0xdfece3,1).strokePoints([{x:gx,y},{x:gx,y:y-48},{x:gx+86,y:y-48},{x:gx+86,y}],false);
+    net.lineStyle(2,0x9fbfc9,.85).strokePoints([{x:gx+86,y:y-48},{x:gx+105,y:y-33},{x:gx+105,y},{x:gx+86,y}],false);
+    this.label(EGG.ballX-45,y-70,'KICK A GOAL →','#ffd08b',14);
     this.liftHint=this.label(EGG.elevatorX-125,y-118,'[ F ] ENTER ELEVATOR','#ffd08b',14).setVisible(false).setDepth(6);
     this.eggLabel=this.label(EGG.guitarX-24,y-110,'SERVICE ROAD','#93afc3',12);
     this.eggLift=this.add.container(EGG.elevatorX,y,[
@@ -508,7 +515,7 @@ class Errand extends Phaser.Scene {
     if(!this.player)return;
     gameAudio.music.setHold('scores',scoresOpen());
     let pads:readonly (Gamepad|null)[]=[];try{pads=navigator.getGamepads?.()??[];}catch{/* Keyboard remains usable if gamepad access is blocked. */}
-    const controller=this.controller.sample(Array.from(pads),document.hasFocus()&&!scoresOpen()&&!(document.getElementById('touch-menu') as HTMLDialogElement).open&&document.activeElement?.id!=='radio-volume');const mobile=touch.sample(scoresOpen()||document.hidden||(document.getElementById('touch-menu') as HTMLDialogElement).open);
+    const controller=this.controller.sample(Array.from(pads),document.hasFocus()&&!scoresOpen()&&!(document.getElementById('touch-menu') as HTMLDialogElement).open&&document.activeElement?.id!=='radio-volume');const mobile=touch.sample(scoresOpen()||document.hidden||!!document.querySelector('dialog[open]'));
     controller.move=controller.move||mobile.move;
     controller.jump ||= mobile.jump;controller.interact ||= mobile.interact;controller.recall ||= mobile.recall;controller.pause ||= mobile.pause;controller.sprint ||= mobile.sprint;
     this.pad=controller;
@@ -523,7 +530,7 @@ class Errand extends Phaser.Scene {
     if(this.scorePaused){this.input.keyboard!.enabled=true;this.scorePaused=false;for(const key of Object.values(this.keys))key.reset();if(!this.introActive&&!this.failed&&!this.won)this.physics.world.resume();}
     if(Phaser.Input.Keyboard.JustDown(this.keys.S))gameAudio.toggle();
     if(this.introActive&&(controller.jump||controller.interact||controller.pause||controller.move!==0)){void gameAudio.unlock();void this.startIntro();}
-    if(this.introActive){const status=document.getElementById('live-status');if(status){status.textContent=`BEER RUN intro. ${gameAudio.state==='running'?'Playing Let’s go. Gameplay locked.':'Browser autoplay paused. Click to enable sound. Gameplay locked.'}`;status.dataset.intro='true';status.dataset.x=String(Math.round(this.player.x));status.dataset.y=String(Math.round(this.player.y));status.dataset.loadedVoices=String(gameAudio.loadedVoiceCount);status.dataset.voiceLine=gameAudio.lastSpoken;status.dataset.voiceStatus=gameAudio.voiceStatus;status.dataset.muted=String(gameAudio.muted);}return;}
+    if(this.introActive){const status=document.getElementById('live-status');if(status){status.textContent=`BEER RUN intro. ${this.introStarted?'Playing Let’s go. Gameplay locked.':'Select Start Game to begin. Gameplay locked.'}`;status.dataset.intro='true';status.dataset.x=String(Math.round(this.player.x));status.dataset.y=String(Math.round(this.player.y));status.dataset.loadedVoices=String(gameAudio.loadedVoiceCount);status.dataset.voiceLine=gameAudio.lastSpoken;status.dataset.voiceStatus=gameAudio.voiceStatus;status.dataset.muted=String(gameAudio.muted);}return;}
     if(!this.won&&!this.failed)this.elapsedMs+=Math.min(delta,250);
     if(!this.won&&!this.failed&&runExpired(this.elapsedMs))this.failRun();
     const timerBeep=timerWarningSecond(this.elapsedMs);
@@ -760,3 +767,33 @@ document.getElementById('touch-resume')!.addEventListener('click',()=>closeTouch
 document.getElementById('touch-recall')!.addEventListener('click',()=>{closeTouchMenu();touch.edges.add('recall');});
 touchMenu.addEventListener('cancel',event=>{event.preventDefault();closeTouchMenu();});
 for(const type of ['keydown','keyup'])document.addEventListener(type,event=>{if(touchMenu.open)event.stopPropagation();},true);
+
+// Control configuration is local to this browser and never touches scores.
+const controlSettings=document.getElementById('control-settings') as HTMLDialogElement;
+const styleSelect=document.getElementById('control-style') as HTMLSelectElement;
+const spacingInput=document.getElementById('control-spacing') as HTMLInputElement;
+let controlStyle='default',controlSpacing=3,customizeFromOffer=false;
+try{const saved=JSON.parse(localStorage.getItem('seth-touch-controls')||'null');if(saved&&['default','slider','stick'].includes(saved.style))controlStyle=saved.style;if(Number.isInteger(saved?.spacing)&&saved.spacing>=1&&saved.spacing<=5)controlSpacing=saved.spacing;}catch{/* Defaults remain available. */}
+function applyControls(){
+ touch.clear();touch.style=controlStyle;
+ gameElement.dataset.controlStyle=controlStyle;
+ gameElement.style.setProperty('--arrow-gap',`${8+(controlSpacing-1)*8}px`);
+ document.getElementById('touch-style-help')!.textContent=controlStyle==='default'?'Default arrows walk only; no sprint. Release to stop. Double-tap Jump for Mega Jump.':'Slide through the center to reverse without lifting. Release to stop. Push left/right to the edge to sprint. Double-tap Jump for Mega Jump.';
+ document.getElementById('touch-arrows')!.hidden=controlStyle!=='default';
+ document.getElementById('touch-stick')!.hidden=controlStyle==='default';
+ document.querySelector('.touch-hint')!.textContent=controlStyle==='default'?'Left / right · release to stop':controlStyle==='stick'?'Game Stick · edges sprint':'Slide to move · edges sprint';
+}
+function previewControls(){document.getElementById('spacing-value')!.textContent=spacingInput.value;document.getElementById('spacing-preview')!.style.gap=`${8+(Number(spacingInput.value)-1)*8}px`;spacingInput.disabled=styleSelect.value!=='default';}
+function openControls(first=false){document.getElementById('controls-save')!.textContent=first?'Save and continue':'Save controls';customizeFromOffer=first;touch.clear();styleSelect.value=controlStyle;spacingInput.value=String(controlSpacing);previewControls();controlSettings.showModal();}
+document.getElementById('touch-customize-first')!.addEventListener('click',()=>{touchOffer.close();openControls(true);});
+document.getElementById('touch-customize')!.addEventListener('click',()=>openControls());
+spacingInput.addEventListener('input',previewControls);styleSelect.addEventListener('change',previewControls);
+document.getElementById('controls-reset')!.addEventListener('click',()=>{styleSelect.value='default';spacingInput.value='3';previewControls();});
+document.getElementById('controls-save')!.addEventListener('click',()=>{controlStyle=styleSelect.value;controlSpacing=Number(spacingInput.value);applyControls();try{localStorage.setItem('seth-touch-controls',JSON.stringify({style:controlStyle,spacing:controlSpacing}));}catch{/* Session controls still work. */}controlSettings.close();if(customizeFromOffer){setTouch(true);void toggleFullscreen();}});
+controlSettings.addEventListener('cancel',()=>{if(customizeFromOffer)requestAnimationFrame(()=>touchOffer.showModal());});
+const installHelp=document.getElementById('install-help') as HTMLDialogElement;
+document.querySelectorAll('[data-install-help]').forEach(button=>button.addEventListener('click',()=>{touch.clear();installHelp.showModal();}));
+document.getElementById('install-close')!.addEventListener('click',()=>installHelp.close());
+for(const type of ['keydown','keyup'])document.addEventListener(type,event=>{if(controlSettings.open||installHelp.open||touchOffer.open)event.stopPropagation();},true);
+document.getElementById('start-game')!.addEventListener('click',()=>{gameAudio.unlock();const scene=game.scene.scenes[0] as Errand;void scene?.startIntro();});
+applyControls();

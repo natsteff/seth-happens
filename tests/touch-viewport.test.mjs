@@ -47,3 +47,13 @@ test('native fullscreen escape releases page lock; two-finger gestures are block
  let prevented=false;root.listeners.get('touchstart').fn({type:'touchstart',target:target('background'),touches:[{},{}],cancelable:true,preventDefault(){prevented=true;}});assert.equal(prevented,true);
  doc.fullscreenElement=null;doc.listeners.get('fullscreenchange').fn();assert.equal(controller.locked,false);controller.dispose();
 });
+test('parent-only resize refreshes locked play, and observer is released on dispose',()=>{
+ const root=surface(),html=surface(),doc=surface(),win=surface();let notify,observed,disconnected=false,resizes=0,cancels=0;
+ root.classList.add('touch-mode');root.classList.add('expanded');doc.documentElement=html;
+ Object.assign(win,{innerWidth:844,innerHeight:390,scrollX:0,scrollY:0,scrollTo(){},ResizeObserver:class{constructor(callback){notify=callback;}observe(element){observed=element;}disconnect(){disconnected=true;}}});
+ const controller=installTouchViewport(root,{win,doc,onResize(){resizes++;},onCancel(){cancels++;}});
+ assert.equal(observed,root);assert.equal(resizes,1);
+ notify();assert.equal(resizes,2);assert.equal(cancels,1);
+ root.classList.remove('expanded');controller.sync();const afterExit=resizes;notify();assert.equal(resizes,afterExit);
+ controller.dispose();assert.equal(disconnected,true);
+});

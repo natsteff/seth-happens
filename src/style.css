@@ -119,3 +119,27 @@ html.touch-play-locked::-webkit-scrollbar,html.touch-play-locked body::-webkit-s
 @media(max-width:420px){.touch-mode{--control-inset-x:24px;--control-inset-y:32px}#touch-stick{width:112px;height:60px}.stick-thumb{width:42px;height:42px;margin:-21px 0 0 -21px}.stick-left,.stick-right{top:18px;font-size:13px}.stick-left{left:8px}.stick-right{right:8px}.touch-actions{gap:8px}.touch-actions [data-touch=jump]{width:64px;height:64px}.touch-actions [data-touch=interact]{width:50px;height:50px}.touch-hint{font-size:7px}}
 .touch-mode{touch-action:manipulation}
 .touch-mode .score-dialog,.touch-mode #touch-menu{max-height:max(100px,calc(var(--play-height,100dvh) - 24px))}
+/* Custom controls keep the existing mobile safe-area insets. */
+#start-game{position:absolute;z-index:60;left:50%;top:80%;transform:translate(-50%,-50%);min-width:180px;min-height:56px;padding:12px 28px;border:2px solid #79dec5;border-radius:12px;background:#24485b;color:#ffe2aa;font-size:22px;font-weight:bold;touch-action:manipulation}
+#start-game[hidden],#touch-arrows[hidden],#touch-stick[hidden]{display:none!important}
+#play-area{position:relative}
+#touch-arrows{display:flex;gap:var(--arrow-gap,24px)}
+#touch-arrows button{width:52px;height:60px;border-radius:18px;font-size:25px}
+[data-control-style=stick] #touch-stick{width:108px;height:108px;border-radius:50%}
+[data-control-style=stick] .stick-left,[data-control-style=stick] .stick-right{display:none}
+.stick-thumb{transform:translate(var(--stick-x,0px),var(--stick-y,0px))}
+#control-settings,#install-help{box-sizing:border-box;width:min(560px,92vw);max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain;border:2px solid #79dec5;border-radius:14px;background:#12253c;color:#e8f0ef;padding:20px;touch-action:pan-y}
+#control-settings::backdrop,#install-help::backdrop{background:#081322cc}
+#control-settings h2,#install-help h2{color:#ffd08b}
+#control-settings button,#install-help button,#touch-offer button{min-height:44px;margin:5px;padding:8px 12px;background:#24485b;color:#e8f0ef;border:1px solid #79dec5;border-radius:8px;touch-action:manipulation}
+#control-settings label{display:block;margin:14px 0}#control-style{max-width:100%;font-size:16px;padding:8px}#control-spacing{max-width:70%;vertical-align:middle}
+#spacing-preview{display:flex;justify-content:center;gap:24px;padding:12px;background:linear-gradient(90deg,#a53b3b55 0 48%,transparent 48% 52%,#a53b3b55 52%);border-radius:8px}
+#spacing-preview span{display:grid;place-items:center;width:52px;height:60px;background:#24485b;border:2px solid #a7d1d2;border-radius:18px}
+/* Browser bars / rotation can invalidate Phaser's inline centering margins.
+   Center the fitted canvas in its actual parent; keep its fitted dimensions so
+   Phaser's canvas bounds and pointer coordinates still match the drawn game. */
+#play-area.expanded.touch-mode #game canvas,
+#play-area:fullscreen.touch-mode #game canvas{
+ position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+ margin:0!important;
+}

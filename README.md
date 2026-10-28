@@ -1,14 +1,14 @@
 # Seth Happens - Beer Run, Elevator Out of Order
 
-**Version 0.3.3**
+**Version 0.3.4**
 
 ![Seth Happens - Beer Run, Elevator Out of Order](public/assets/title-logo.png)
 
 <p align="center">
-  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 0.3.3"></a>
+  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 0.3.4"></a>
 </p>
 
-**Play version 0.3.3** — Fullscreen highly recommended. **Play Now on GitHub Pages uses local browser high scores only. Server-wide high scores cannot run on GitHub Pages; they require a server-enabled installation.**
+**Play version 0.3.4** — Fullscreen highly recommended. **Play Now on GitHub Pages uses local browser high scores only. Server-wide high scores cannot run on GitHub Pages; they require a server-enabled installation.**
 
 One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and Ellowyn before the three-minute deadline. See if you can find the 'easter egg'!
 
@@ -111,7 +111,7 @@ Gameplay station, warning/champion selections, music volume, music on/off and ov
 
 🎵 **[Listen to the entire video game soundtrack](https://suno.com/playlist/0ef61d61-9481-48f2-b67f-989cffdc9cca)**.
 
-## What’s new in 0.3.3
+## What’s new in 0.3.4
 
 - Touch controls sit farther inward, beyond safe-area margins.
 - Expanded/fullscreen touch play locks background scrolling and suppresses gameplay pan, pinch and double-tap zoom gestures; menu scrolling stays available.
@@ -150,3 +150,12 @@ The **☰** button pauses play and opens the menu: return to play, recall a miss
 Expanded/fullscreen touch play hides page scrollbars and keeps controls away from screen edges. Gameplay touch gestures are reserved for the game; menus and score entry keep normal scrolling and input behavior. Leaving expanded view restores page scrolling.
 
 Browser-owned address/tool bars can remain when native fullscreen is unavailable. For a view without browser bars on iPhone, use Safari’s **Share → Add to Home Screen**, enable **Open as Web App** where offered, and launch that icon. Other browsers may offer a similar Home Screen option. The game includes a standalone web-app manifest; it still loads online. See [Apple’s Home Screen instructions](https://support.apple.com/guide/iphone/iphea86e5236/ios).
+
+
+### How to add as app
+
+For more room on iPhone, open the game in Safari, tap **Share → Add to Home Screen**, enable **Open as Web App** if offered, then **Add**. Launch the new icon and rotate to landscape. Chrome on iPhone also offers **Share → Add to Home Screen**; use Safari if unavailable. Android Chrome offers **Add to Home screen / Install app** in its menu when supported. Browser labels vary; a normal browser tab may retain its address bar.
+
+This is an online Home Screen web app, not an offline download. Scores and preferences may be separate between browsers and the Home Screen app. See [Apple instructions](https://support.apple.com/guide/iphone/iphea86e5236/ios) and [Chrome instructions](https://support.google.com/chrome/answer/9658361?co=GENIE.Platform%3DiOS).
+
+Mobile controls offer **Default** walking arrows (no sprint), **Sliding Speed Runner**, or **Game Stick**. Choose **Customize Controls** before play or in the mobile pause menu. Arrow spacing has five settings; your choice is saved in this browser. Game Stick vertical movement does not trigger actions. Select **Start Game** to begin the intro; gameplay starts after the intro finishes.
