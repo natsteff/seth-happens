@@ -10,7 +10,7 @@
 
 **Play version 0.3.4** — Fullscreen highly recommended.
 
-**Now with mobile gameplay support!** Choose Default left/right arrows, Sliding Speed Runner or Game Stick. Customize arrow spacing and save your preferred setup. Select **Customize Controls** at the mobile start prompt or in the game menu. Play in landscape; launch from a Home Screen icon for more screen space. See [How to add as app](#how-to-add-as-app).
+**Now with mobile gameplay support!** Choose Default left/right arrows, Sliding Speed Runner or Game Stick. Customize arrow spacing and save your preferred setup. Select **Customize Controls** at the mobile start prompt or in the game menu. Play in landscape; launch from a Home Screen icon for more screen space. See [How to add as a mobile app](#how-to-add-as-a-mobile-app).
 
 **Play Now on GitHub Pages uses local browser high scores only. Server-wide high scores cannot run on GitHub Pages; they require a server-enabled installation.**
 
@@ -27,7 +27,7 @@ One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and
 - **Don’t fall…or do, because it’s hilarious.**
 - **Let time run out and see what happens.**
 
-## How to add as app
+## How to add as a mobile app
 
 For more room on iPhone, open the game in Safari, tap **Share → Add to Home Screen**, enable **Open as Web App** if offered, then **Add**. Launch the new icon and rotate to landscape. Chrome on iPhone also offers **Share → Add to Home Screen**; use Safari if unavailable. Android Chrome offers **Add to Home screen / Install app** in its menu when supported. Browser labels vary; a normal browser tab may retain its address bar.
 
