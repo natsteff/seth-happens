@@ -1,0 +1,10 @@
+{
+  "name": "Seth Happens - Beer Run",
+  "short_name": "Seth Happens",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#101d30",
+  "theme_color": "#101d30",
+  "description": "Deliver the beer and take two rooftop photos."
+}

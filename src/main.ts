@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { ControllerInput, keyboardOrControllerMove } from './controller.mjs';
 import './style.css';
 import { touch } from './touch.mjs';
+import { installTouchViewport } from './touch-viewport.mjs';
 import './radio';
 import { offerScore, scoresOpen, resetScoreEntry } from './scoreboard';
 import { impactEffects } from './impact-effects';
@@ -681,16 +682,18 @@ soundToggle?.addEventListener('click',()=>{void gameAudio.unlock();gameAudio.tog
 
 const fullscreenToggle=document.getElementById('fullscreen-toggle') as HTMLButtonElement;
 const gameElement=document.getElementById('play-area')!;
+const touchViewport=installTouchViewport(gameElement,{onResize:()=>requestAnimationFrame(()=>game.scale.refresh()),onCancel:()=>touch.clear()});
 async function toggleFullscreen(){
   fullscreenToggle.blur();
   try {
     if(document.fullscreenElement)await document.exitFullscreen();
     else if(gameElement.classList.contains('expanded'))gameElement.classList.remove('expanded');
-    else if(gameElement.requestFullscreen)await gameElement.requestFullscreen();
+    else if(gameElement.requestFullscreen)await gameElement.requestFullscreen({navigationUI:'hide'});
     else gameElement.classList.add('expanded');
   } catch {
     gameElement.classList.add('expanded');
   }
+  touchViewport.sync();
   requestAnimationFrame(()=>game.scale.refresh());
 }
 fullscreenToggle.addEventListener('click',()=>{void toggleFullscreen();});
@@ -718,6 +721,7 @@ function setTouch(enabled:boolean){
   touch.clear();touch.enabled=enabled;
   document.getElementById('touch-controls')!.hidden=!enabled;
   gameElement.classList.toggle('touch-mode',enabled);
+  touchViewport.sync();
   const radio=document.getElementById('radio')!;
   if(enabled)document.getElementById('touch-radio-slot')!.append(radio);else gameElement.insertBefore(radio,document.getElementById('game'));
   if(!enabled)(document.getElementById('touch-menu') as HTMLDialogElement).close();

@@ -99,3 +99,23 @@ header .game-subtitle{text-align:left;color:#ffd08b;font-size:16px;margin:8px 0 
 .touch-mode #fullscreen-exit{display:none!important}#touch-stick:focus-visible,#touch-controls button:focus-visible,#touch-menu button:focus-visible{outline:3px solid #ffd08b;outline-offset:3px}
 @media(max-width:420px){#touch-stick{width:136px;height:66px}.stick-left,.stick-right{top:20px;font-size:16px}.stick-thumb{width:48px;height:48px;margin:-24px 0 0 -24px}.touch-actions{gap:10px;right:max(12px,env(safe-area-inset-right))}.touch-actions [data-touch=jump]{width:70px;height:70px;font-size:15px}.touch-actions [data-touch=interact]{width:55px;height:55px;font-size:11px}.touch-movement{left:max(12px,env(safe-area-inset-left))}.touch-hint{font-size:8px}}
 @media(max-height:430px){.touch-movement{bottom:max(10px,env(safe-area-inset-bottom))}#touch-stick{height:64px}.stick-left,.stick-right{top:19px}.touch-actions{bottom:max(12px,env(safe-area-inset-bottom))}.touch-actions [data-touch=jump]{width:76px;height:76px}.touch-actions [data-touch=interact]{width:58px;height:58px}.touch-hint{font-size:8px}}
+
+/* Lock only the background page during expanded/fullscreen touch play. */
+html.touch-play-locked{overflow:hidden;overscroll-behavior:none;scrollbar-width:none;height:100%}
+html.touch-play-locked body{position:fixed;top:var(--touch-page-top,0px);left:0;right:0;width:100%;overflow:hidden;overscroll-behavior:none}
+html.touch-play-locked::-webkit-scrollbar,html.touch-play-locked body::-webkit-scrollbar{display:none}
+#play-area.expanded.touch-mode{inset:auto;left:var(--play-left,0px);top:var(--play-top,0px);width:var(--play-width,100%);height:var(--play-height,100dvh);overscroll-behavior:none}
+#play-area:fullscreen.touch-mode{width:var(--play-width,100vw);height:var(--play-height,100dvh);overscroll-behavior:none}
+#play-area.expanded.touch-mode #game{width:100%;border:0;border-radius:0;box-shadow:none}
+.touch-mode canvas{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#touch-menu,.score-dialog{overscroll-behavior:contain;touch-action:pan-y pinch-zoom;-webkit-overflow-scrolling:touch}
+#touch-menu button,.score-dialog button{touch-action:manipulation}
+.score-dialog input{font-size:16px}
+.touch-mode{--control-inset-x:clamp(32px,6vw,72px);--control-inset-y:clamp(28px,7vh,48px)}
+.touch-movement{left:calc(env(safe-area-inset-left,0px) + var(--control-inset-x));bottom:calc(env(safe-area-inset-bottom,0px) + var(--control-inset-y))}
+.touch-actions{right:calc(env(safe-area-inset-right,0px) + var(--control-inset-x));bottom:calc(env(safe-area-inset-bottom,0px) + var(--control-inset-y))}
+#touch-menu-open{right:calc(env(safe-area-inset-right,0px) + var(--control-inset-x));top:calc(env(safe-area-inset-top,0px) + clamp(72px,18vh,260px))}
+.browser-view-hint{border-left:3px solid #79dec5;padding-left:10px}
+@media(max-width:420px){.touch-mode{--control-inset-x:24px;--control-inset-y:32px}#touch-stick{width:112px;height:60px}.stick-thumb{width:42px;height:42px;margin:-21px 0 0 -21px}.stick-left,.stick-right{top:18px;font-size:13px}.stick-left{left:8px}.stick-right{right:8px}.touch-actions{gap:8px}.touch-actions [data-touch=jump]{width:64px;height:64px}.touch-actions [data-touch=interact]{width:50px;height:50px}.touch-hint{font-size:7px}}
+.touch-mode{touch-action:manipulation}
+.touch-mode .score-dialog,.touch-mode #touch-menu{max-height:max(100px,calc(var(--play-height,100dvh) - 24px))}

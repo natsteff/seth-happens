@@ -1,14 +1,14 @@
 # Seth Happens - Beer Run, Elevator Out of Order
 
-**Version 0.3.2**
+**Version 0.3.3**
 
 ![Seth Happens - Beer Run, Elevator Out of Order](public/assets/title-logo.png)
 
 <p align="center">
-  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 0.3.2"></a>
+  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 0.3.3"></a>
 </p>
 
-**Play version 0.3.2** — Fullscreen highly recommended. **Play Now on GitHub Pages uses local browser high scores only. Server-wide high scores cannot run on GitHub Pages; they require a server-enabled installation.**
+**Play version 0.3.3** — Fullscreen highly recommended. **Play Now on GitHub Pages uses local browser high scores only. Server-wide high scores cannot run on GitHub Pages; they require a server-enabled installation.**
 
 One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and Ellowyn before the three-minute deadline. See if you can find the 'easter egg'!
 
@@ -111,6 +111,13 @@ Gameplay station, warning/champion selections, music volume, music on/off and ov
 
 🎵 **[Listen to the entire video game soundtrack](https://suno.com/playlist/0ef61d61-9481-48f2-b67f-989cffdc9cca)**.
 
+## What’s new in 0.3.3
+
+- Touch controls sit farther inward, beyond safe-area margins.
+- Expanded/fullscreen touch play locks background scrolling and suppresses gameplay pan, pinch and double-tap zoom gestures; menu scrolling stays available.
+- Expanded view tracks the visible viewport as browser bars or the keyboard change it.
+- Fullscreen requests hidden navigation UI; Home Screen web-app launch is supported where the browser offers it.
+
 ## What’s new in 0.3.2
 
 - Sliding movement pad: reverse without lifting; outer edges sprint.
@@ -138,3 +145,8 @@ Phones and tablets are offered optional touch controls. You can also enable them
 Slide the left pad left or right without lifting your thumb; the center stops movement and either outer edge activates sprint. Use the round **Jump** button (double-tap within 300ms for Mega Jump) and **Action** for photos, finish and elevator. Release the pad to stop.
 
 The **☰** button pauses play and opens the menu: return to play, recall a missed photo, restart, scores, sound, music/volume/tracks and fullscreen exit. Keyboard and standard controllers remain available. Physical iOS/Android acceptance is pending.
+
+
+Expanded/fullscreen touch play hides page scrollbars and keeps controls away from screen edges. Gameplay touch gestures are reserved for the game; menus and score entry keep normal scrolling and input behavior. Leaving expanded view restores page scrolling.
+
+Browser-owned address/tool bars can remain when native fullscreen is unavailable. For a view without browser bars on iPhone, use Safari’s **Share → Add to Home Screen**, enable **Open as Web App** where offered, and launch that icon. Other browsers may offer a similar Home Screen option. The game includes a standalone web-app manifest; it still loads online. See [Apple’s Home Screen instructions](https://support.apple.com/guide/iphone/iphea86e5236/ios).
