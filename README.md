@@ -69,11 +69,19 @@ Server-wide scores require a running score service; GitHub Pages cannot provide 
 
 ## Screenshots
 
-Desktop captures from version 0.3.1. Title and rooftop shots were captured in fullscreen; settings are shown in the normal desktop view.
+Desktop captures from version 0.3.1. Game shots use 2560×1440 fullscreen (16:9); settings are shown in the normal desktop view.
 
 ![Fullscreen title screen](docs/screenshots/start-screen.png)
 ![Fullscreen rooftop beer run](docs/screenshots/beer-run.png)
+![Seth falling while holding the beer](docs/screenshots/falling.png)
 ![Desktop controls, radio and settings](docs/screenshots/desktop-settings.png)
+
+<details>
+<summary>Timeout surprise — spoiler screenshot</summary>
+
+![Angel Seth after time runs out](docs/screenshots/timeout-angel.png)
+
+</details>
 
 ## Local development
 
