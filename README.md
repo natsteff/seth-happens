@@ -1,14 +1,14 @@
 # Seth Happens - Beer Run, Elevator Out of Order
 
-**Version 0.3.0**
+**Version 0.3.1**
 
 ![Seth Happens - Beer Run, Elevator Out of Order](public/assets/title-logo.png)
 
 <p align="center">
-  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 0.3.0"></a>
+  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 0.3.1"></a>
 </p>
 
-**Play version 0.3.0** — Fullscreen highly recommended. **Play Now on GitHub Pages uses local browser high scores only. Server-wide high scores cannot run on GitHub Pages; they require a server-enabled installation.**
+**Play version 0.3.1** — Fullscreen highly recommended. **Play Now on GitHub Pages uses local browser high scores only. Server-wide high scores cannot run on GitHub Pages; they require a server-enabled installation.**
 
 One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and Ellowyn before the three-minute deadline. See if you can find the 'easter egg'!
 
@@ -104,6 +104,12 @@ Gameplay station, warning/champion selections, music volume, music on/off and ov
 
 🎵 **[Listen to the entire video game soundtrack](https://suno.com/playlist/0ef61d61-9481-48f2-b67f-989cffdc9cca)**.
 
+## What’s new in 0.3.1
+
+- Optional mobile touch D-pad, Jump/Action, Sprint, Recall, Pause and held Restart.
+- Fullscreen touch settings and expanded view for browsers without fullscreen.
+- Held-touch cleanup on cancellation, app switching, rotation and score dialogs.
+
 ## What’s new in 0.3.0
 
 - Five-track SETH FM radio with saved preferences, independent volume, warning-track crossfade and selectable completion music.
@@ -111,3 +117,9 @@ Gameplay station, warning/champion selections, music volume, music on/off and ov
 - Updated walking/falling/carrying sprites, faster sprint cadence, earlier fall audio and solid landed hazards.
 - Richer timeout presentation, clearer controls/layout and removal of the old jump-clue toggle.
 - Existing browser high scores remain preserved; Play Now still uses local-only scores.
+
+### Mobile touch controls
+
+Touch-capable devices are offered optional touch controls. You can also use the **Touch controls** button. Landscape is recommended. Enable touch controls to request fullscreen from your tap; browsers without fullscreen use an expanded view instead. **Expand / Exit** returns to the page.
+
+Use the left/right D-pad to move, **Jump** to hop (double-tap within 300ms for Mega Jump), **Action** for photos/finish/elevator, and hold **Sprint** while moving. **Recall photo**, **Pause / Resume**, and **Hold Restart** (0.65 seconds) are also available. Touch controls support multiple fingers and release held actions on cancellation, lost focus, resizing or score dialogs. Keyboard and standard controllers remain available. Physical iOS/Android acceptance is pending. Landscape is the recommended way to play on a phone. Open **Settings / Scores** inside the touch deck for sound, outcome tracks and high scores; the radio provides music controls.

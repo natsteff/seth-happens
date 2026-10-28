@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { ControllerInput, keyboardOrControllerMove } from './controller.mjs';
 import './style.css';
+import { touch } from './touch.mjs';
 import './radio';
 import { offerScore, scoresOpen, resetScoreEntry } from './scoreboard';
 import { impactEffects } from './impact-effects';
@@ -35,7 +36,7 @@ class Errand extends Phaser.Scene {
   eggLabel!:Phaser.GameObjects.Text;liftHint!:Phaser.GameObjects.Text;eggBlocks:Phaser.GameObjects.Rectangle[]=[];
   scorePaused=false;
   onRoad=true;beerHint!:Phaser.GameObjects.Text;
-  mishaps={falls:0,squishes:0,bumps:0}; restartSince:number|null=null;
+  mishaps={falls:0,squishes:0,bumps:0}; restartSince:number|null=null;touchRestartSince:number|null=null;
   fallSoundPlayed=false;lastTimerBeep=0;
   heroHeard=false;heroPlaying=false;runVersion=0;
   introActive=true;introStarted=false;introOverlay!:Phaser.GameObjects.Container;introCaption!:Phaser.GameObjects.Text;
@@ -61,11 +62,11 @@ class Errand extends Phaser.Scene {
     this.load.image('cats','./assets/cats.png');
   }
   create() {
-    resetScoreEntry();this.scorePaused=false;this.controller=new ControllerInput();
+    touch.clear();resetScoreEntry();this.scorePaused=false;this.controller=new ControllerInput();
     this.input.keyboard!.enabled=true;
     this.elapsedMs=0;this.lastTimerBeep=0;this.failed=false;this.cheater=false;this.riding=false;this.rideTween=undefined;
     this.jumpStarted=-1;this.megaUsed=false;this.jumpCount=0;this.paused=false;this.eggStage=0;this.eggPreviousX=75;this.eggBlocks=[];
-    this.mishaps={falls:0,squishes:0,bumps:0};this.restartSince=null;
+    this.mishaps={falls:0,squishes:0,bumps:0};this.restartSince=null;this.touchRestartSince=null;
     this.runVersion++;this.onRoad=true;this.fallSoundPlayed=false;this.heroHeard=false;this.heroPlaying=false;
     gameAudio.beginRun();this.introActive=true;this.introStarted=false;
     this.latePhotos = new Set();
@@ -127,10 +128,11 @@ class Errand extends Phaser.Scene {
     this.cameras.main.setBounds(0,300,LEVEL_WIDTH,GROUND_Y+240-300);
     this.cameras.main.startFollow(this.player,true,.12,.12,-120,90);
     this.keys=this.input.keyboard!.addKeys('A,D,W,LEFT,RIGHT,UP,SPACE,F,R,B,S,SHIFT,P') as Record<string,Phaser.Input.Keyboard.Key>;
-    const onBlur=()=>{this.player.setVelocityX(0);for(const key of Object.values(this.keys))key.reset();if(!this.paused)this.togglePause();};
+    const onBlur=()=>{touch.clear();this.player.setVelocityX(0);for(const key of Object.values(this.keys))key.reset();if(!this.paused)this.togglePause();};
     const onRadioFocus=()=>{for(const key of Object.values(this.keys))key.reset();this.player.setVelocityX(0);};
     const radioVolume=document.getElementById('radio-volume')!;radioVolume.addEventListener('focus',onRadioFocus);
     this.events.once('shutdown',()=>radioVolume.removeEventListener('focus',onRadioFocus));
+    const onHidden=()=>{if(document.hidden)onBlur();};document.addEventListener('visibilitychange',onHidden);this.events.once('shutdown',()=>document.removeEventListener('visibilitychange',onHidden));
     window.addEventListener('blur',onBlur);this.events.once('shutdown',()=>window.removeEventListener('blur',onBlur));
     this.input.keyboard!.addCapture(['SPACE','UP','DOWN','LEFT','RIGHT']);
     const pauseButton=document.getElementById('pause-toggle') as HTMLButtonElement;
@@ -357,7 +359,7 @@ class Errand extends Phaser.Scene {
   }
   togglePause(){
     if(this.introActive||this.won||this.failed||scoresOpen())return;
-    this.paused=!this.paused;this.controller.armed=false;
+    touch.clear();this.paused=!this.paused;this.controller.armed=false;
     const button=document.getElementById('pause-toggle')!;
     button.textContent=this.paused?'Resume · P':'Pause · P';button.setAttribute('aria-pressed',String(this.paused));
     this.jumpStarted=-1;this.megaUsed=false;
@@ -504,7 +506,13 @@ class Errand extends Phaser.Scene {
     if(!this.player)return;
     gameAudio.music.setHold('scores',scoresOpen());
     let pads:readonly (Gamepad|null)[]=[];try{pads=navigator.getGamepads?.()??[];}catch{/* Keyboard remains usable if gamepad access is blocked. */}
-    const controller=this.controller.sample(Array.from(pads),document.hasFocus()&&!scoresOpen()&&document.activeElement?.id!=='radio-volume');this.pad=controller;
+    const controller=this.controller.sample(Array.from(pads),document.hasFocus()&&!scoresOpen()&&document.activeElement?.id!=='radio-volume');const mobile=touch.sample(scoresOpen()||document.hidden);
+    controller.move=controller.move||mobile.move;
+    controller.jump ||= mobile.jump;controller.interact ||= mobile.interact;controller.recall ||= mobile.recall;controller.pause ||= mobile.pause;controller.sprint ||= mobile.sprint;
+    this.pad=controller;
+    if(!mobile.restart)this.touchRestartSince=null;
+    if(mobile.restart&&!this.introActive){this.touchRestartSince??=time;if(time-this.touchRestartSince>=RESTART_HOLD_MS){touch.clear();this.scene.restart();return;}}
+
     const controllerStatus=document.getElementById('controller-status');if(controllerStatus&&controllerStatus.textContent!==controller.label)controllerStatus.textContent=controller.label;
     if(controller.disconnected&&!this.paused){this.player.setVelocityX(0);this.togglePause();}
     if(Phaser.Input.Keyboard.JustDown(this.keys.P)||controller.pause)this.togglePause();
@@ -523,7 +531,7 @@ class Errand extends Phaser.Scene {
       if(live){live.dataset.riding='true';live.dataset.x=String(Math.round(this.player.x));live.dataset.y=String(Math.round(this.player.y));live.dataset.elapsed=String(Math.round(this.elapsedMs));live.textContent='Elevator ascending to floor 26. '+this.hud.text;}
       return;
     }
-    if(this.keys.R.isDown){
+    if(this.keys.R.isDown||mobile.restart){
       this.restartSince??=time;
       if(time-this.restartSince>=RESTART_HOLD_MS){this.scene.restart();return;}
     }else this.restartSince=null;
@@ -676,10 +684,13 @@ async function toggleFullscreen(){
   fullscreenToggle.blur();
   try {
     if(document.fullscreenElement)await document.exitFullscreen();
-    else await gameElement.requestFullscreen();
+    else if(gameElement.classList.contains('expanded'))gameElement.classList.remove('expanded');
+    else if(gameElement.requestFullscreen)await gameElement.requestFullscreen();
+    else gameElement.classList.add('expanded');
   } catch {
-    fullscreenToggle.textContent='Fullscreen unavailable';
+    gameElement.classList.add('expanded');
   }
+  requestAnimationFrame(()=>game.scale.refresh());
 }
 fullscreenToggle.addEventListener('click',()=>{void toggleFullscreen();});
 document.addEventListener('keydown',(event)=>{
@@ -694,8 +705,32 @@ document.addEventListener('fullscreenchange',()=>{
   requestAnimationFrame(()=>game.scale.refresh());
 });
 if(!document.fullscreenEnabled){
-  fullscreenToggle.disabled=true;
-  fullscreenToggle.title='Fullscreen is unavailable in this browser. Open the game in a regular browser window.';
+  fullscreenToggle.disabled=false;
+  fullscreenToggle.title='Use expanded view in this browser.';
 }
 
-document.getElementById('fullscreen-exit')!.addEventListener('click',()=>{void document.exitFullscreen();});
+document.getElementById('fullscreen-exit')!.addEventListener('click',()=>{void toggleFullscreen();});
+
+const touchToggle=document.getElementById('touch-toggle')!;
+const touchOffer=document.getElementById('touch-offer') as HTMLDialogElement;
+function setTouch(enabled:boolean){
+  touch.clear();touch.enabled=enabled;
+  document.getElementById('touch-controls')!.hidden=!enabled;
+  gameElement.classList.toggle('touch-mode',enabled);
+  touchToggle.textContent=`Touch controls: ${enabled?'On':'Off'}`;
+  touchToggle.setAttribute('aria-pressed',String(enabled));
+  requestAnimationFrame(()=>game.scale.refresh());
+}
+touchToggle.addEventListener('click',()=>{setTouch(!touch.enabled);touchToggle.blur();});
+document.getElementById('touch-accept')!.addEventListener('click',()=>{touchOffer.close();setTouch(true);void toggleFullscreen();});
+document.getElementById('touch-decline')!.addEventListener('click',()=>touchOffer.close());
+document.getElementById('touch-view')!.addEventListener('click',()=>{void toggleFullscreen();});
+if(navigator.maxTouchPoints>0||matchMedia('(pointer: coarse)').matches)touchOffer.showModal();
+window.addEventListener('resize',()=>{touch.clear();requestAnimationFrame(()=>game.scale.refresh());});
+
+document.querySelectorAll<HTMLButtonElement>('[data-proxy]').forEach(button=>{
+  const source=document.getElementById(button.dataset.proxy!) as HTMLButtonElement;
+  const sync=()=>{button.textContent=source.innerText;button.disabled=source.disabled;if(source.hasAttribute('aria-pressed'))button.setAttribute('aria-pressed',source.getAttribute('aria-pressed')!);};
+  sync();new MutationObserver(sync).observe(source,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['disabled','aria-pressed']});
+  button.addEventListener('click',()=>{touch.clear();source.click();button.blur();});
+});
