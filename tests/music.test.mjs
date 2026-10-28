@@ -71,3 +71,23 @@ test('restart, off and outcomes clean up both crossfade decks without late playb
  m.toggleCountdownTrack();m.updateRemaining(30);await Promise.resolve();assert.match(m.audio.src,/system-failure-imminent/);m.beginRun();assert.equal(old.paused,true);assert.equal(m.audio.paused,true);context.currentTime=5;t.mock.timers.tick(5000);assert.match(m.audio.src,/arcade-staircase/);assert.equal(m.audio.paused,true);
  m.startRun();await Promise.resolve();old=m.audio;m.updateRemaining(30);await Promise.resolve();m.off();assert.equal(old.paused,true);assert.equal(m.audio.paused,true);m.toggle();await Promise.resolve();assert.equal(m.audio.paused,false);m.finishRun('failure');assert.equal(old.paused,true);assert.match(m.audio.src,/failure-/);m.endRun();
 });
+
+test('120-second touch run switches default warning at 90 elapsed using the same media element',async()=>{
+ const {RUN_LIMIT_MS}=await import('../src/mission.mjs');
+ const m=new MusicRadio(true);const context={state:'running',currentTime:0,createGain:()=>({connect(){},gain:{value:1,cancelScheduledValues(){},setTargetAtTime(v){this.value=v;}}}),createMediaElementSource:()=>({connect(){}})};
+ m.attach(context,{});m.beginRun();m.startRun();await Promise.resolve();const active=m.audio;
+ m.updateRemaining(Math.ceil((RUN_LIMIT_MS-89999)/1000));assert.equal(m.countdown,false);
+ m.updateRemaining(Math.ceil((RUN_LIMIT_MS-90000)/1000));await Promise.resolve();
+ assert.equal(m.countdown,true);assert.equal(m.audio,active);assert.match(active.src,/the-final-warning/);assert.equal(active.paused,false);assert.equal(active.currentTime,0);
+ const starts=active.plays;active.currentTime=12;m.updateRemaining(18);assert.equal(active.plays,starts);assert.equal(active.currentTime,12);
+ m.setHold('pause',true);assert.equal(active.paused,true);m.setHold('pause',false);await Promise.resolve();assert.equal(active.paused,false);
+ m.beginRun();assert.equal(m.countdown,false);assert.match(m.audio.src,/arcade-staircase/);m.endRun();
+});
+test('rejected second-deck playback falls back to the previously playing element',async t=>{
+ t.mock.timers.enable({apis:['setInterval']});
+ const context={state:'running',currentTime:0,createGain:()=>({connect(){},gain:{value:1,cancelScheduledValues(){},setTargetAtTime(){}}}),createMediaElementSource:()=>({connect(){}})};
+ const m=new MusicRadio(false);m.attach(context,{});m.startRun();await Promise.resolve();const active=m.audio;
+ m.elements.find(element=>element!==active).play=()=>Promise.reject(new Error('NotAllowedError'));
+ m.updateRemaining(30);await Promise.resolve();await Promise.resolve();await Promise.resolve();
+ assert.equal(m.audio,active);assert.match(active.src,/the-final-warning/);assert.equal(active.paused,false);m.endRun();
+});

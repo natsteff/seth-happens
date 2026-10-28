@@ -15,7 +15,9 @@ export class MusicRadio{
  private running=false;private context?:AudioContext;private gain?:GainNode;
  private holds=new Set<string>();private version=0;
  private listeners=new Set<()=>void>();
- constructor(){
+ private singleDeck:boolean;
+ constructor(singleDeck=(globalThis.navigator?.maxTouchPoints??0)>0){
+  this.singleDeck=singleDeck;
   const settings=loadSettings();this.selected=settings.track;this.countdownSelected=settings.countdownTrack;this.championSelected=settings.championTrack;this.volume=settings.volume;this.enabled=settings.musicEnabled;this.muted=settings.muted;
   for(const element of this.elements){
    element.hidden=true;element.preload='none';element.loop=true;
@@ -85,15 +87,22 @@ export class MusicRadio{
  toggleChampionTrack(){if(this.outcome)return;this.championSelected=1-this.championSelected;this.save();this.notify();}
  updateRemaining(seconds:number){
   if(!this.running||this.outcome||this.countdown||seconds>30||seconds<=0)return;
-  const outgoing=this.audio,canBlend=!this.blocked&&!outgoing.paused&&this.context?.state==='running';
+  const outgoing=this.audio,canBlend=!this.singleDeck&&!this.blocked&&!outgoing.paused&&this.context?.state==='running';
   this.countdown=true;this.version++;this.error='';
   if(canBlend){
    this.audio=this.standby;this.standby=outgoing;this.audio.id='radio-audio';outgoing.id='radio-audio-outgoing';
    this.audio.currentTime=0;this.audio.loop=true;this.setDeckLevel(this.audio,0);
    this.fade={outgoing,elapsed:0,last:this.context!.currentTime,ready:false};
    this.fadeTimer=setInterval(()=>this.tickFade(),16);
-  }else{outgoing.pause();this.audio.src=this.trackUrl();this.audio.loop=true;}
+  }else{outgoing.pause();this.audio.src=this.trackUrl();this.audio.currentTime=0;this.audio.loop=true;this.setDeckLevel(this.audio,1);}
   this.refresh();
+ }
+ private fallbackCountdown(){
+  const outgoing=this.fade?.outgoing;if(!outgoing)return;
+  this.cancelFade();this.audio.pause();this.standby=this.audio;this.audio=outgoing;
+  this.audio.id='radio-audio';this.standby.id='radio-audio-standby';
+  this.audio.src=this.trackUrl();this.audio.currentTime=0;this.audio.loop=true;
+  this.setDeckLevel(this.audio,1);this.setDeckLevel(this.standby,0);this.refresh();
  }
  get status(){
   if(this.countdown)return 'Hurry, wrap it up or die!';
@@ -114,7 +123,7 @@ export class MusicRadio{
   if(this.fade&&this.context?.state==='running'&&this.fade.outgoing.paused)void this.fade.outgoing.play().catch(()=>{});
   if(this.context?.state==='running'&&this.audio.paused){
    const version=++this.version,element=this.audio;
-   void element.play().then(()=>{if(version===this.version){this.error='';if(this.fade){this.fade.ready=true;this.fade.last=this.context!.currentTime;}this.notify();}}).catch(()=>{if(version===this.version){this.error='Click game or select track to enable music';this.notify();}});
+   void element.play().then(()=>{if(version===this.version){this.error='';if(this.fade){this.fade.ready=true;this.fade.last=this.context!.currentTime;}this.notify();}}).catch(()=>{if(version===this.version){if(this.fade){this.fallbackCountdown();return;}this.error='Click game or select track to enable music';this.notify();}});
   }
   this.notify();
  }
