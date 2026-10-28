@@ -4,7 +4,7 @@ import {mkdirSync,existsSync,readFileSync,writeFileSync,renameSync} from 'node:f
 import {dirname} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {validScores,rankScores} from '../src/scores.mjs';
-import {finalScore,timeBonus} from '../src/mission.mjs';
+import {finalScore,timeBonus,RUN_LIMIT_MS} from '../src/mission.mjs';
 export function leaderboard({filePath='data/high-scores.json',origins=[],clearHash=process.env.CLEAR_PASSWORD_HASH}={}){
   mkdirSync(dirname(filePath),{recursive:true});
   let records=existsSync(filePath)?validScores(JSON.parse(readFileSync(filePath,'utf8'))):[];
@@ -38,7 +38,7 @@ export function leaderboard({filePath='data/high-scores.json',origins=[],clearHa
       }
       const importing=route.endsWith('/import');
       if(typeof input.id!=='string'||(importing?(!input.id.length||input.id.length>128||/[\x00-\x1f\x7f]/.test(input.id)):!/^[a-f0-9-]{36}$/i.test(input.id))||typeof input.name!=='string')throw Error();
-      if((!importing||input.elapsedMs!==undefined)&&(!Number.isFinite(input.elapsedMs)||input.elapsedMs<0||input.elapsedMs>=180000))throw Error();
+      if((!importing||input.elapsedMs!==undefined)&&(!Number.isFinite(input.elapsedMs)||input.elapsedMs<0||input.elapsedMs>=(importing?180000:RUN_LIMIT_MS)))throw Error();
       const record={id:input.id,name:input.name.trim(),date:importing?input.date:new Date().toISOString(),...(input.elapsedMs===undefined?{}:{elapsedMs:input.elapsedMs}),
         falls:input.falls,squishes:input.squishes,bumps:input.bumps,photos:input.photos,latePhotos:input.latePhotos,beer:input.beer,cheater:input.cheater===true};
       if(!record.name||/[\x00-\x1f\x7f]/.test(record.name))throw Error();

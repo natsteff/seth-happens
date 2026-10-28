@@ -62,15 +62,15 @@ test('only photos recovered after the summit are worth half', () => {
   assert.equal(runScore(false,new Set([1]),clean,new Set([1])),1125);
 });
 
-test('three-minute deadline, whole-second bonus under two minutes, and shortcut override',async()=>{
+test('120-second deadline, unchanged whole-second bonus, and shortcut override',async()=>{
   const {timeBonus,runExpired,finalScore}=await import('../src/mission.mjs');
   assert.equal(timeBonus(90000),3000);
   assert.equal(timeBonus(90001),2900);
   assert.equal(timeBonus(119000),100);
   assert.equal(timeBonus(120000),0);
   assert.equal(timeBonus(150000),0);
-  assert.equal(runExpired(179999),false);
-  assert.equal(runExpired(180000),true);
+  assert.equal(runExpired(119999),false);
+  assert.equal(runExpired(120000),true);
   assert.equal(finalScore(true,new Set([0,1]),{falls:0,squishes:0,bumps:0},new Set(),45000),9500);
   assert.equal(finalScore(true,new Set([0,1]),{falls:0,squishes:0,bumps:0},new Set(),1000,true),-10000);
 });
@@ -109,12 +109,12 @@ test('second tap upgrades rising jump within 300ms without adding a full second 
   assert.ok(Math.abs(height+megaJumpVelocity(300,v)**2/(2*1050)-MEGA_JUMP_SPEED**2/(2*1050))<.001);
   assert.ok(REGULAR_JUMP_SPEED**2/(2*1050)>76);
 });
-test('countdown formats three minutes, final seconds and timeout',async()=>{
+test('countdown displays seconds only, including the last partial second and timeout',async()=>{
   const {countdownLabel}=await import('../src/mission.mjs');
-  assert.equal(countdownLabel(0),'3:00');
-  assert.equal(countdownLabel(42000),'2:18');
-  assert.equal(countdownLabel(179200),'0:01');
-  assert.equal(countdownLabel(180000),'0:00');
+  assert.equal(countdownLabel(0),'120s');
+  assert.equal(countdownLabel(42000),'78s');
+  assert.equal(countdownLabel(119200),'1s');
+  assert.equal(countdownLabel(120000),'0s');
 });
 
 test('fall audio starts high up only after reachable roofs are missed',async()=>{
@@ -132,8 +132,8 @@ test('fall audio starts high up only after reachable roofs are missed',async()=>
 });
 test('timer beeps every red-countdown second and never outside it',async()=>{
   const {timerWarningSecond}=await import('../src/mission.mjs');
-  for(let seconds=30;seconds>=1;seconds--)assert.equal(timerWarningSecond((180-seconds)*1000),seconds);
-  for(const seconds of [180,31,0])assert.equal(timerWarningSecond((180-seconds)*1000),null);
+  for(let seconds=30;seconds>=1;seconds--)assert.equal(timerWarningSecond((120-seconds)*1000),seconds);
+  for(const seconds of [120,31,0])assert.equal(timerWarningSecond((120-seconds)*1000),null);
 });
 
 test('falling objects only hurt in descent, never warning/landed/cooldown',async()=>{
@@ -157,4 +157,10 @@ test('landed falling objects are solid only while landed, with no contact damage
       assert.equal(fallingObjectHurts(motion),hurt,kind+' at '+time);
     }
   }
+});
+
+test('score time presentation keeps historical elapsed time in seconds without changing scores',async()=>{
+ const {formatRunSeconds,finalScore}=await import('../src/mission.mjs');
+ assert.equal(formatRunSeconds(60000),'60.0 seconds');assert.equal(formatRunSeconds(83456),'83.5 seconds');assert.equal(formatRunSeconds(150000),'150.0 seconds');
+ assert.equal(finalScore(true,new Set([0,1]),{falls:0,squishes:0,bumps:0},new Set(),60000),8000);
 });

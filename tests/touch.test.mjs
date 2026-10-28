@@ -101,3 +101,11 @@ test('Default quick sprint is opt-in, Jump independent, and reverse/dialog cance
  down(left,6,350);assert.equal(input.sample().sprint,false);up(right,4,360);assert.equal(input.sample().move,-1);assert.equal(input.sample().sprint,false);
  input.sample(true);assert.equal(input.quickSprint.active,false);assert.equal(input.quickSprint.lastTap,null);buttons.length=0;
 });
+test('rotation clear releases native captures so every control accepts a fresh pointer',()=>{
+ const captured=new Set(),released=[];
+ const button={dataset:{touch:'right'},listeners:{},addEventListener(name,fn){this.listeners[name]=fn;},setPointerCapture(id){captured.add(id);},hasPointerCapture:id=>captured.has(id),releasePointerCapture(id){released.push(id);captured.delete(id);},removeAttribute(){}};
+ buttons.push(button);const input=new TouchInput();input.enabled=true;
+ const down=id=>button.listeners.pointerdown({pointerId:id,timeStamp:0,preventDefault(){}});
+ down(1);assert.equal(input.sample().move,1);input.clear();assert.deepEqual(released,[1]);assert.equal(input.captures.size,0);assert.equal(input.sample().move,0);
+ down(2);assert.equal(input.sample().move,1);input.clear();buttons.length=0;
+});

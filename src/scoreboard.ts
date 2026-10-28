@@ -1,3 +1,4 @@
+import { RUN_LIMIT_MS,formatRunSeconds } from './mission.mjs';
 import {gameAudio} from './audio';
 import { rankScores,readScores,saveScore,verifyClearPassword,SCORE_KEY } from './scores.mjs';
 type Result={score:number;falls:number;squishes:number;bumps:number;photos:number;latePhotos:number;beer:boolean;elapsedMs?:number;bonus?:number;cheater?:boolean};
@@ -74,7 +75,7 @@ function render(){
         const details=row.insertCell();details.className='run-details';
         const facts=[
           ['DATE',new Date(s.date).toLocaleDateString()],
-          ['TIME',s.elapsedMs===undefined?'Legacy run':(s.elapsedMs/1000).toFixed(1)+'s'],
+          ['TIME',s.elapsedMs===undefined?'Legacy run':formatRunSeconds(s.elapsedMs)+(s.elapsedMs>=RUN_LIMIT_MS?' · previous time limit':'')],
           ['PHOTOS',`${s.photos}/2${s.latePhotos?' · '+s.latePhotos+' recovered':''}`],
           ['SIX-PACK',s.beer?'Delivered':'Not delivered'],
           ['MISHAPS',`${s.falls} falls · ${s.squishes} squishes · ${s.bumps} bumps`],

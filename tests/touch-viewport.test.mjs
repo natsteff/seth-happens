@@ -57,3 +57,11 @@ test('parent-only resize refreshes locked play, and observer is released on disp
  root.classList.remove('expanded');controller.sync();const afterExit=resizes;notify();assert.equal(resizes,afterExit);
  controller.dispose();assert.equal(disconnected,true);
 });
+test('orientation change clears pointers and refreshes again after the viewport settles',()=>{
+ const root=surface(),doc=surface(),win=surface(),screen=surface();doc.documentElement=surface();root.classList.add('touch-mode');root.classList.add('expanded');
+ let late,cancelled=0,resizes=0;Object.assign(win,{innerWidth:844,innerHeight:390,scrollX:0,scrollY:0,scrollTo(){},screen:{orientation:screen},requestAnimationFrame(fn){late=fn;return 1;},cancelAnimationFrame(){}});
+ const controller=installTouchViewport(root,{win,doc,onCancel(){cancelled++;},onResize(){resizes++;}});
+ win.listeners.get('orientationchange').fn();assert.ok(cancelled>0);const before=resizes;
+ win.innerWidth=390;win.innerHeight=700;late();assert.ok(resizes>before);assert.equal(root.style.getPropertyValue('--play-width'),'390px');
+ controller.dispose();assert.equal(screen.listeners.size,0);assert.equal(win.listeners.has('orientationchange'),false);
+});

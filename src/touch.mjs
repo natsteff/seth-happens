@@ -30,7 +30,7 @@ export class QuickSprint {
 }
 export class TouchInput {
   quickSprintEnabled=false;quickSprint=new QuickSprint();
-  style='slider';vertical=0;enabled=false;held=new Map();edges=new Set();movement=new SlidingMovement();
+  style='slider';vertical=0;enabled=false;captures=new Map();held=new Map();edges=new Set();movement=new SlidingMovement();
   paintStick(){
     const stick=document.getElementById?.('touch-stick');if(!stick)return;
     stick.style.setProperty('--stick-x',`${this.movement.axis*(stick.getBoundingClientRect().width/2-30)}px`);
@@ -40,7 +40,10 @@ export class TouchInput {
     stick.setAttribute('aria-valuetext',this.movement.direction?`${this.movement.sprint?'Sprinting':'Moving'} ${this.movement.direction<0?'left':'right'}`:'Stopped');
   }
   paintSprint(){const arrows=document.getElementById?.('touch-arrows');if(arrows)arrows.dataset.sprint=String(this.quickSprint.active);}
-  clear(){this.quickSprint.clear();this.paintSprint();this.vertical=0;this.held.clear();this.edges.clear();this.movement.clear();this.paintStick();document.querySelectorAll('[data-touch]').forEach(el=>el.removeAttribute('data-held'));}
+  clear(){
+    const captures=[...this.captures];this.captures.clear();
+    for(const [pointer,element] of captures){try{if(element.hasPointerCapture?.(pointer))element.releasePointerCapture(pointer);}catch{/* Rotation may already have invalidated this pointer. */}}
+    this.quickSprint.clear();this.paintSprint();this.vertical=0;this.held.clear();this.edges.clear();this.movement.clear();this.paintStick();document.querySelectorAll('[data-touch]').forEach(el=>el.removeAttribute('data-held'));}
   sample(blocked=false){
     if(blocked||!this.enabled){this.clear();return {move:0,jump:false,interact:false,recall:false,pause:false,sprint:false,restart:false};}
     const down=(key)=>[...this.held.values()].includes(key);
@@ -51,19 +54,19 @@ export class TouchInput {
     document.querySelectorAll('[data-touch]').forEach(button=>{
       button.addEventListener('pointerdown',event=>{
         if(!this.enabled)return;
-        event.preventDefault();button.setPointerCapture(event.pointerId);
+        event.preventDefault();button.setPointerCapture(event.pointerId);this.captures.set(event.pointerId,button);
         const action=button.dataset.touch;if(this.style==='default'&&this.quickSprintEnabled&&['left','right'].includes(action)){this.quickSprint.press(event.pointerId,action,event.timeStamp);this.paintSprint();}this.held.set(event.pointerId,action);this.edges.add(action);button.dataset.held='true';
       });
-      const release=(event)=>{this.quickSprint.release(event.pointerId,event.timeStamp,event.type!=='pointerup');this.paintSprint();this.held.delete(event.pointerId);if(![...this.held.values()].includes(button.dataset.touch))button.removeAttribute('data-held');};
+      const release=(event)=>{this.captures.delete(event.pointerId);this.quickSprint.release(event.pointerId,event.timeStamp,event.type!=='pointerup');this.paintSprint();this.held.delete(event.pointerId);if(![...this.held.values()].includes(button.dataset.touch))button.removeAttribute('data-held');};
       button.addEventListener('pointerup',release);button.addEventListener('pointercancel',release);button.addEventListener('lostpointercapture',release);
       button.addEventListener('contextmenu',event=>event.preventDefault());
     });
     const stick=document.getElementById?.('touch-stick');
     if(stick){
       const axis=(event)=>{const rect=stick.getBoundingClientRect();let x=(event.clientX-rect.left-rect.width/2)/(rect.width/2-24),y=(event.clientY-rect.top-rect.height/2)/(rect.height/2-24);if(this.style==='stick'){const magnitude=Math.max(1,Math.hypot(x,y));x/=magnitude;y/=magnitude;this.vertical=y;}else this.vertical=0;return x;};
-      stick.addEventListener('pointerdown',event=>{if(!this.enabled||this.movement.pointer!==null)return;event.preventDefault();if(this.movement.start(event.pointerId,axis(event))){stick.setPointerCapture(event.pointerId);this.paintStick();}});
+      stick.addEventListener('pointerdown',event=>{if(!this.enabled||this.movement.pointer!==null)return;event.preventDefault();if(this.movement.start(event.pointerId,axis(event))){stick.setPointerCapture(event.pointerId);this.captures.set(event.pointerId,stick);this.paintStick();}});
       stick.addEventListener('pointermove',event=>{if(this.movement.pointer!==event.pointerId)return;this.movement.move(event.pointerId,axis(event));this.paintStick();});
-      for(const type of ['pointerup','pointercancel','lostpointercapture'])stick.addEventListener(type,event=>{this.movement.release(event.pointerId);if(this.movement.pointer===null)this.vertical=0;this.paintStick();});
+      for(const type of ['pointerup','pointercancel','lostpointercapture'])stick.addEventListener(type,event=>{this.captures.delete(event.pointerId);this.movement.release(event.pointerId);if(this.movement.pointer===null)this.vertical=0;this.paintStick();});
       stick.addEventListener('contextmenu',event=>event.preventDefault());
       stick.addEventListener('keydown',event=>{if(this.enabled&&['ArrowLeft','ArrowRight'].includes(event.key)){event.preventDefault();this.movement.start('keyboard',event.key==='ArrowLeft'?-1:1);this.movement.move('keyboard',event.key==='ArrowLeft'?-1:1);this.paintStick();}});
       stick.addEventListener('keyup',event=>{if(['ArrowLeft','ArrowRight'].includes(event.key)){this.movement.release('keyboard');this.paintStick();}});

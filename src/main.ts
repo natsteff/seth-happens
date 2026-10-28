@@ -12,7 +12,7 @@ import { impactEffects } from './impact-effects';
 import { gameAudio } from './audio';
 import { soccerBall, steelKeg, sixPack } from './props';
 import { walkLayout, fallLayout } from './art-layout';
-import { REGULAR_JUMP_SPEED, megaJumpVelocity, countdownLabel, fallingPose, timerWarningSecond, fallDecision, runExpired, RUN_LIMIT_MS, SPRINT_SPEED, timeBonus, finalScore, roadLandingIsFall, fallingStep, fallingObjectHurts, fallingObjectSolid, patrolX, EGG, fallingAssignments, floors, photoStops, beerSpot, recordMishap, RESTART_HOLD_MS, missing, missedPhotos, photoIndicator, LEVEL_WIDTH, GROUND_Y, ROAD, FLOOR_RISE, objectImpactReaction } from './mission.mjs';
+import { REGULAR_JUMP_SPEED, megaJumpVelocity, countdownLabel, formatRunSeconds, fallingPose, timerWarningSecond, fallDecision, runExpired, RUN_LIMIT_MS, SPRINT_SPEED, timeBonus, finalScore, roadLandingIsFall, fallingStep, fallingObjectHurts, fallingObjectSolid, patrolX, EGG, fallingAssignments, floors, photoStops, beerSpot, recordMishap, RESTART_HOLD_MS, missing, missedPhotos, photoIndicator, LEVEL_WIDTH, GROUND_Y, ROAD, FLOOR_RISE, objectImpactReaction } from './mission.mjs';
 
 const W = 1100, H = 600;
 // Render at display density, retaining the same logical play area and physics.
@@ -151,7 +151,7 @@ class Errand extends Phaser.Scene {
     pattern.push(...fallingAssignments as [number,HazardKind][]);
     pattern.forEach(([floor,kind])=>this.addHazard(floor,kind));
     this.add.rectangle(W/2,42,W,84,0x101e32,.97).setScrollFactor(0).setDepth(10);
-    this.timerText=this.label(900,7,'3:00','#ffd08b',32).setScrollFactor(0).setDepth(12);
+    this.timerText=this.label(900,7,countdownLabel(0),'#ffd08b',32).setScrollFactor(0).setDepth(12);
     this.timerLabel=this.label(902,43,'TIME LEFT','#d0b58e',9).setScrollFactor(0).setDepth(12);
     this.hud=this.label(20,13,'','#eaf3f1',16).setScrollFactor(0).setDepth(11);
     this.photoHud=this.label(20,47,'','#80e5ce',15).setScrollFactor(0).setDepth(11);
@@ -160,7 +160,7 @@ class Errand extends Phaser.Scene {
     this.label(1064,68,'0F','#b7d4d8',9).setOrigin(.5,0).setScrollFactor(0).setDepth(12),
     this.add.rectangle(1064,43,4,44,0x43586b).setScrollFactor(0).setDepth(11)];
     this.progress=this.add.rectangle(1064,65,4,44,0x7ee0c5).setOrigin(.5,1).setScrollFactor(0).setDepth(12);
-    this.mobileTrack=this.label(390,49,'','#a8d8cf',11).setScrollFactor(0).setDepth(13).setWordWrapWidth(400).setVisible(false);
+    this.mobileTrack=this.label(590,5,'','#a8d8cf',12).setScrollFactor(0).setDepth(13).setWordWrapWidth(230).setPadding(8,4).setBackgroundColor('#183b47').setVisible(false);
     this.toast=this.add.text(W/2,112,'Allison is waiting on Floor 26. Bring beer and two photos. The elevator is out of order.',{fontFamily:'Arial',fontSize:'15px',color:'#ffe0a3',backgroundColor:'#16283e',padding:{x:14,y:10},align:'center'}).setOrigin(.5).setScrollFactor(0).setDepth(12);
     this.prompt=this.add.text(W/2,555,'',{fontFamily:'Arial',fontSize:'16px',color:'#102c39',backgroundColor:'#7ce3c5',padding:{x:14,y:9},align:'center'}).setOrigin(.5).setScrollFactor(0).setDepth(12).setVisible(false);
     this.showIntro();
@@ -382,7 +382,7 @@ class Errand extends Phaser.Scene {
     }};
     visit(this.children.list);
     this.keyboardHint?.setVisible(!touch.enabled);
-    if(this.mobileTrack){this.mobileTrack.setVisible(touch.enabled);this.mobileTrack.setText(mobileTrackLabel(gameAudio.music));this.mobileTrack.setColor(gameAudio.music.countdown?'#ff7e79':'#a8d8cf');}
+    if(this.mobileTrack){this.mobileTrack.setVisible(touch.enabled);this.mobileTrack.setText(`SETH FM · MUSIC\n${mobileTrackLabel(gameAudio.music)}\nChange music: Menu`);this.mobileTrack.setColor(gameAudio.music.countdown?'#ff7e79':'#a8d8cf');}
     const offset=(W*RENDER_SCALE-W)/2,x=(touch.enabled?980:1064)+offset;
     for(const object of this.progressParts)(object as Phaser.GameObjects.Text).setX(x);
     this.progress?.setX(x);this.timerText?.setX((touch.enabled?850:900)+offset);this.timerLabel?.setX((touch.enabled?852:902)+offset);
@@ -445,7 +445,7 @@ class Errand extends Phaser.Scene {
     const text=(y:number,value:string,size:number,color:string)=>{const label=this.add.text(W/2,y,value,{fontFamily:'Arial',fontSize:`${size}px`,color,align:'center'}).setOrigin(.5);screen.add(label);return label;};
     text(130,'TIME’S UP. BEER’S WARM.',34,'#ffd08b').setFontStyle('bold');
     text(175,'You died, great sadness.',20,'#ffac8c');
-    text(220,'180 seconds elapsed. No score saved.\nHold R for another run.',20,'#d5e8ec');
+    text(220,`${RUN_LIMIT_MS/1000} seconds elapsed. No score saved.\nHold R for another run.`,20,'#d5e8ec');
     screen.add(this.add.rectangle(W/2,525,W-100,3,0x537185));
     const body=this.add.sprite(165,525,'seth-timeout','ground-2').setOrigin(.5,1).setDisplaySize(190,225).setScrollFactor(0).setDepth(43);
     const angel=this.add.sprite(165,525,'seth-timeout','angel-0').setOrigin(.5,.9).setDisplaySize(128,190).setAlpha(0).setScrollFactor(0).setDepth(44);
@@ -701,7 +701,7 @@ class Errand extends Phaser.Scene {
     const score=finalScore(this.beer,this.photos,this.mishaps,this.latePhotos,this.elapsedMs,this.cheater);
     this.add.text(W/2,220,`SCORE: ${score.toLocaleString()}`,{fontFamily:'Arial',fontSize:'36px',fontStyle:'bold',color:this.cheater?'#ffac8c':'#80e5ce'}).setOrigin(.5).setScrollFactor(0).setDepth(21);
     const row=(y:number,text:string,color='#d5e8ec',size=17)=>this.add.text(W/2,y,text,{fontFamily:'Arial',fontSize:size+'px',color,align:'center'}).setOrigin(.5).setScrollFactor(0).setDepth(21);
-    row(270,this.cheater?'ELEVATOR SHORTCUT • CHEATER':`Time: ${(this.elapsedMs/1000).toFixed(1)}s • Time bonus: +${timeBonus(this.elapsedMs)}`,this.cheater?'#ffac8c':'#80e5ce',19);
+    row(270,this.cheater?'ELEVATOR SHORTCUT • CHEATER':`Time: ${formatRunSeconds(this.elapsedMs)} • Time bonus: +${timeBonus(this.elapsedMs)}`,this.cheater?'#ffac8c':'#80e5ce',19);
     row(309,`Falls: ${this.mishaps.falls}  •  Squished: ${this.mishaps.squishes}  •  Bumps: ${this.mishaps.bumps}`);
     row(340,`Photos: ${this.photos.size}/2 (${this.latePhotos.size} at half value)  •  Six-pack: ${this.beer?'Delivered':'Not delivered'}`);
     row(373,this.cheater?'Fixed shortcut score: −10,000. Objectives and time bonuses do not apply.':'1,000 finish + photos + beer − mishaps + time bonus','#a8becd',15);
@@ -720,7 +720,13 @@ soundToggle?.addEventListener('click',()=>{void gameAudio.unlock();gameAudio.tog
 
 const fullscreenToggle=document.getElementById('fullscreen-toggle') as HTMLButtonElement;
 const gameElement=document.getElementById('play-area')!;
-const touchViewport=installTouchViewport(gameElement,{onResize:()=>requestAnimationFrame(()=>game.scale.refresh()),onCancel:()=>touch.clear()});
+let menuPointer:number|null=null;
+function clearPlayPointers(){
+ touch.clear();const pointer=menuPointer;menuPointer=null;
+ const button=document.getElementById('touch-menu-open') as HTMLButtonElement;
+ try{if(pointer!==null&&button.hasPointerCapture(pointer))button.releasePointerCapture(pointer);}catch{/* Pointer already invalid after orientation change. */}
+}
+const touchViewport=installTouchViewport(gameElement,{onResize:()=>requestAnimationFrame(()=>game.scale.refresh()),onCancel:clearPlayPointers});
 async function toggleFullscreen(){
   fullscreenToggle.blur();
   try {
@@ -773,7 +779,7 @@ document.getElementById('touch-accept')!.addEventListener('click',()=>{touchOffe
 document.getElementById('touch-decline')!.addEventListener('click',()=>touchOffer.close());
 document.getElementById('touch-view')!.addEventListener('click',()=>{closeTouchMenu();void toggleFullscreen();});
 if(navigator.maxTouchPoints>0||matchMedia('(pointer: coarse)').matches)touchOffer.showModal();
-window.addEventListener('resize',()=>{touch.clear();requestAnimationFrame(()=>game.scale.refresh());});
+window.addEventListener('resize',()=>{clearPlayPointers();requestAnimationFrame(()=>game.scale.refresh());});
 
 document.querySelectorAll<HTMLButtonElement>('[data-proxy]').forEach(button=>{
   const source=document.getElementById(button.dataset.proxy!) as HTMLButtonElement;
@@ -795,9 +801,18 @@ function openTouchMenu(){
   touch.clear();if(!scene.paused&&!scene.won&&!scene.failed)scene.togglePause();
   (document.getElementById('touch-recall') as HTMLButtonElement).disabled=scene.won||scene.failed;
   document.querySelectorAll<HTMLButtonElement>('[data-proxy]').forEach(button=>{button.textContent=controlCopy(Array.from(document.getElementById(button.dataset.proxy!)!.childNodes).map(node=>node.nodeName==='BR'?'\n':node.textContent??'').join(''),touch.enabled);});
+  const resume=document.getElementById('touch-resume') as HTMLButtonElement;
+  const restart=touchMenu.querySelector<HTMLButtonElement>('[data-proxy="restart-run"]')!;
+  const ended=scene.won||scene.failed;
+  resume.hidden=ended;
+  resume.classList.toggle('menu-primary',!ended);
+  restart.classList.toggle('menu-primary',ended);
+  const primary=ended?restart:resume;
+  primary.parentElement!.prepend(primary);
   touchMenu.showModal();
+  primary.focus({preventScroll:true});
 }
-let menuPointer:number|null=null;
+
 menuButton.addEventListener('pointerdown',event=>{
  if(menuButton.disabled||menuPointer!==null)return;
  event.preventDefault();event.stopPropagation();menuPointer=event.pointerId;menuButton.setPointerCapture(event.pointerId);
@@ -860,3 +875,6 @@ function positionStartGame(){
  button.style.top=`${frame.top-parent.top+frame.height*.94}px`;
 }
 game.scale.on('resize',()=>requestAnimationFrame(positionStartGame));
+
+window.addEventListener('blur',clearPlayPointers);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)clearPlayPointers();});

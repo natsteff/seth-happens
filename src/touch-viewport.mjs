@@ -39,6 +39,13 @@ export function installTouchViewport(root,{win=window,doc=document,onResize=()=>
  };
  const types=['touchstart','touchmove','touchend','gesturestart','gesturechange','dblclick'];
  types.forEach(type=>root.addEventListener(type,guard,{passive:false}));
+ let orientationFrame;
+ const orientation=()=>{
+  onCancel();layout();if(locked)onResize();
+  if(orientationFrame!==undefined)win.cancelAnimationFrame?.(orientationFrame);
+  orientationFrame=win.requestAnimationFrame?.(()=>{orientationFrame=undefined;layout();if(locked)onResize();});
+ };
+ win.addEventListener('orientationchange',orientation);win.screen?.orientation?.addEventListener('change',orientation);
  win.addEventListener('resize',layout);win.visualViewport?.addEventListener('resize',layout);win.visualViewport?.addEventListener('scroll',layout);
  // The parent can resize after a toolbar/orientation change without another
  // visualViewport event. Refresh the scale against the settled parent box.
@@ -46,6 +53,8 @@ export function installTouchViewport(root,{win=window,doc=document,onResize=()=>
  observer?.observe(root);
  doc.addEventListener('fullscreenchange',sync);sync();
  return {sync,get locked(){return locked;},dispose(){
+  if(orientationFrame!==undefined)win.cancelAnimationFrame?.(orientationFrame);
+  win.removeEventListener('orientationchange',orientation);win.screen?.orientation?.removeEventListener('change',orientation);
   observer?.disconnect();root.classList.remove('touch-mode');sync();types.forEach(type=>root.removeEventListener(type,guard));
   win.removeEventListener('resize',layout);win.visualViewport?.removeEventListener('resize',layout);win.visualViewport?.removeEventListener('scroll',layout);doc.removeEventListener('fullscreenchange',sync);
  }};

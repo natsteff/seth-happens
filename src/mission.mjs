@@ -34,7 +34,7 @@ export const RESTART_HOLD_MS = 650;
 
 export const fallingAssignments = [[7,'piano'],[14,'anvil'],[20,'ac'],[23,'cooler']];
 
-export const RUN_LIMIT_MS=180000;
+export const RUN_LIMIT_MS=120000;
 export const SPRINT_SPEED=385;
 export function timeBonus(elapsedMs){return Math.max(0,120-Math.ceil(Math.max(0,elapsedMs)/1000))*100;}
 export function finalScore(beer,photos,mishaps,latePhotos,elapsedMs,cheater=false){
@@ -96,9 +96,11 @@ export function megaJumpVelocity(sinceFirstMs,velocityY){
 }
 export function countdownLabel(elapsedMs){
   const seconds=Math.max(0,Math.ceil((RUN_LIMIT_MS-elapsedMs)/1000));
-  return `${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`;
+  return `${seconds}s`;
 }
 
 export function fallingObjectHurts(motion){return motion.dropping===true;}
 
 export function fallingObjectSolid(motion){return motion?.landed===true;}
+
+export function formatRunSeconds(elapsedMs){return `${(Math.max(0,elapsedMs)/1000).toFixed(1)} seconds`;}

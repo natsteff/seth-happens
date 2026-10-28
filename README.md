@@ -1,20 +1,20 @@
 # Seth Happens - Beer Run, Elevator Out of Order
 
-**Version 0.3.6**
+**Version 0.3.7**
 
 ![Seth Happens - Beer Run, Elevator Out of Order](public/assets/title-logo.png)
 
 <p align="center">
-  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 0.3.6"></a>
+  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 0.3.7"></a>
 </p>
 
-**Play version 0.3.6** — Fullscreen highly recommended.
+**Play version 0.3.7** — Fullscreen highly recommended.
 
 **Now with mobile gameplay support!** Choose Default left/right arrows, Sliding Speed Runner or Game Stick. Customize arrow spacing and save your preferred setup. Select **Customize Controls** at the mobile start prompt or in the game menu. **For the best mobile experience, add the game as a Home Screen app and launch its icon in landscape. Direct mobile browser-tab play is not supported for further fixes.** See [How to add as a mobile app](#how-to-add-as-a-mobile-app).
 
 **Play Now on GitHub Pages uses local browser high scores only. Server-wide high scores cannot run on GitHub Pages; they require a server-enabled installation.**
 
-One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and Ellowyn before the three-minute deadline. See if you can find the 'easter egg'!
+One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and Ellowyn before the 120-second deadline. See if you can find the 'easter egg'!
 
 🎵 **[Listen to the entire video game soundtrack](https://suno.com/playlist/0ef61d61-9481-48f2-b67f-989cffdc9cca)**.
 
@@ -85,13 +85,15 @@ Five backing tracks are selectable in the SETH FM bar. **Arcade Staircase** is d
 
 ## Scoring and records
 
-- Finish within **180 seconds**: 1,000 base points.
+- Finish within **120 seconds**: 1,000 base points.
 - Each photo: +250; photos first recovered after reaching floor 26: +125.
 - Deliver the six-pack: +500.
 - Each fall, squish or bump: −10, counting each incident once.
 - Finish under **120 seconds**: +100 for each whole second saved. A 90-second finish earns +3,000. Fractional seconds round up before calculating the bonus.
-- At 180 seconds, the run fails and no score is saved.
+- At 120 seconds, the run fails and no score is saved.
 - Intro and high-score dialogs pause the clock. P pauses gameplay, countdown, animations and audio. Resume continues from the same point.
+
+The countdown displays seconds (120s → 0s), and run times in score screens use seconds. Existing scores and point totals are preserved. Historical finishes at or above the new limit are labelled “previous time limit”; they are not deleted or treated as newly valid runs.
 
 ## Optional server high scores
 
@@ -129,6 +131,13 @@ Gameplay station, warning/champion selections, music volume, music on/off and ov
 - Voices built using **[ElevenLabs](https://elevenlabs.io/)**.
 
 🎵 **[Listen to the entire video game soundtrack](https://suno.com/playlist/0ef61d61-9481-48f2-b67f-989cffdc9cca)**.
+
+## What’s new in 0.3.7
+
+- 120-second runs, with seconds shown in the timer and score times. Existing scores stay intact; scoring is unchanged.
+- SETH FM station displays on desktop and mobile, with track and playback state.
+- Restart leads the mobile menu after a run ends; compact landscape menus use three columns.
+- Touch input resets after orientation changes to prevent stuck controls. Physical iOS retesting is pending.
 
 ## What’s new in 0.3.6
 

@@ -208,3 +208,30 @@ html.touch-play-locked main>*:not(#play-area){visibility:hidden}
 /* Draw the hamburger consistently instead of relying on a platform glyph. */
 #touch-menu-open{font-size:0!important;display:grid;place-items:center}
 #touch-menu-open::before{content:"";display:block;width:18px;height:2px;background:currentColor;box-shadow:0 -6px 0 currentColor,0 6px 0 currentColor}
+@media(orientation:landscape){
+ #touch-menu{width:min(760px,96vw);padding:12px}
+ #touch-menu .touch-menu-actions{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+ #touch-menu h2{font-size:22px;margin-bottom:10px}
+ #touch-menu .touch-menu-actions button{font-size:12px;padding:6px;min-height:44px}
+ #touch-menu .browser-view-hint{font-size:11px;margin:9px 0}
+}
+@media(orientation:portrait){#touch-menu .touch-menu-actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(orientation:landscape){
+ /* Detailed help remains in the app-help/customization panes. */
+ #touch-menu>.browser-view-hint,#touch-menu>p:last-child{display:none}
+ #touch-menu #radio{margin-top:10px;padding:8px}
+}
+
+/* SETH FM receiver faceplate, shared by desktop and mobile settings. */
+#radio{background:linear-gradient(135deg,#1b3547,#102331);box-shadow:inset 0 1px #6b8e97,inset 0 -3px #081721}
+.radio-brand{border-right:1px solid #527782;padding-right:16px;white-space:nowrap}
+.radio-now{background:#0b242d;border:1px solid #436775;border-radius:6px;padding:8px 12px;box-shadow:inset 0 2px 5px #061820;font-family:monospace}
+.radio-now:before{content:'MUSIC • STATION DISPLAY';font-size:9px;letter-spacing:2px;color:#7ee0c5}
+.radio-now strong{text-shadow:0 0 7px #c3ab6040}
+#touch-menu .menu-primary{background:#326b51;order:-1}
+#touch-menu [hidden]{display:none}
+#touch-menu #touch-resume:not(.menu-primary){background:#24485b}
+#touch-menu #radio .radio-brand{display:block;font-size:12px;padding-right:8px}
+#touch-menu #radio .radio-brand span{display:none}
+#touch-menu #radio .radio-now{padding:5px 8px;min-width:120px}
+#touch-menu #radio .radio-now:before{font-size:8px;letter-spacing:1px}
