@@ -879,6 +879,14 @@ applyControls();
 // Follow the fitted canvas, rather than the radio + game wrapper or letterbox.
 function positionStartGame(){
  const button=document.getElementById('start-game')!;
+ const portrait=touch.enabled&&matchMedia('(orientation:portrait)').matches;
+ button.classList.toggle('portrait-start',portrait);
+ if(portrait){
+  if(button.parentElement!==gameElement){gameElement.insertBefore(button,document.getElementById('touch-controls'));requestAnimationFrame(()=>game.scale.refresh());}
+  button.style.removeProperty('left');button.style.removeProperty('top');return;
+ }
+ const gameContainer=document.getElementById('game')!;
+ if(button.parentElement!==gameContainer){gameContainer.append(button);requestAnimationFrame(()=>game.scale.refresh());}
  const canvas=document.querySelector('#game canvas');
  if(!canvas)return;
  const frame=canvas.getBoundingClientRect(),parent=document.getElementById('game')!.getBoundingClientRect();
