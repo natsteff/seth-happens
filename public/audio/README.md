@@ -39,3 +39,5 @@ Additional owner recordings: elevator.wav (ride, arrival synchronized to end), g
 Soundtrack: owner-supplied unmodified MP3 files in music/ (Arcade Staircase, The Beer of Destiny, Twenty-Six Floors of Celts, Go Seth Go, The Haunted Happy Hour). Runtime copies from Nate’s provided files; original intake hashes are retained privately by the project owner. No third-party download in this update. Countdown/outcome tracks are also owner supplied: The Final Warning, System Failure Imminent, Failure - Twenty-Six Floors for Nothing, Big Stupid Cheater, 26 Floors of Glory, Eye of the Stairwell. All runtime MP3s preserve supplied bytes; no Beer Delivery World Champion track is used.
 
 Version0.3.14: Mega Jump uses owner-supplied spring-boing.wav. Former Mega Jump grunt.wav joins ouch.wav/ahh.wav in equal-third ordinary object reactions; people and squishes remain separate. Countdown/champion use fixed defaults The Final Warning/26 Floors of Glory; alternate audio files retained.
+
+Version0.3.15: Mega Jump uses mega-jump-v2.mp3 at60%clip gain, leaving other effects unchanged. Previous spring-boing retained unused. Owner source audio preserved.

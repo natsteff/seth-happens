@@ -107,9 +107,12 @@ class GameAudio {
     const priority=kind==='mega'||kind==='quick'?0:kind==='start'?1:kind==='win'?5:kind==='hero'?4:kind==='fall'?3:2,now=performance.now();
     if(now<this.voiceUntil&&priority<this.voicePriority)return;
     this.stopVoice();
-    const source=this.context.createBufferSource();source.buffer=buffer;source.playbackRate.value=rate;source.connect(this.master);source.start();
+    const source=this.context.createBufferSource();source.buffer=buffer;source.playbackRate.value=rate;
+    const clipGain=kind==='mega'?this.context.createGain():undefined;
+    if(clipGain){clipGain.gain.value=.6;source.connect(clipGain);clipGain.connect(this.master);}else source.connect(this.master);
+    source.start();
     this.lastSpoken=text;this.playedKinds.add(kind);this.activeKind=kind;this.voiceSource=source;this.voiceStatus='playing';this.voiceUntil=now+buffer.duration/rate*1000;this.voicePriority=priority;
-    source.onended=()=>{source.disconnect();if(this.voiceSource===source){this.voiceSource=undefined;this.activeKind=undefined;this.voiceStatus='ended';}finished?.();};
+    source.onended=()=>{source.disconnect();clipGain?.disconnect();if(this.voiceSource===source){this.voiceSource=undefined;this.activeKind=undefined;this.voiceStatus='ended';}finished?.();};
   }
   play(cue:Cue,urgent=false) {
     this.lastCue=cue;

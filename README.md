@@ -145,6 +145,10 @@ Mobile images are **browser viewport previews**, not physical iPhone/Android scr
 | **Portrait gameplay · landscape recommended**<br>[<img src="docs/screenshots/mobile-portrait.jpg" width="220" alt="Portrait gameplay · landscape recommended">](docs/screenshots/mobile-portrait.jpg) | **Portrait menu**<br>[<img src="docs/screenshots/mobile-portrait-menu.jpg" width="220" alt="Portrait menu">](docs/screenshots/mobile-portrait-menu.jpg) |
 | **Portrait customization**<br>[<img src="docs/screenshots/mobile-portrait-customize.jpg" width="220" alt="Portrait customization">](docs/screenshots/mobile-portrait-customize.jpg) |  |
 
+## Maintenance update v0.3.15
+
+Mega Jump now uses the updated owner-supplied MP3 at60%clip volume. Open mobile dialogs refresh after rotation; transition taps and misplaced button clicks are suppressed. Browser rotation checks pass; physical iPhone retesting remains pending.
+
 ## Maintenance update v0.3.14
 
 Mega Jump uses the new spring-boing effect; the previous grunt joins random object-collision reactions. Timeout starts Seth and his angel at screen center. Mobile help/customization replace the menu and return to it, avoiding stacked dialogs; intermittent iPhone lock reports still need device retesting. The update button matches menu styling. Warning/champion music use fixed defaults, with alternate audio retained.

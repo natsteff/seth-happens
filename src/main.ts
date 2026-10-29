@@ -2,6 +2,7 @@ import { SummitReminder, REMINDER_MS } from './reminders.mjs';
 import { checkForUpdate } from './updates.mjs';
 import { loadSettings, saveSettings } from './preferences.mjs';
 import { mobileTrackLabel } from './mobile-track.mjs';
+import { installDialogRotationRecovery } from './dialog-rotation.mjs';
 import { ModalNavigation } from './modal-navigation.mjs';
 import { installOpeningGuard } from './dialog-input.mjs';
 import { controlCopy } from './control-copy.mjs';
@@ -741,6 +742,7 @@ function clearPlayPointers(){
  try{if(pointer!==null&&button.hasPointerCapture(pointer))button.releasePointerCapture(pointer);}catch{/* Pointer already invalid after orientation change. */}
 }
 const touchViewport=installTouchViewport(gameElement,{onResize:()=>requestAnimationFrame(()=>game.scale.refresh()),onCancel:clearPlayPointers});
+installDialogRotationRecovery(gameElement,{onCancel:clearPlayPointers});
 async function toggleFullscreen(){
   fullscreenToggle.blur();
   try {
