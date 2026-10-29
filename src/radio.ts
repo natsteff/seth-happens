@@ -1,5 +1,5 @@
 import {gameAudio} from './audio';
-import {championTracks,countdownTracks,radioShortcut} from './radio-playlist.mjs';
+import {radioShortcut} from './radio-playlist.mjs';
 import {scoresOpen} from './scoreboard';
 const radio=document.getElementById('radio')!;
 const music=gameAudio.music;
@@ -10,10 +10,7 @@ music.subscribe(()=>{
  const track=music.track;
  radio.dataset.countdown=String(music.countdown);
  radio.dataset.finished=String(!!music.outcome);
- (document.getElementById('radio-champion') as HTMLButtonElement).disabled=!!music.outcome;
- document.getElementById('radio-champion-title')!.textContent=championTracks[music.championSelected].title;
- for(const id of ['radio-prev','radio-next','radio-countdown'])(document.getElementById(id) as HTMLButtonElement).disabled=music.countdown||!!music.outcome;
- document.getElementById('radio-countdown-title')!.textContent=countdownTracks[music.countdownSelected].title;
+ for(const id of ['radio-prev','radio-next'])(document.getElementById(id) as HTMLButtonElement).disabled=music.countdown||!!music.outcome;
  document.getElementById('radio-track')!.textContent=(music.countdown||music.outcome)?track.title:`${music.selected+1} · ${track.title}`;
  document.getElementById('radio-description')!.textContent=track.description;
  document.getElementById('radio-state')!.textContent=music.status;
@@ -30,7 +27,7 @@ for(const type of ['keydown','keyup'])document.addEventListener(type,event=>{
  if(event.target instanceof Element&&event.target.closest('#radio input'))event.stopPropagation();
 },true);
 document.addEventListener('keydown',event=>{
- if(event.repeat||event.ctrlKey||event.metaKey||event.altKey||scoresOpen())return;
+ if(event.repeat||event.ctrlKey||event.metaKey||event.altKey||scoresOpen()||document.querySelector('dialog[open]'))return;
  if(event.target instanceof Element&&event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
  const action=radioShortcut(event.code);if(!action)return;
  if((music.countdown||music.outcome)&&!action.off)return;
@@ -38,7 +35,6 @@ document.addEventListener('keydown',event=>{
  if(action.off)music.off();else if(typeof action.track==='number')music.select(action.track);else if(typeof action.step==='number')music.step(action.step);
 });
 
-document.getElementById('radio-countdown')!.addEventListener('click',event=>{music.toggleCountdownTrack();(event.currentTarget as HTMLButtonElement).blur();});
 
 // Pointer use returns to gameplay; keyboard focus remains available for range keys.
 let volumePointer:number|undefined;
@@ -48,5 +44,3 @@ for(const type of ['pointerup','pointercancel'] as const)window.addEventListener
  volumePointer=undefined;
  requestAnimationFrame(()=>{if(document.activeElement===volume)volume.blur();});
 });
-
-document.getElementById('radio-champion')!.addEventListener('click',event=>{music.toggleChampionTrack();(event.currentTarget as HTMLButtonElement).blur();});

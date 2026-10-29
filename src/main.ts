@@ -2,6 +2,7 @@ import { SummitReminder, REMINDER_MS } from './reminders.mjs';
 import { checkForUpdate } from './updates.mjs';
 import { loadSettings, saveSettings } from './preferences.mjs';
 import { mobileTrackLabel } from './mobile-track.mjs';
+import { ModalNavigation } from './modal-navigation.mjs';
 import { installOpeningGuard } from './dialog-input.mjs';
 import { controlCopy } from './control-copy.mjs';
 import Phaser from 'phaser';
@@ -18,6 +19,7 @@ import { walkLayout, fallLayout } from './art-layout';
 import { REGULAR_JUMP_SPEED, megaJumpVelocity, countdownLabel, formatRunSeconds, fallingPose, timerWarningSecond, fallDecision, runExpired, RUN_LIMIT_MS, SPRINT_SPEED, timeBonus, finalScore, roadLandingIsFall, fallingStep, fallingObjectHurts, fallingObjectSolid, patrolX, EGG, fallingAssignments, floors, photoStops, beerSpot, recordMishap, RESTART_HOLD_MS, missing, missedPhotos, photoIndicator, LEVEL_WIDTH, GROUND_Y, ROAD, FLOOR_RISE, objectImpactReaction } from './mission.mjs';
 
 const W = 1100, H = 600;
+const modalNavigation=new ModalNavigation();
 // Render at display density, retaining the same logical play area and physics.
 const RENDER_SCALE = Math.min(3, Math.max(1, Math.ceil(
   Math.min(screen.width / W, screen.height / H) * window.devicePixelRatio)));
@@ -71,7 +73,7 @@ class Errand extends Phaser.Scene {
     this.load.image('cats','./assets/cats.png');
   }
   create() {
-    touch.clear();(document.getElementById('touch-menu') as HTMLDialogElement).close();(document.getElementById('touch-menu-open') as HTMLButtonElement).disabled=true;resetScoreEntry();this.scorePaused=false;this.controller=new ControllerInput();
+    modalNavigation.reset();touch.clear();(document.getElementById('touch-menu') as HTMLDialogElement).close();(document.getElementById('touch-menu-open') as HTMLButtonElement).disabled=true;resetScoreEntry();this.scorePaused=false;this.controller=new ControllerInput();
     this.input.keyboard!.enabled=true;
     this.elapsedMs=0;this.lastTimerBeep=0;this.failed=false;this.cheater=false;this.riding=false;this.rideTween=undefined;
     this.jumpStarted=-1;this.megaUsed=false;this.jumpCount=0;this.paused=false;this.eggStage=0;this.eggPreviousX=75;this.eggBlocks=[];
@@ -372,7 +374,7 @@ class Errand extends Phaser.Scene {
     this.mishaps=recordMishap(this.mishaps,reaction);
     this.jumpStarted=-1;this.megaUsed=false;
     this.retries++;(this.player.body as Phaser.Physics.Arcade.Body).reset(this.checkpoint.x,this.checkpoint.y);this.player.setVelocity(0,0);this.immuneUntil=time+1400;this.lastGround=-1000;this.jumpUntil=0;
-    gameAudio.play('impact');if(reaction==='fall'&&!this.fallSoundPlayed)gameAudio.speak('Aaaaaah!','fall');if(reaction==='squish')gameAudio.speak('Squish!','squish');if(reaction==='person')gameAudio.speak('Well, excuse you.','person');if(reaction==='object'){const kind=objectImpactReaction(Math.random());gameAudio.speak(kind==='ouch'?'Ouch!':'Ahh!',kind);}this.cameras.main.shake(100,.003);this.say(reason+' Beer and photos saved.');this.fallSoundPlayed=false;
+    gameAudio.play('impact');if(reaction==='fall'&&!this.fallSoundPlayed)gameAudio.speak('Aaaaaah!','fall');if(reaction==='squish')gameAudio.speak('Squish!','squish');if(reaction==='person')gameAudio.speak('Well, excuse you.','person');if(reaction==='object'){const kind=objectImpactReaction(Math.random());gameAudio.speak(kind==='ouch'?'Ouch!':kind==='ahh'?'Ahh!':'Grunt!',kind);}this.cameras.main.shake(100,.003);this.say(reason+' Beer and photos saved.');this.fallSoundPlayed=false;
   }
   mobileTrack!:Phaser.GameObjects.Text;
   keyboardHint!:Phaser.GameObjects.Text;
@@ -456,8 +458,8 @@ class Errand extends Phaser.Scene {
     text(175,'You died, great sadness.',20,'#ffac8c');
     text(220,`${RUN_LIMIT_MS/1000} seconds elapsed. No score saved.\nHold R for another run.`,20,'#d5e8ec');
     screen.add(this.add.rectangle(W/2,525,W-100,3,0x537185));
-    const body=this.add.sprite(165,525,'seth-timeout','ground-2').setOrigin(.5,1).setDisplaySize(190,225).setScrollFactor(0).setDepth(43);
-    const angel=this.add.sprite(165,525,'seth-timeout','angel-0').setOrigin(.5,.9).setDisplaySize(128,190).setAlpha(0).setScrollFactor(0).setDepth(44);
+    const body=this.add.sprite(W/2,525,'seth-timeout','ground-2').setOrigin(.5,1).setDisplaySize(190,225).setScrollFactor(0).setDepth(43);
+    const angel=this.add.sprite(W/2,525,'seth-timeout','angel-0').setOrigin(.5,.9).setDisplaySize(128,190).setAlpha(0).setScrollFactor(0).setDepth(44);
     screen.add([body,angel]);this.timeoutAngel=angel;angel.play('timeout-angel');
     this.time.delayedCall(1000,()=>{
       this.failurePhase='rising';
@@ -607,7 +609,7 @@ class Errand extends Phaser.Scene {
         ?megaJumpVelocity(this.elapsedMs-this.jumpStarted,body.velocity.y):null;
       if(boost!==null){
         this.player.setVelocityY(boost);this.megaUsed=true;this.jumpUntil=0;
-        gameAudio.speak('Mega jump','grunt',undefined,false,this.jumpCount%2?.97:1.04);
+        gameAudio.speak('Mega jump','mega');
       }else{
         if(jumpPressed)this.jumpUntil=time+130;
         if(this.jumpUntil>time&&time-this.lastGround<110){
@@ -841,7 +843,7 @@ menuButton.addEventListener('click',event=>{event.stopPropagation();if(event.det
 document.getElementById('touch-resume')!.addEventListener('click',()=>closeTouchMenu());
 document.getElementById('touch-recall')!.addEventListener('click',()=>{closeTouchMenu();touch.edges.add('recall');});
 touchMenu.addEventListener('cancel',event=>{event.preventDefault();closeTouchMenu();});
-for(const type of ['keydown','keyup'])document.addEventListener(type,event=>{if(touchMenu.open)event.stopPropagation();},true);
+for(const type of ['keydown','keyup'])document.addEventListener(type,event=>{if(touchMenu.open&&!(event.target instanceof Element&&event.target.closest('dialog')))event.stopPropagation();},true);
 
 // Control configuration is local to this browser and never touches scores.
 const controlSettings=document.getElementById('control-settings') as HTMLDialogElement;
@@ -861,7 +863,7 @@ function applyControls(){
 }
 function previewControls(){document.querySelectorAll<HTMLInputElement>('input[name=movement-style]').forEach(radio=>{radio.checked=radio.value===styleSelect.value;});document.getElementById('style-detail')!.textContent=styleSelect.value==='stick'?'Up/down has no game action. Jump and Action stay separate.':'Jump and Action stay separate.';document.getElementById('spacing-value')!.textContent=spacingInput.value;document.getElementById('spacing-preview')!.style.gap=`${8+(Number(spacingInput.value)-1)*8}px`;spacingInput.disabled=styleSelect.value!=='default';quickSprintInput.disabled=styleSelect.value!=='default';}
 const controlInputGuard=installOpeningGuard(controlSettings);
-function openControls(first=false){document.getElementById('controls-save')!.textContent=first?'Save and continue':'Save controls';customizeFromOffer=first;touch.clear();styleSelect.value=controlStyle;spacingInput.value=String(controlSpacing);quickSprintInput.checked=controlQuickSprint;previewControls();controlSettings.showModal();controlSettings.focus({preventScroll:true});controlInputGuard.arm();}
+function openControls(first=false){document.getElementById('controls-save')!.textContent=first?'Save and continue':'Save controls';customizeFromOffer=first;touch.clear();styleSelect.value=controlStyle;spacingInput.value=String(controlSpacing);quickSprintInput.checked=controlQuickSprint;previewControls();modalNavigation.open(controlSettings,touchMenu,controlSettings);controlInputGuard.arm();}
 document.getElementById('touch-customize-first')!.addEventListener('click',()=>{touchOffer.close();openControls(true);});
 document.getElementById('touch-customize')!.addEventListener('click',()=>openControls());
 document.querySelectorAll<HTMLInputElement>('input[name=movement-style]').forEach(radio=>radio.addEventListener('change',()=>{if(radio.checked){styleSelect.value=radio.value;previewControls();}}));
@@ -870,9 +872,11 @@ document.getElementById('controls-reset')!.addEventListener('click',()=>{styleSe
 document.getElementById('controls-save')!.addEventListener('click',()=>{controlStyle=styleSelect.value;controlSpacing=Number(spacingInput.value);controlQuickSprint=quickSprintInput.checked;applyControls();try{localStorage.setItem('seth-touch-controls',JSON.stringify({style:controlStyle,spacing:controlSpacing,quickSprint:controlQuickSprint}));}catch{/* Session controls still work. */}controlSettings.close();if(customizeFromOffer){setTouch(true);void toggleFullscreen();}});
 controlSettings.addEventListener('cancel',()=>{if(customizeFromOffer)requestAnimationFrame(()=>touchOffer.showModal());});
 const installHelp=document.getElementById('install-help') as HTMLDialogElement;
-document.querySelectorAll('[data-install-help]').forEach(button=>button.addEventListener('click',()=>{touch.clear();installHelp.showModal();}));
+document.querySelectorAll('[data-install-help]').forEach(button=>button.addEventListener('click',()=>{touch.clear();modalNavigation.open(installHelp,touchMenu.open?touchMenu:touchOffer,document.getElementById('install-close'));}));
 document.getElementById('install-close')!.addEventListener('click',()=>installHelp.close());
-for(const type of ['keydown','keyup'])document.addEventListener(type,event=>{if(controlSettings.open||installHelp.open||touchOffer.open)event.stopPropagation();},true);
+for(const dialog of [controlSettings,installHelp])dialog.addEventListener('close',()=>modalNavigation.restore(dialog));
+// Let native dialog controls receive keys, then stop them reaching gameplay.
+for(const dialog of [touchMenu,controlSettings,installHelp,touchOffer])for(const type of ['keydown','keyup'])dialog.addEventListener(type,event=>event.stopPropagation());
 document.getElementById('start-game')!.addEventListener('click',()=>{gameAudio.unlock();const scene=game.scene.scenes[0] as Errand;void scene?.startIntro();});
 applyControls();
 

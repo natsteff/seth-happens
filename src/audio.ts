@@ -104,7 +104,7 @@ class GameAudio {
     if((this.muted&&!allowMuted)||!this.context||!this.master)return;
     const buffer=this.voiceBuffers.get(kind);
     if(!buffer){this.voiceStatus='not-loaded';return;}
-    const priority=kind==='grunt'||kind==='quick'?0:kind==='start'?1:kind==='win'?5:kind==='hero'?4:kind==='fall'?3:2,now=performance.now();
+    const priority=kind==='mega'||kind==='quick'?0:kind==='start'?1:kind==='win'?5:kind==='hero'?4:kind==='fall'?3:2,now=performance.now();
     if(now<this.voiceUntil&&priority<this.voicePriority)return;
     this.stopVoice();
     const source=this.context.createBufferSource();source.buffer=buffer;source.playbackRate.value=rate;source.connect(this.master);source.start();

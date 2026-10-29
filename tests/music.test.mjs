@@ -7,11 +7,11 @@ const source=stripTypeScriptTypes(readFileSync(new URL('../src/music.ts',import.
 const {MusicRadio}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 globalThis.document={baseURI:'http://localhost/',createElement:()=>({paused:true,currentTime:0,events:{},plays:0,addEventListener(name,fn){(this.events[name]??=[]).push(fn);},pause(){this.paused=true;},play(){this.plays++;this.paused=false;return Promise.resolve();}})};
 test('countdown switches once at 30, locks selection, retains mute/off, resets on restart',()=>{
- const m=new MusicRadio();m.beginRun();m.startRun();m.toggleCountdownTrack();
+ const m=new MusicRadio();m.beginRun();m.startRun();
  m.updateRemaining(31);assert.equal(m.countdown,false);
- m.updateRemaining(30);assert.equal(m.track.title,'System Failure Imminent');
- assert.match(m.audio.src,/system-failure-imminent/);assert.equal(m.status,'Hurry, wrap it up or die!');
- m.select(4);m.step(1);m.toggleCountdownTrack();assert.equal(m.selected,0);assert.equal(m.countdownSelected,1);
+ m.updateRemaining(30);assert.equal(m.track.title,'The Final Warning');
+ assert.match(m.audio.src,/the-final-warning/);assert.equal(m.status,'Hurry, wrap it up or die!');
+ m.select(4);m.step(1);assert.equal(m.selected,0);assert.equal(m.countdownSelected,0);
  m.audio.currentTime=8;m.updateRemaining(29);assert.equal(m.audio.currentTime,8);
  m.off();assert.equal(m.enabled,false);m.beginRun();assert.equal(m.countdown,false);assert.equal(m.track.title,'Arcade Staircase');assert.match(m.audio.src,/arcade-staircase/);
 });
@@ -26,8 +26,8 @@ test('music gain stays selected and pause holds stop playback independently',asy
 test('finish songs loop through score dialogs, cheater plays once, restart restores gameplay',t=>{
  t.mock.timers.enable({apis:['setTimeout']});
  const m=new MusicRadio();m.beginRun();m.startRun();assert.equal(m.volume,.75);
- m.toggleChampionTrack();m.finishRun('success');assert.equal(m.track.title,'Eye of the Stairwell');assert.equal(m.audio.loop,true);
- m.setHold('scores',true);assert.notEqual(m.status,'Paused');m.select(4);assert.equal(m.track.title,'Eye of the Stairwell');
+ m.finishRun('success');assert.equal(m.track.title,'26 Floors of Glory');assert.equal(m.audio.loop,true);
+ m.setHold('scores',true);assert.notEqual(m.status,'Paused');m.select(4);assert.equal(m.track.title,'26 Floors of Glory');
  m.finishRun('failure');assert.match(m.track.title,/Failure/);assert.equal(m.audio.loop,true);
  m.finishRun('cheater');assert.equal(m.track.title,'Big Stupid Cheater');assert.equal(m.audio.loop,false);
  m.beginRun();assert.equal(m.outcome,null);assert.equal(m.audio.loop,true);assert.equal(m.track.title,'Arcade Staircase');
@@ -68,7 +68,7 @@ test('restart, off and outcomes clean up both crossfade decks without late playb
  t.mock.timers.enable({apis:['setInterval']});
  const context={state:'running',currentTime:0,createGain:()=>({connect(){},gain:{value:1,cancelScheduledValues(){},setTargetAtTime(v){this.value=v;}}}),createMediaElementSource:()=>({connect(){}})};
  const m=new MusicRadio();m.attach(context,{});m.startRun();await Promise.resolve();let old=m.audio;
- m.toggleCountdownTrack();m.updateRemaining(30);await Promise.resolve();assert.match(m.audio.src,/system-failure-imminent/);m.beginRun();assert.equal(old.paused,true);assert.equal(m.audio.paused,true);context.currentTime=5;t.mock.timers.tick(5000);assert.match(m.audio.src,/arcade-staircase/);assert.equal(m.audio.paused,true);
+ m.updateRemaining(30);await Promise.resolve();assert.match(m.audio.src,/the-final-warning/);m.beginRun();assert.equal(old.paused,true);assert.equal(m.audio.paused,true);context.currentTime=5;t.mock.timers.tick(5000);assert.match(m.audio.src,/arcade-staircase/);assert.equal(m.audio.paused,true);
  m.startRun();await Promise.resolve();old=m.audio;m.updateRemaining(30);await Promise.resolve();m.off();assert.equal(old.paused,true);assert.equal(m.audio.paused,true);m.toggle();await Promise.resolve();assert.equal(m.audio.paused,false);m.finishRun('failure');assert.equal(old.paused,true);assert.match(m.audio.src,/failure-/);m.endRun();
 });
 
@@ -90,4 +90,10 @@ test('rejected second-deck playback falls back to the previously playing element
  m.elements.find(element=>element!==active).play=()=>Promise.reject(new Error('NotAllowedError'));
  m.updateRemaining(30);await Promise.resolve();await Promise.resolve();await Promise.resolve();
  assert.equal(m.audio,active);assert.match(active.src,/the-final-warning/);assert.equal(active.paused,false);m.endRun();
+});
+
+test('legacy alternate outcome settings cannot change fixed default tracks or gameplay station',()=>{
+ const old=globalThis.localStorage;
+ globalThis.localStorage={getItem:()=>JSON.stringify({countdownTrack:1,championTrack:1,track:3,volume:.4}),setItem(){}};
+ try{const m=new MusicRadio();assert.equal(m.selected,3);assert.equal(m.volume,.4);m.beginRun();m.startRun();m.updateRemaining(30);assert.equal(m.track.title,'The Final Warning');m.finishRun('success');assert.equal(m.track.title,'26 Floors of Glory');m.endRun();}finally{globalThis.localStorage=old;}
 });

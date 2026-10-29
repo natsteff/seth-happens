@@ -29,3 +29,15 @@ test('real effect/voice/location paths never automate music or master gain or pa
  assert.deepEqual([master.value,musicGain.value,master.writes.length,musicGain.writes.length],snapshot);
  assert.equal(musicGain.value,.67);
 });
+
+test('Mega Jump yields to collision reactions, including the former jump grunt, and respects mute/pause',async()=>{
+ const {gameAudio}=await import(data(source));gameAudio.beginRun();await gameAudio.unlock();
+ gameAudio.speak('Mega jump','mega');assert.equal(gameAudio.lastSpoken,'Mega jump');
+ assert.ok(gameAudio.playedKinds.has('mega'));
+ gameAudio.speak('Grunt!','grunt');assert.equal(gameAudio.lastSpoken,'Grunt!');
+ gameAudio.speak('Mega jump','mega');assert.equal(gameAudio.lastSpoken,'Grunt!','jump cannot interrupt collision');
+ await gameAudio.setPaused(true);assert.equal(gameAudio.state,'suspended');
+ await gameAudio.setPaused(false);assert.equal(gameAudio.state,'running');
+ gameAudio.toggle();const before=starts;gameAudio.speak('Mega jump','mega');gameAudio.speak('Grunt!','grunt');
+ assert.equal(starts,before,'muted reactions start no audio');gameAudio.toggle();
+});

@@ -93,7 +93,7 @@ header .game-subtitle{text-align:left;color:#ffd08b;font-size:16px;margin:8px 0 
 .touch-actions span{display:block;font-size:8px;margin-top:4px}
 #touch-menu{width:min(560px,94vw);max-height:90dvh;overflow:auto;border:2px solid #79dec5;border-radius:14px;background:#12253c;color:#e8f0ef;padding:18px}
 #touch-menu::backdrop{background:#081322aa}#touch-menu h2{margin:0 0 14px;color:#ffd08b}#touch-menu p{font-size:12px;line-height:1.5;color:#b9d1db}
-.touch-menu-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.touch-menu-actions button{min-height:44px;padding:8px;border:1px solid #628d9b;border-radius:8px;background:#24485b;color:#e7f7f1;font-weight:bold;white-space:pre-line}.touch-menu-actions button:disabled{opacity:.45}
+.touch-menu-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.touch-menu-actions button,#check-updates{min-height:44px;padding:8px;border:1px solid #628d9b;border-radius:8px;background:#24485b;color:#e7f7f1;font-weight:bold;white-space:pre-line}.touch-menu-actions button:disabled{opacity:.45}
 #touch-resume{background:#326b51}#touch-menu #radio{margin-top:14px;padding:10px;gap:10px;border-radius:8px}#touch-menu .radio-brand{display:none}#touch-menu .radio-now{min-width:160px}#touch-menu .radio-actions{flex-wrap:wrap}#touch-menu .radio-actions input{width:95px}
 #play-area.expanded:not(.touch-mode) #fullscreen-exit{display:block;position:absolute;right:12px;bottom:12px;z-index:10;padding:10px}
 .touch-mode #fullscreen-exit{display:none!important}#touch-stick:focus-visible,#touch-controls button:focus-visible,#touch-menu button:focus-visible{outline:3px solid #ffd08b;outline-offset:3px}
@@ -212,7 +212,7 @@ html.touch-play-locked main>*:not(#play-area){visibility:hidden}
  #touch-menu{width:min(760px,96vw);padding:12px}
  #touch-menu .touch-menu-actions{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
  #touch-menu h2{font-size:22px;margin-bottom:10px}
- #touch-menu .touch-menu-actions button{font-size:12px;padding:6px;min-height:44px}
+ #touch-menu .touch-menu-actions button,#check-updates{font-size:12px;padding:6px;min-height:44px}
  #touch-menu .browser-view-hint{font-size:11px;margin:9px 0}
 }
 @media(orientation:portrait){#touch-menu .touch-menu-actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -236,7 +236,7 @@ html.touch-play-locked main>*:not(#play-area){visibility:hidden}
 #touch-menu #radio .radio-now{padding:5px 8px;min-width:120px}
 #touch-menu #radio .radio-now:before{font-size:8px;letter-spacing:1px}
 
-#update-settings{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:8px;font-size:12px;color:#b9d1db}#update-settings input{accent-color:#7ee0c5}#update-settings button{min-height:36px;padding:5px 10px}#update-status{font-size:11px}
+#update-settings{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:8px;font-size:12px;color:#b9d1db}#update-settings input{accent-color:#7ee0c5}#update-settings button{min-height:44px;padding:8px 12px;cursor:pointer}#update-status{font-size:11px}
 
 #splash-version{display:block;font-size:11px;font-weight:normal;line-height:14px;color:#b9d1db}
 

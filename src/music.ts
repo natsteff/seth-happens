@@ -83,8 +83,6 @@ export class MusicRadio{
   if(outcome==='cheater'){this.holds.add('voice-lead-in');this.leadInTimer=setTimeout(()=>{this.leadInTimer=undefined;this.holds.delete('voice-lead-in');this.refresh();},2000);}
   this.refresh();}
  get track(){if(this.outcome==='success')return championTracks[this.championSelected];if(this.outcome==='failure')return failureTrack;if(this.outcome==='cheater')return cheaterTrack;return this.countdown?countdownTracks[this.countdownSelected]:radioTracks[this.selected];}
- toggleCountdownTrack(){if(this.countdown||this.outcome)return;this.countdownSelected=1-this.countdownSelected;this.prepareCountdown();this.save();this.notify();}
- toggleChampionTrack(){if(this.outcome)return;this.championSelected=1-this.championSelected;this.save();this.notify();}
  updateRemaining(seconds:number){
   if(!this.running||this.outcome||this.countdown||seconds>30||seconds<=0)return;
   const outgoing=this.audio,canBlend=!this.singleDeck&&!this.blocked&&!outgoing.paused&&this.context?.state==='running';

@@ -1,7 +1,8 @@
 export const PREFERENCES_KEY='seth-happens.preferences.v1';
 export const preferenceDefaults={track:0,countdownTrack:0,championTrack:0,volume:.75,musicEnabled:true,muted:false,autoUpdate:true};
 function valid(key,value){
- if(['track','countdownTrack','championTrack'].includes(key))return Number.isInteger(value)&&value>=0&&value<(key==='track'?5:2);
+ if(['countdownTrack','championTrack'].includes(key))return value===0;
+ if(key==='track')return Number.isInteger(value)&&value>=0&&value<5;
  if(key==='volume')return typeof value==='number'&&Number.isFinite(value)&&value>=0&&value<=1;
  return typeof value==='boolean';
 }

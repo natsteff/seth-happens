@@ -23,7 +23,7 @@ One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and
 - **GO FULL SCREEN!** Bigger Seth, bigger jumps, bigger questionable decisions.
 - Find the **easter egg cheat**—see if you can discover it yourself!
 - Experiment with the **radio stations and tracks**.
-- Try different **30-second warning** and **Champion Track** selections.
+- Final-warning and champion music use fixed defaults; gameplay music stations remain selectable.
 - **Don’t fall…or do, because it’s hilarious.**
 - **Let time run out and see what happens.**
 
@@ -145,13 +145,17 @@ Mobile images are **browser viewport previews**, not physical iPhone/Android scr
 | **Portrait gameplay · landscape recommended**<br>[<img src="docs/screenshots/mobile-portrait.jpg" width="220" alt="Portrait gameplay · landscape recommended">](docs/screenshots/mobile-portrait.jpg) | **Portrait menu**<br>[<img src="docs/screenshots/mobile-portrait-menu.jpg" width="220" alt="Portrait menu">](docs/screenshots/mobile-portrait-menu.jpg) |
 | **Portrait customization**<br>[<img src="docs/screenshots/mobile-portrait-customize.jpg" width="220" alt="Portrait customization">](docs/screenshots/mobile-portrait-customize.jpg) |  |
 
+## Maintenance update v0.3.14
+
+Mega Jump uses the new spring-boing effect; the previous grunt joins random object-collision reactions. Timeout starts Seth and his angel at screen center. Mobile help/customization replace the menu and return to it, avoiding stacked dialogs; intermittent iPhone lock reports still need device retesting. The update button matches menu styling. Warning/champion music use fixed defaults, with alternate audio retained.
+
 ## Final-warning and champion music
 
-The **30sec Remaining Track** selector offers **The Final Warning** (default) and **System Failure Imminent**. At 30 seconds remaining, desktop gameplay music crossfades into your selected warning track over **1.25 seconds**; touch devices switch using the same audio element for reliability. In both cases, the radio turns red and station switching locks.
+The final 30 seconds use **The Final Warning**. At 30 seconds remaining, desktop gameplay music crossfades into the warning track over **1.25 seconds**; touch devices switch using the same audio element for reliability. In both cases, the radio turns red and station switching locks.
 
-**Champion Track** selects **26 Floors of Glory** (default) or **Eye of the Stairwell**. It loops after successful completion and through high-score entry. Timeout has a separate looping failure track. Music volume/mute still apply, and effects play over the music.
+Successful completion uses **26 Floors of Glory**. It loops after successful completion and through high-score entry. Timeout has a separate looping failure track. Music volume/mute still apply, and effects play over the music.
 
-Gameplay station, warning/champion selections, music volume, music on/off and overall sound are remembered in this browser. A saved volume overrides the **75%** first-visit default. Clearing site data removes preferences.
+Gameplay station, music volume, music on/off and overall sound are remembered in this browser. A saved volume overrides the **75%** first-visit default. Clearing site data removes preferences. Warning/champion selectors have been removed; older alternate selections are ignored. Alternate audio files are retained for possible future use.
 
 ## Music, sound and voice credits
 
