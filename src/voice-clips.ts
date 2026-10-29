@@ -7,7 +7,7 @@ export const voiceClips: Record<VoiceReaction,string> = {
   quick: `${base}quick-jump.wav`,
   cheater: `${base}cheater.wav`,
   grunt: `${base}grunt.wav`,
-  mega: `${base}mega-jump-v2.mp3`,
+  mega: `${base}mega-jump-v3.wav`,
   fall: `${base}fall.wav`,
   person: `${base}person.wav`,
   beer: `${base}beer.wav`,

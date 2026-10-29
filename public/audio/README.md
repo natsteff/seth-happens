@@ -41,3 +41,5 @@ Soundtrack: owner-supplied unmodified MP3 files in music/ (Arcade Staircase, The
 Version0.3.14: Mega Jump uses owner-supplied spring-boing.wav. Former Mega Jump grunt.wav joins ouch.wav/ahh.wav in equal-third ordinary object reactions; people and squishes remain separate. Countdown/champion use fixed defaults The Final Warning/26 Floors of Glory; alternate audio files retained.
 
 Version0.3.15: Mega Jump uses mega-jump-v2.mp3 at60%clip gain, leaving other effects unchanged. Previous spring-boing retained unused. Owner source audio preserved.
+
+Version0.3.16: Mega Jump uses edited mega-jump-v3.wav at original level; per-clip60%gain removed. Other sounds unchanged; older resources retained.

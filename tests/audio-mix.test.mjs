@@ -34,7 +34,7 @@ test('Mega Jump yields to collision reactions, including the former jump grunt, 
  const {gameAudio}=await import(data(source));gameAudio.beginRun();await gameAudio.unlock();
  const beforeGains=gains.length,masterBefore=[gains[0].gain.value,gains[0].gain.writes.length];
  gameAudio.speak('Mega jump','mega');assert.equal(gameAudio.lastSpoken,'Mega jump');
- assert.equal(gains.length,beforeGains+1);assert.equal(gains.at(-1).gain.value,.6);
+ assert.equal(gains.length,beforeGains,'Mega Jump uses the normal full-level voice path with no clip attenuation');
  assert.deepEqual([gains[0].gain.value,gains[0].gain.writes.length],masterBefore);
  const megaGains=gains.length;
  assert.ok(gameAudio.playedKinds.has('mega'));
