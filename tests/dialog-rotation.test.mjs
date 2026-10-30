@@ -5,7 +5,7 @@ import {ModalNavigation} from '../src/modal-navigation.mjs';
 function setup(){
  let time=0,id=0,focuses=0,cancels=0,settlements=0;const callbacks=new Map(),events=new Map(),input=new Map(),closed=[];
  const focus={focus(){focuses++;}};
- const make=()=>({open:false,scrollTop:31,shows:0,close(){this.open=false;closed.push(this);},showModal(){this.open=true;this.shows++;},contains:x=>x===focus});
+ const make=()=>({open:false,scrollTop:31,shows:0,getBoundingClientRect(){return {left:0,top:0,width:390,height:700};},close(){this.open=false;closed.push(this);},showModal(){this.open=true;this.shows++;},contains:x=>x===focus});
  const menu=make(),child=make();menu.open=true;
  const win={innerWidth:844,innerHeight:390,addEventListener:(k,fn)=>events.set(k,fn),removeEventListener:k=>events.delete(k),setTimeout:fn=>{callbacks.set(++id,fn);return id;},clearTimeout:n=>callbacks.delete(n),requestAnimationFrame:fn=>{callbacks.set(++id,fn);return id;},cancelAnimationFrame:n=>callbacks.delete(n)};
  const root={querySelectorAll:()=>[menu,child].filter(x=>x.open),addEventListener:(k,fn)=>input.set(k,fn),removeEventListener:k=>input.delete(k)};
@@ -15,9 +15,9 @@ function setup(){
  const send=(type,extra={})=>{const event={type,target,detail:1,pointerId:5,clientX:20,clientY:20,preventDefault(){this.blocked=true;},stopImmediatePropagation(){},...extra};input.get(type)(event);return event;};
  return {win,menu,child,nav,recovery,events,input,flush,send,setTime:v=>time=v,get focuses(){return focuses;},get cancels(){return cancels;},get settlements(){return settlements;}};
 }
-test('landscape menu rotation refreshes same modal without changing pause/navigation or focused control',()=>{
+test('landscape menu rotation keeps the same native modal open without resetting focus or navigation',()=>{
  const s=setup();s.win.innerWidth=390;s.win.innerHeight=844;s.events.get('resize')();s.events.get('orientationchange')();s.flush();
- assert.equal(s.menu.open,true);assert.equal(s.menu.shows,1);assert.equal(s.child.open,false);assert.equal(s.menu.scrollTop,31);assert.equal(s.focuses,1);assert.ok(s.cancels>=1);
+ assert.equal(s.menu.open,true);assert.equal(s.menu.shows,0);assert.equal(s.child.open,false);assert.equal(s.menu.scrollTop,31);assert.equal(s.focuses,0);assert.ok(s.cancels>=1);
  s.setTime(300);assert.equal(s.send('click').blocked,undefined);
 });
 test('rotation rejects carry-through and stale wrong-button coordinates, preserves keyboard access',()=>{
@@ -37,4 +37,14 @@ test('unchanged resize does not re-present modal and disposal cancels pending wo
 
 test('rotation settles input geometry even during active play without an open dialog',()=>{
  const s=setup();s.menu.open=false;s.events.get('orientationchange')();s.flush();assert.equal(s.settlements,1);assert.equal(s.menu.shows,0);assert.ok(s.cancels>0);
+});
+
+test('portrait landscape portrait rotations keep modal state and real taps working each time',()=>{
+ const s=setup();
+ for(const [width,height,time] of [[390,844,1000],[844,390,2000],[390,844,3000]]){
+  s.win.innerWidth=width;s.win.innerHeight=height;s.events.get('resize')();s.flush();s.setTime(time);
+  assert.equal(s.menu.open,true);assert.equal(s.child.open,false);assert.equal(s.menu.shows,0);
+  assert.equal(s.send('pointerdown').blocked,undefined);assert.equal(s.send('pointerup').blocked,undefined);assert.equal(s.send('click').blocked,undefined);
+ }
+ assert.equal(s.settlements,3);
 });

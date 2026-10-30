@@ -250,3 +250,12 @@ html.touch-play-locked main>*:not(#play-area){visibility:hidden}
 .score-dialog[data-entry=true] .score-heading h2{font-size:18px;margin:0 0 6px}.score-dialog[data-entry=true] .score-eyebrow,.score-dialog[data-entry=true]>.score-actions,.score-dialog[data-entry=true]>.score-list,.score-dialog[data-entry=true]>p:not([role=status]){display:none}
 .score-dialog #score-entry{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.score-dialog #score-entry[hidden],.score-dialog [hidden]{display:none!important}
 .score-dialog #score-entry .entry-fields{display:flex;align-items:center;gap:8px;flex:1;min-width:150px}.score-dialog #score-entry input{min-width:0;width:100%;height:44px;margin:0;font-size:16px}.score-dialog #score-entry button{min-height:44px;font-size:14px}.score-dialog .saved-name{display:flex;gap:10px;align-items:center}.score-dialog[data-entry=true] [role=status]{margin:4px 0;font-size:12px}.score-dialog #skip-score{font-size:12px}
+
+/* Expanded touch play owns the document viewport. Keep its surface in normal
+   flow so rotation cannot leave a separate fixed layer with stale hit regions. */
+html.touch-play-locked main{margin:0;padding:0;max-width:none;width:100%}
+html.touch-play-locked main>*:not(#play-area):not(#live-status){display:none}
+html.touch-play-locked #play-area.expanded.touch-mode{position:relative;inset:auto;left:auto;top:auto;margin:0}
+/* Native modal semantics remain; use the same document coordinate space. */
+.touch-mode dialog:modal{position:absolute}
+.touch-mode .score-dialog[data-entry=true]{position:absolute}

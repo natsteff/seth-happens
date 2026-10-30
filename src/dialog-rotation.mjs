@@ -1,5 +1,5 @@
-// Re-present the existing native modal after viewport rotation/layout settles.
-// This preserves DOM/listeners and refreshes top-layer layout and hit testing.
+// Settle viewport/input geometry without closing or reopening an active modal.
+// Replacing its top-layer entry during rotation can invalidate an in-flight tap.
 export function installDialogRotationRecovery(root,{win=window,doc=document,now=()=>performance.now(),onCancel=()=>{},onSettled=()=>{}}={}){
  let dimensions=`${win.innerWidth}x${win.innerHeight}`,timer,frame,readyAt=0,disposed=false;
  const held=new Set();
@@ -10,11 +10,9 @@ export function installDialogRotationRecovery(root,{win=window,doc=document,now=
    frame=undefined;if(disposed)return;
    onSettled();
    const dialog=modal();if(!dialog)return;
-   const focused=doc.activeElement,scrollTop=dialog.scrollTop;
-   // close/show is synchronous: queued close listeners see it still open and
-   // must not navigate back or resume play (ModalNavigation.restore checks this).
-   dialog.close();dialog.showModal();dialog.scrollTop=scrollTop;
-   if(focused&&dialog.contains(focused))focused.focus({preventScroll:true});
+   // Layout is now in the document coordinate space; retain native focus,
+   // selection, scroll position and modal ownership throughout the transition.
+   dialog.getBoundingClientRect();
    readyAt=now()+250;
   });
  }
