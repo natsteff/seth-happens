@@ -1,14 +1,14 @@
 # Seth Happens - Beer Run, Elevator Out of Order
 
-**Version 0.3.13**
+**Version 1.0.0**
 
 ![Seth Happens - Beer Run, Elevator Out of Order](public/assets/title-logo.png)
 
 <p align="center">
-  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 0.3.13"></a>
+  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 1.0.0"></a>
 </p>
 
-**Play version 0.3.13** — Fullscreen highly recommended.
+**Play version 1.0.0** — Fullscreen highly recommended.
 
 **Now with mobile gameplay support!** Choose Default left/right arrows, Sliding Speed Runner or Game Stick. Customize arrow spacing and save your preferred setup. Select **Customize Controls** at the mobile start prompt or in the game menu. **For the best mobile experience, add the game as a Home Screen app and launch its icon in landscape. Direct mobile browser-tab play is not supported for further fixes.** See [How to add as a mobile app](#how-to-add-as-a-mobile-app).
 
@@ -17,6 +17,12 @@
 One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and Ellowyn before the 120-second deadline. See if you can find the 'easter egg'!
 
 🎵 **[Listen to the entire video game soundtrack](https://suno.com/playlist/0ef61d61-9481-48f2-b67f-989cffdc9cca)**.
+
+## Version 1.0.0
+
+The full release includes centered menu controls and improved rotation layout recovery, contextual photo Recall, compact high-score name entry with remembered names, and confirmed local score clearing without a password on GitHub Pages. Beer is required for a normal delivery; Allison’s “My hero” line plays only when Seth brings it. Missing beer takes priority over photo reminders.
+
+This game now receives minor maintenance and bug fixes. New levels and major enhancements belong to the separate V2 project. Existing gallery images were captured from earlier releases and may show older menu/score-entry layouts. Physical controller, Android and latest iPhone edge-case acceptance remain pending; browser checks do not certify every device.
 
 ## Fun Things to Explore
 
@@ -70,9 +76,9 @@ Portrait mode groups the complete game view and touch controls together, with an
 
 **Launch the Home Screen app in landscape for mobile play**—see [How to add as a mobile app](#how-to-add-as-a-mobile-app). Phones and tablets are offered optional touch controls on their first visit. The game remembers touch versus keyboard/controller choice and restores saved controls on later launches; existing saved customization also counts as completed setup. Controls remain available through **Touch controls**. Home Screen launches omit redundant installation advice. Clearing storage can reset setup; browser and Home Screen storage may be separate. The game keeps its full framing, with translucent controls over the lower corners. Direct mobile browser-tab layout issues are not being pursued further.
 
-Slide the left pad left or right without lifting your thumb; the center stops movement and either outer edge activates sprint. Use the round **Jump** button (double-tap within 300ms for Mega Jump) and **Action** for beer pickup, photos, finish and elevator. Release the pad to stop.
+Slide the left pad left or right without lifting your thumb; the center stops movement and either outer edge activates sprint. Use the round **Jump** button (double-tap within 300ms for Mega Jump) and **Action** for beer pickup, photos, contextual Recall, finish and elevator. Recall returns to the earliest missed photo; when delivering with photos missing, choose delivery, Recall, or keep playing. Beer is required to finish normally; photos remain optional. Release the pad to stop.
 
-The **☰** button pauses play and opens the menu: Resume, recall a missed photo, restart, scores, sound, music/volume/tracks and fullscreen exit. Keyboard and standard controllers remain available. Owner testing confirmed successful iOS Home Screen gameplay; Android device acceptance remains pending.
+The **☰** button pauses play and opens the menu: Resume, control customization, restart, scores, sound, music/volume/tracks and fullscreen exit. Keyboard and standard controllers remain available. Owner testing confirmed successful iOS Home Screen gameplay; Android device acceptance remains pending.
 
 
 Expanded/fullscreen touch play hides page scrollbars and keeps controls away from screen edges. Gameplay touch gestures are reserved for the game; menus and score entry keep normal scrolling and input behavior. Leaving expanded view restores page scrolling.
@@ -103,7 +109,7 @@ High Scores opens your existing local browser list directly by default, includin
 
 Server installations can enable **Server High Scores** alongside **This PC High Scores**. New runs attempt both lists, with separate save results. Existing local records automatically sync to that deployment’s server when enabled, without deleting local scores or duplicating imports. Failed syncs retry when reopening scores or reconnecting. Older untimed runs retain their original score and date without an invented timer bonus. Each hosted copy has its own shared records.
 
-Server-wide scores require a running score service; GitHub Pages cannot provide it. See [server setup](docs/leaderboard-server.md). Clearing acts on the selected list only and requires its password and confirmation.
+Server-wide scores require a running score service; GitHub Pages cannot provide it. See [server setup](docs/leaderboard-server.md). Clearing acts on the selected list only and always requires confirmation. GitHub Pages local scores do not require a password; other installations are password-protected by default, with separate local/server configuration options.
 
 ## Screenshots
 
@@ -189,7 +195,7 @@ Gameplay station, music volume, music on/off and overall sound are remembered in
 ## What’s new in 0.3.11
 
 - Floor 26 gives a brief Action reminder after five seconds, then leaves you free to explore. Recall guidance appears briefly only when a photo is actually missed.
-- Recall is disabled in the mobile menu when no missed photo is available.
+- Recall is offered during play when a photo is missed; it is no longer a mobile menu item.
 
 ## What’s new in 0.3.10
 
@@ -271,3 +277,9 @@ pnpm build
 The repository uses relative asset URLs for GitHub Pages. Source is on main; the compiled playable site is on gh-pages. The shared leaderboard requires the server setup above; GitHub Pages hosts only the game files. No player accounts or analytics.
 
 Owner-supplied character references, logo and audio; generated character artwork and original code-drawn props/effects. The Minnesota United crest is owner supplied for an unofficial fan scene; no affiliation or endorsement. Raw reference photographs are not included. See [asset and dependency notices](THIRD_PARTY_NOTICES.md).
+
+## High-score entry and clearing
+
+Successful names are remembered in this browser: use Save as the last name or Change name. New/changed names use a compact keyboard-aware form; Return saves, and the full record list appears afterward. Full names remain supported up to 16 characters. This preference is separate from stored scores.
+
+On github.io, clearing this device’s browser scores requires confirmation but no password. Other deployments require the existing clear password by default; owners can set `clearPasswordRequired:false` in `game-config.json` for local scores. Shared leaderboard clearing has its own server-side setting in `server/config.json` and cannot be unlocked by the client hostname. Alternate installations should retain protection unless intentionally opting out. Clearing one list never clears the other.

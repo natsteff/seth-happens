@@ -1,4 +1,5 @@
 {
   "serverHighScores": false,
-  "scoreApiUrl": "/api/scores"
+  "scoreApiUrl": "/api/scores",
+  "clearPasswordRequired": true
 }

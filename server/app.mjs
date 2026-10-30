@@ -5,7 +5,7 @@ import {dirname} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {validScores,rankScores} from '../src/scores.mjs';
 import {finalScore,timeBonus,RUN_LIMIT_MS} from '../src/mission.mjs';
-export function leaderboard({filePath='data/high-scores.json',origins=[],clearHash=process.env.CLEAR_PASSWORD_HASH}={}){
+export function leaderboard({filePath='data/high-scores.json',origins=[],clearHash=process.env.CLEAR_PASSWORD_HASH,clearPasswordRequired=true}={}){
   mkdirSync(dirname(filePath),{recursive:true});
   let records=existsSync(filePath)?validScores(JSON.parse(readFileSync(filePath,'utf8'))):[];
   const list=()=>rankScores(records);
@@ -19,7 +19,7 @@ export function leaderboard({filePath='data/high-scores.json',origins=[],clearHa
     res.setHeader('Access-Control-Allow-Methods','GET, POST, OPTIONS');res.setHeader('Access-Control-Allow-Headers','Content-Type');
     if(req.method==='OPTIONS'){res.writeHead(204);return res.end();}
     const route=new URL(req.url,'http://localhost').pathname;
-    if(route==='/api/scores'&&req.method==='GET')return send(200,{scores:list()});
+    if(route==='/api/scores'&&req.method==='GET')return send(200,{scores:list(),clearPasswordRequired});
     if(req.method!=='POST'||!['/api/scores','/api/scores/clear','/api/scores/import'].includes(route))return send(404,{error:'Not found.'});
     if(!req.headers['content-type']?.startsWith('application/json'))return send(415,{error:'JSON required.'});
     const now=Date.now(),ip=req.socket.remoteAddress||'unknown';
@@ -30,10 +30,12 @@ export function leaderboard({filePath='data/high-scores.json',origins=[],clearHa
       let body='';for await(const chunk of req){body+=chunk;if(Buffer.byteLength(body)>4096)return send(413,{error:'Request too large.'});}
       const input=JSON.parse(body);
       if(route.endsWith('/clear')){
+        if(clearPasswordRequired){
         if(!clearHash||!/^[a-f0-9]{64}$/.test(clearHash))return send(503,{error:'Server clearing is not configured.'});
         if(typeof input.password!=='string'||input.password.length>256)return send(400,{error:'Invalid password.'});
         const hash=pbkdf2Sync(input.password,'seth-scores-clear-v1',210000,32,'sha256');
         if(!timingSafeEqual(hash,Buffer.from(clearHash,'hex')))return send(403,{error:'Incorrect password. Scores were not cleared.'});
+        }else if(input.confirm!==true)return send(400,{error:'Confirmation required.'});
         store([]);return send(200,{scores:[]});
       }
       const importing=route.endsWith('/import');
@@ -54,6 +56,7 @@ export function leaderboard({filePath='data/high-scores.json',origins=[],clearHa
   return {server,close:()=>{}};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
-  const {server}=leaderboard({filePath:process.env.SCORE_FILE||'data/high-scores.json',origins:(process.env.ALLOWED_ORIGINS||'').split(',').filter(Boolean)});
+  const config=JSON.parse(readFileSync(new URL('./config.json',import.meta.url),'utf8'));
+  const {server}=leaderboard({clearPasswordRequired:config.clearPasswordRequired!==false,filePath:process.env.SCORE_FILE||'data/high-scores.json',origins:(process.env.ALLOWED_ORIGINS||'').split(',').filter(Boolean)});
   server.listen(Number(process.env.PORT||8787),process.env.HOST||'127.0.0.1',()=>console.log('Leaderboard server ready.'));
 }

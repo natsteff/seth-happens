@@ -4,10 +4,10 @@ export class SummitReminder{
  update(now,{home,ready,finished,beer,missed,mobile}){
   if(finished)return null;
   if(home&&this.arrivedAt===null)this.arrivedAt=now;
-  if(!home||!ready||this.shown||this.arrivedAt===null||now-this.arrivedAt<5000)return null;
+  if(!beer||!home||!ready||this.shown||this.arrivedAt===null||now-this.arrivedAt<5000)return null;
   this.shown=true;
-  const delivery=beer?'Use Action to deliver the six-pack & finish':'Use Action to finish';
-  return delivery+(missed?(mobile?'\nMissing photo: Menu → Recall missed photo':'\nMissing photo: press B to recall'): '');
+  const delivery=beer?'Use Action to deliver the six-pack & finish':'Return to Floor 12 for the beer';
+  return delivery+(missed?'\nMissing photo: use Action to recall': '');
  }
 }
 export const REMINDER_MS=1800;

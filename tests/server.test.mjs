@@ -36,3 +36,12 @@ test('shared server persists, recalculates, deduplicates, limits cheaters and pr
   assert.equal((await post({password:'anything'},'/clear')).status,503);
  }finally{await new Promise(r=>service.server.close(r));service.close();rmSync(dir,{recursive:true});}
 });
+test('server-side explicit password opt-out still requires confirmation and reports policy',async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'seth-clear-'));const service=leaderboard({filePath:join(dir,'scores.json'),clearPasswordRequired:false});
+ await new Promise(r=>service.server.listen(0,'127.0.0.1',r));const url=`http://127.0.0.1:${service.server.address().port}/api/scores`;
+ try{
+  assert.equal((await (await fetch(url)).json()).clearPasswordRequired,false);
+  const post=body=>fetch(url+'/clear',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  assert.equal((await post({})).status,400);assert.equal((await post({confirm:true})).status,200);
+ }finally{await new Promise(r=>service.server.close(r));rmSync(dir,{recursive:true});}
+});

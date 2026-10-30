@@ -1,3 +1,6 @@
+import { refreshMeasuredScale, installLayoutSettlement } from './layout-settlement.mjs';
+import { missionAction, FORGOT_BEER, summitSignals } from './mission-actions.mjs';
+import { askFinishChoice, finishChoiceOpen, resetFinishChoice } from './finish-choice';
 import { standaloneLaunch, readMobileSetup, saveMobileSetup, mobileStartup } from './mobile-setup.mjs';
 import { SummitReminder, REMINDER_MS } from './reminders.mjs';
 import { checkForUpdate } from './updates.mjs';
@@ -50,7 +53,7 @@ class Errand extends Phaser.Scene {
   onRoad=true;beerHint!:Phaser.GameObjects.Text;
   mishaps={falls:0,squishes:0,bumps:0}; restartSince:number|null=null;touchRestartSince:number|null=null;
   fallSoundPlayed=false;lastTimerBeep=0;
-  heroHeard=false;heroPlaying=false;runVersion=0;
+  heroHeard=false;summitReached=false;beerWarningAt=-Infinity;heroPlaying=false;runVersion=0;
   summitReminder=new SummitReminder();reminder!:Phaser.GameObjects.Text;reminderAt=-Infinity;
   introActive=true;introStarted=false;introOverlay!:Phaser.GameObjects.Container;introCaption!:Phaser.GameObjects.Text;
   failurePhase='none';timeoutAngel?:Phaser.GameObjects.Sprite;
@@ -75,13 +78,13 @@ class Errand extends Phaser.Scene {
     this.load.image('cats','./assets/cats.png');
   }
   create() {
-    modalNavigation.reset();touch.clear();(document.getElementById('touch-menu') as HTMLDialogElement).close();(document.getElementById('touch-menu-open') as HTMLButtonElement).disabled=true;resetScoreEntry();this.scorePaused=false;this.controller=new ControllerInput();
+    resetFinishChoice();modalNavigation.reset();touch.clear();(document.getElementById('touch-menu') as HTMLDialogElement).close();(document.getElementById('touch-menu-open') as HTMLButtonElement).disabled=true;resetScoreEntry();this.scorePaused=false;this.controller=new ControllerInput();
     this.input.keyboard!.enabled=true;
     this.elapsedMs=0;this.lastTimerBeep=0;this.failed=false;this.cheater=false;this.riding=false;this.rideTween=undefined;
     this.jumpStarted=-1;this.megaUsed=false;this.jumpCount=0;this.paused=false;this.eggStage=0;this.eggPreviousX=75;this.eggBlocks=[];
     this.mishaps={falls:0,squishes:0,bumps:0};this.restartSince=null;this.touchRestartSince=null;
     this.summitReminder=new SummitReminder();this.reminderAt=-Infinity;
-    this.runVersion++;this.onRoad=true;this.fallSoundPlayed=false;this.heroHeard=false;this.heroPlaying=false;
+    this.runVersion++;this.onRoad=true;this.fallSoundPlayed=false;this.heroHeard=false;this.summitReached=false;this.beerWarningAt=-Infinity;this.heroPlaying=false;
     gameAudio.beginRun();this.introActive=true;this.introStarted=false;
     this.latePhotos = new Set();
     this.photos = new Set(); this.warned = new Set(); this.beer = false; this.won = false; this.retries = 0; this.hazards=[];this.heardLocations=new Set();this.visitedWalkFrames=new Set();this.failurePhase='none';this.timeoutAngel=undefined;
@@ -566,7 +569,7 @@ class Errand extends Phaser.Scene {
 
     const controllerStatus=document.getElementById('controller-status');if(controllerStatus&&controllerStatus.textContent!==controller.label)controllerStatus.textContent=controller.label;
     if(controller.disconnected&&!this.paused){this.player.setVelocityX(0);this.togglePause();}
-    if(Phaser.Input.Keyboard.JustDown(this.keys.P)||controller.pause)this.togglePause();
+    if(!finishChoiceOpen()&&(Phaser.Input.Keyboard.JustDown(this.keys.P)||controller.pause))this.togglePause();
     if(this.paused){const live=document.getElementById('live-status');if(live){live.dataset.paused='true';live.dataset.sound=gameAudio.state;live.textContent=controlCopy('Paused. Press P to resume.',touch.enabled);}return;}
     if(scoresOpen()){this.physics.world.pause();this.input.keyboard!.enabled=false;this.scorePaused=true;return;}
     if(this.scorePaused){this.input.keyboard!.enabled=true;this.scorePaused=false;for(const key of Object.values(this.keys))key.reset();if(!this.introActive&&!this.failed&&!this.won)this.physics.world.resume();}
@@ -590,11 +593,7 @@ class Errand extends Phaser.Scene {
     const body=this.player.body as Phaser.Physics.Arcade.Body;
     if(!this.won&&!this.failed){
       const missed=missedPhotos(this.player.x,this.photos);
-      if((Phaser.Input.Keyboard.JustDown(this.keys.B)||controller.recall)&&missed.length){
-        const stop=photoStops[missed[0]],f=floors[stop.floor];
-        body.reset(f.x+65,f.y-24);this.player.setVelocity(0,0);this.floor=f.floor;this.onRoad=false;this.checkpoint={x:f.x+45,y:f.y-24};this.immuneUntil=time+1000;
-        this.say('CAMERA STRAP EXPRESS: back to the missed shot. Press F at the sign.');
-      }
+      if((Phaser.Input.Keyboard.JustDown(this.keys.B)||controller.recall)&&missed.length)this.recallPhoto(time);
       const direction=keyboardOrControllerMove(this.keys.A.isDown||this.keys.LEFT.isDown,this.keys.D.isDown||this.keys.RIGHT.isDown,controller.move);
       this.player.setVelocityX(direction*((this.keys.SHIFT.isDown||controller.sprint)?SPRINT_SPEED:275));this.walking=direction!==0&&body.blocked.down;if(direction)this.facing=direction;
       if(body.blocked.down){
@@ -666,7 +665,8 @@ class Errand extends Phaser.Scene {
       if(this.riding)return;
       const stop=photoStops.findIndex(s=>Math.abs(this.player.x-s.x)<100&&Math.abs(this.player.y-s.y)<90);
       const home=this.floor===26;
-      if(home&&!this.heroHeard){
+      const summit=summitSignals({home,beer:this.beer,reached:this.summitReached,heroHeard:this.heroHeard});this.summitReached=summit.reached;
+      if(summit.playHero){
         this.heroHeard=true;this.heroPlaying=true;const run=this.runVersion;
         this.say('Allison: “My hero!”');
         void gameAudio.playHero().then(()=>{if(this.runVersion===run)this.heroPlaying=false;});
@@ -674,15 +674,23 @@ class Errand extends Phaser.Scene {
       const beerNearby=this.floor===12&&!this.beer;
       const beerInReach=!this.beer&&Math.abs(this.player.x-beerSpot.x)<43&&Math.abs(this.player.y-beerSpot.y)<65;
       this.prompt.setVisible(stop>=0||beerNearby);
-      if(stop>=0)this.prompt.setText(this.photos.has(stop)?'✓ Photo saved. Upward, photographer.':this.heroHeard?'[ F ] RECOVER PHOTO • +125 points (half value)':'[ F ] PHOTO OPPORTUNITY • +250 points');
+      if(stop>=0)this.prompt.setText(this.photos.has(stop)?'✓ Photo saved. Upward, photographer.':this.summitReached?'[ F ] RECOVER PHOTO • +125 points (half value)':'[ F ] PHOTO OPPORTUNITY • +250 points');
       if(beerNearby)this.prompt.setText(beerInReach?'[ Action ] Pick up the six-pack':`GET THE BEER ${this.player.x<beerSpot.x?'→':'←'} Move closer, then press Action`);
+      const action=missionAction({beerInReach,photoInReach:stop>=0&&!this.photos.has(stop),home,beer:this.beer,missed:missedPhotos(this.player.x,this.photos).length>0,heroPlaying:this.heroPlaying});
+      if(action==='recall'){this.prompt.setVisible(true).setText('[ Action ] Recall missed photo');}
+      if(home&&!this.beer){
+        if(this.elapsedMs-this.beerWarningAt>6000){this.beerWarningAt=this.elapsedMs;this.flashReminder(FORGOT_BEER);}
+        this.prompt.setVisible(true).setText('Return to Floor 12 for the beer');
+      }
       if(Phaser.Input.Keyboard.JustDown(this.keys.F)||controller.interact){
         if(beerInReach){this.beer=true;gameAudio.play('pickup');this.crate.setVisible(false);this.beerHint.setVisible(false);this.prompt.setVisible(false);this.say('SIX-PACK IN HAND. Only fourteen floors of foam management left.');}
-        else if(stop>=0&&!this.photos.has(stop)){this.photos.add(stop);if(this.heroHeard)this.latePhotos.add(stop);gameAudio.play('photo');this.cameras.main.flash(140,255,255,255);this.say(`PHOTO SAVED • +${this.latePhotos.has(stop)?125:250} points • ${photoStops[stop].caption}`);}
-        else if(home&&!this.heroPlaying)this.finish();
+        else if(stop>=0&&!this.photos.has(stop)){this.photos.add(stop);if(this.summitReached)this.latePhotos.add(stop);gameAudio.play('photo');this.cameras.main.flash(140,255,255,255);this.say(`PHOTO SAVED • +${this.latePhotos.has(stop)?125:250} points • ${photoStops[stop].caption}`);}
+        else if(action==='finish')this.finish();
+        else if(action==='finish-choice')this.chooseFinish();
+        else if(action==='recall')this.recallPhoto(time);
       }
-      for(const i of missedPhotos(this.player.x,this.photos))if(!this.warned.has(i)){
-        this.warned.add(i);gameAudio.play('miss');this.say(`MISSED PHOTO: ${photoStops[i].short.toUpperCase()}!`);this.flashReminder(touch.enabled?'Missing photo: Menu → Recall missed photo':'Missing photo: press B to recall');
+      for(const i of missedPhotos(this.player.x,this.photos))if(!(home&&!this.beer)&&!this.warned.has(i)){
+        this.warned.add(i);gameAudio.play('miss');this.say(`MISSED PHOTO: ${photoStops[i].short.toUpperCase()}!`);if(!(home&&!this.beer))this.flashReminder('Missing photo: use Action to recall');
       }
     }
     this.hero.setPosition(this.player.x,this.player.y);
@@ -700,15 +708,30 @@ class Errand extends Phaser.Scene {
     const indicator=photoIndicator(this.player.x,this.photos),hasMissed=missedPhotos(this.player.x,this.photos).length>0;
     this.photoHud.setText(indicator).setColor(hasMissed?'#ffac8c':'#80e5ce');
     const reminder=this.summitReminder.update(this.elapsedMs,{home:this.floor===26,ready:!this.heroPlaying,finished:this.won||this.failed,beer:this.beer,missed:hasMissed,mobile:touch.enabled});
-    if(reminder)this.flashReminder(reminder);
+    if(reminder&&!(this.floor===26&&!this.beer))this.flashReminder(reminder);
     const age=this.elapsedMs-this.reminderAt;
+    const beerWarning=this.floor===26&&!this.beer;
+    if(beerWarning&&this.elapsedMs-this.beerWarningAt<REMINDER_MS)this.reminder.setText(FORGOT_BEER);
+    this.reminder.setFontSize(beerWarning?28:18).setColor(beerWarning?'#ff5454':'#ffd08b').setWordWrapWidth(W-120);
     this.reminder.setVisible(!this.won&&!this.failed&&age<REMINDER_MS).setAlpha(Math.floor(age/450)%2===0?1:.4);
     const status=document.getElementById('live-status');
     const summary=`${this.hud.text}. ${indicator}. ${this.toast.text} ${this.reminder.visible?this.reminder.text:''}${this.won?' Mission complete.':''}`;
     if(status){status.dataset.paused='false';const drop=this.hazards.find(h=>isFalling(h.kind)&&h.floor===this.floor);status.dataset.dropPhase=drop?.piano?.dropping?'dropping':drop?.piano?.landed?'landed':drop?.piano?.warning?'warning':'idle';status.dataset.heroFlipped=String(this.portrait.flipX);status.dataset.heroAnimation=this.portrait.anims.currentAnim?.key??'idle';status.dataset.heroAnimationRate=String(this.portrait.anims.timeScale);status.dataset.heroFilter='nearest';status.dataset.heroTexture=this.portrait.texture.key;status.dataset.timerBeeps=String(this.lastTimerBeep);status.dataset.megaJump=String(this.megaUsed);status.dataset.floor=String(this.floor);status.dataset.elapsed=String(Math.round(this.elapsedMs));status.dataset.eggStage=String(this.eggStage);status.dataset.riding=String(this.riding);status.dataset.failed=String(this.failed);status.dataset.failurePhase=this.failurePhase;status.dataset.score=String(finalScore(this.beer,this.photos,this.mishaps,this.latePhotos,this.elapsedMs,this.cheater));status.dataset.falls=String(this.mishaps.falls);status.dataset.squishes=String(this.mishaps.squishes);status.dataset.bumps=String(this.mishaps.bumps);status.dataset.won=String(this.won);status.dataset.intro='false';status.dataset.heroPlaying=String(this.heroPlaying);status.dataset.fallSound=String(this.fallSoundPlayed);if(status.textContent!==summary)status.textContent=summary;status.dataset.x=String(Math.round(this.player.x));status.dataset.y=String(Math.round(this.player.y));status.dataset.grounded=String(body.blocked.down);status.dataset.walkFrame=String(this.portrait.frame.name);status.dataset.walkFrames=[...this.visitedWalkFrames].sort().join(',');status.dataset.carrying=String(this.beer);status.dataset.sound=gameAudio.state;status.dataset.muted=String(gameAudio.muted);status.dataset.lastCue=gameAudio.lastCue;status.dataset.voiceLine=gameAudio.lastSpoken;status.dataset.voiceStatus=gameAudio.voiceStatus;status.dataset.voiceName=gameAudio.voiceName;status.dataset.loadedVoices=String(gameAudio.loadedVoiceCount);status.dataset.playedVoices=[...gameAudio.playedKinds].sort().join(',');status.dataset.locationCue=gameAudio.lastLocation;status.dataset.heardLocations=[...this.heardLocations].sort().join(',');const nearbyPiano=this.hazards.find(h=>h.kind==='piano'&&h.floor===this.floor);status.dataset.pianoDrops=String(nearbyPiano?.piano?.serial??0);status.dataset.pianoVisible=String(nearbyPiano?.art.visible??false);}
     }finally{this.refreshControlCopy();}
   }
+  recallPhoto(time:number){
+    const missed=missedPhotos(this.player.x,this.photos);if(!missed.length)return;
+    const stop=photoStops[missed[0]],f=floors[stop.floor];
+    (this.player.body as Phaser.Physics.Arcade.Body).reset(f.x+65,f.y-24);this.player.setVelocity(0,0);this.floor=f.floor;this.onRoad=false;this.checkpoint={x:f.x+45,y:f.y-24};this.immuneUntil=time+1000;
+    this.say('CAMERA STRAP EXPRESS: back to the missed shot. Use Action at the sign.');
+  }
+  chooseFinish(){
+    if(finishChoiceOpen()||this.paused)return;
+    this.togglePause();const version=this.runVersion;
+    askFinishChoice(choice=>{if(this.runVersion!==version)return;touch.clear();for(const key of Object.values(this.keys))key.reset();if(this.paused)this.togglePause();if(choice==='finish')this.finish();if(choice==='recall')this.recallPhoto(this.time.now);});
+  }
   finish(){
+    if(!this.cheater&&!this.beer)return;
     gameAudio.music.finishRun(this.cheater?'cheater':'success');
     (document.getElementById('pause-toggle') as HTMLButtonElement).disabled=true;
     if(this.cheater)gameAudio.speak('Cheater!','cheater');else gameAudio.play('win');this.won=true;this.player.setVelocity(0,0);this.walking=false;this.prompt.setVisible(false);this.reminder.setVisible(false);this.say('Allison: “You’re home! The elevator just got fixed.”');
@@ -735,14 +758,16 @@ const soundToggle=document.getElementById('sound-toggle');
 soundToggle?.addEventListener('click',()=>{void gameAudio.unlock();gameAudio.toggle();(soundToggle as HTMLButtonElement).blur();});
 
 const fullscreenToggle=document.getElementById('fullscreen-toggle') as HTMLButtonElement;
+function refreshGameLayout(){refreshMeasuredScale(game.scale);}
 const gameElement=document.getElementById('play-area')!;
+installLayoutSettlement(refreshGameLayout,{parent:document.getElementById('game')!});
 let menuPointer:number|null=null;
 function clearPlayPointers(){
  touch.clear();const pointer=menuPointer;menuPointer=null;
  const button=document.getElementById('touch-menu-open') as HTMLButtonElement;
  try{if(pointer!==null&&button.hasPointerCapture(pointer))button.releasePointerCapture(pointer);}catch{/* Pointer already invalid after orientation change. */}
 }
-const touchViewport=installTouchViewport(gameElement,{onResize:()=>requestAnimationFrame(()=>game.scale.refresh()),onCancel:clearPlayPointers});
+const touchViewport=installTouchViewport(gameElement,{onResize:()=>requestAnimationFrame(()=>refreshGameLayout()),onCancel:clearPlayPointers});
 installDialogRotationRecovery(gameElement,{onCancel:clearPlayPointers});
 async function toggleFullscreen(){
   fullscreenToggle.blur();
@@ -755,7 +780,7 @@ async function toggleFullscreen(){
     gameElement.classList.add('expanded');
   }
   touchViewport.sync();
-  requestAnimationFrame(()=>game.scale.refresh());
+  requestAnimationFrame(()=>refreshGameLayout());
 }
 fullscreenToggle.addEventListener('click',()=>{void toggleFullscreen();});
 document.addEventListener('keydown',(event)=>{
@@ -767,7 +792,7 @@ document.addEventListener('fullscreenchange',()=>{
   document.getElementById('fullscreen-recommendation')!.hidden=!!document.fullscreenElement;
   fullscreenToggle.textContent=document.fullscreenElement?'Exit full screen · V':'Full screen ⛶ · V';
   fullscreenToggle.setAttribute('aria-label',document.fullscreenElement?'Exit fullscreen':'Enter fullscreen');
-  requestAnimationFrame(()=>game.scale.refresh());
+  requestAnimationFrame(()=>refreshGameLayout());
 });
 if(!document.fullscreenEnabled){
   fullscreenToggle.disabled=false;
@@ -792,7 +817,7 @@ function setTouch(enabled:boolean){
   if(!enabled)(document.getElementById('touch-menu') as HTMLDialogElement).close();
   touchToggle.textContent=`Touch controls: ${enabled?'On':'Off'}`;
   touchToggle.setAttribute('aria-pressed',String(enabled));
-  requestAnimationFrame(()=>game.scale.refresh());
+  requestAnimationFrame(()=>refreshGameLayout());
 }
 function completeMobileSetup(enabled:boolean,expand=false){
  saveMobileSetup(setupStorage,enabled?'touch':'keyboard');
@@ -805,7 +830,7 @@ document.getElementById('touch-accept')!.addEventListener('click',()=>{touchOffe
 document.getElementById('touch-decline')!.addEventListener('click',()=>{touchOffer.close();completeMobileSetup(false);});
 document.getElementById('touch-view')!.addEventListener('click',()=>{closeTouchMenu();void toggleFullscreen();});
 // Restore setup only after control settings and dialog handlers are initialized.
-window.addEventListener('resize',()=>{clearPlayPointers();requestAnimationFrame(()=>game.scale.refresh());});
+window.addEventListener('resize',()=>{clearPlayPointers();requestAnimationFrame(()=>refreshGameLayout());});
 
 document.querySelectorAll<HTMLButtonElement>('[data-proxy]').forEach(button=>{
   const source=document.getElementById(button.dataset.proxy!) as HTMLButtonElement;
@@ -825,7 +850,6 @@ function openTouchMenu(){
   const scene=game.scene.scenes[0] as Errand;
   if(!scene||(scene.introActive&&scene.introStarted)||scoresOpen()||touchMenu.open||controlSettings?.open||installHelp?.open)return;
   touch.clear();if(!scene.introActive&&!scene.paused&&!scene.won&&!scene.failed)scene.togglePause();
-  (document.getElementById('touch-recall') as HTMLButtonElement).disabled=scene.introActive||scene.won||scene.failed||missedPhotos(scene.player.x,scene.photos).length===0;
   document.querySelectorAll<HTMLButtonElement>('[data-proxy]').forEach(button=>{button.textContent=controlCopy(Array.from(document.getElementById(button.dataset.proxy!)!.childNodes).map(node=>node.nodeName==='BR'?'\n':node.textContent??'').join(''),touch.enabled);});
   const resume=document.getElementById('touch-resume') as HTMLButtonElement;
   const restart=touchMenu.querySelector<HTMLButtonElement>('[data-proxy="restart-run"]')!;
@@ -853,7 +877,6 @@ menuButton.addEventListener('pointerup',event=>{
 for(const type of ['pointercancel','lostpointercapture'])menuButton.addEventListener(type,()=>{menuPointer=null;});
 menuButton.addEventListener('click',event=>{event.stopPropagation();if(event.detail===0)openTouchMenu();});
 document.getElementById('touch-resume')!.addEventListener('click',()=>closeTouchMenu());
-document.getElementById('touch-recall')!.addEventListener('click',()=>{closeTouchMenu();touch.edges.add('recall');});
 touchMenu.addEventListener('cancel',event=>{event.preventDefault();closeTouchMenu();});
 for(const type of ['keydown','keyup'])document.addEventListener(type,event=>{if(touchMenu.open&&!(event.target instanceof Element&&event.target.closest('dialog')))event.stopPropagation();},true);
 
@@ -908,11 +931,11 @@ function positionStartGame(){
  const portrait=touch.enabled&&matchMedia('(orientation:portrait)').matches;
  button.classList.toggle('portrait-start',portrait);
  if(portrait){
-  if(button.parentElement!==gameElement){gameElement.insertBefore(button,document.getElementById('touch-controls'));requestAnimationFrame(()=>game.scale.refresh());}
+  if(button.parentElement!==gameElement){gameElement.insertBefore(button,document.getElementById('touch-controls'));requestAnimationFrame(()=>refreshGameLayout());}
   button.style.removeProperty('left');button.style.removeProperty('top');return;
  }
  const gameContainer=document.getElementById('game')!;
- if(button.parentElement!==gameContainer){gameContainer.append(button);requestAnimationFrame(()=>game.scale.refresh());}
+ if(button.parentElement!==gameContainer){gameContainer.append(button);requestAnimationFrame(()=>refreshGameLayout());}
  const canvas=document.querySelector('#game canvas');
  if(!canvas)return;
  const frame=canvas.getBoundingClientRect(),parent=document.getElementById('game')!.getBoundingClientRect();

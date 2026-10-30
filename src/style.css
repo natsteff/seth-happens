@@ -199,15 +199,15 @@ html.touch-play-locked main>*:not(#play-area){visibility:hidden}
 @media(orientation:portrait){
  #play-area.expanded.touch-mode,#play-area:fullscreen.touch-mode{gap:12px;padding-top:calc(env(safe-area-inset-top,0px) + 16px)}
  .touch-mode #touch-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;height:56px;flex:none;padding:0 16px}
- .touch-mode #touch-toolbar #touch-menu-open{position:static;flex:none;top:auto;right:auto;bottom:auto;margin:0}
+ .touch-mode #touch-toolbar #touch-menu-open{position:relative;flex:none;top:auto;right:auto;bottom:auto;margin:0}
  .touch-mode #touch-toolbar #portrait-hint{display:block;position:static;flex:1;margin:0;color:#ffd08b;font-size:13px;line-height:1.35;text-align:center}
 }
 @media(orientation:landscape){
  .touch-mode #touch-toolbar #touch-menu-open{left:var(--landscape-menu-left,auto);top:var(--landscape-menu-top,10px);right:auto;width:44px;height:44px;min-width:44px;min-height:44px;font-size:18px;border-radius:10px}
 }
 /* Draw the hamburger consistently instead of relying on a platform glyph. */
-#touch-menu-open{font-size:0!important;display:grid;place-items:center}
-#touch-menu-open::before{content:"";display:block;width:18px;height:2px;background:currentColor;box-shadow:0 -6px 0 currentColor,0 6px 0 currentColor}
+#touch-menu-open{font-size:0!important;display:block;padding:0;box-sizing:border-box}
+#touch-menu-open::before{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:block;pointer-events:none;width:18px;height:2px;background:currentColor;box-shadow:0 -6px 0 currentColor,0 6px 0 currentColor}
 @media(orientation:landscape){
  #touch-menu{width:min(760px,96vw);padding:12px}
  #touch-menu .touch-menu-actions{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
@@ -242,3 +242,11 @@ html.touch-play-locked main>*:not(#play-area){visibility:hidden}
 
 /* Portrait splash reserves a separate row beneath the complete logo/canvas. */
 .touch-mode>#start-game.portrait-start{position:static;transform:none;display:block;flex:none;align-self:center;margin:0 auto}
+
+.finish-choice{background:#12253c;color:#e8f0ef;border:2px solid #79dec5;border-radius:12px;width:min(520px,94vw);max-height:90dvh;overflow:auto;padding:20px}.finish-choice h2{color:#ffd08b}.finish-choice button{min-height:44px;background:#24485b;color:#e8f0ef;border:1px solid #79dec5;border-radius:8px;padding:8px 12px;margin:4px}.finish-choice::backdrop{background:#081322cc}
+
+/* Name entry is a compact, keyboard-aware step; detailed records follow saving. */
+.score-dialog[data-entry=true]{position:fixed;inset:auto;left:calc(var(--score-left,0px) + 8px);top:calc(var(--score-top,0px) + 8px);margin:0;width:min(700px,calc(var(--score-width,100vw) - 16px));max-height:calc(var(--score-height,100dvh) - 16px);overflow:auto;padding:10px 14px}
+.score-dialog[data-entry=true] .score-heading h2{font-size:18px;margin:0 0 6px}.score-dialog[data-entry=true] .score-eyebrow,.score-dialog[data-entry=true]>.score-actions,.score-dialog[data-entry=true]>.score-list,.score-dialog[data-entry=true]>p:not([role=status]){display:none}
+.score-dialog #score-entry{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.score-dialog #score-entry[hidden],.score-dialog [hidden]{display:none!important}
+.score-dialog #score-entry .entry-fields{display:flex;align-items:center;gap:8px;flex:1;min-width:150px}.score-dialog #score-entry input{min-width:0;width:100%;height:44px;margin:0;font-size:16px}.score-dialog #score-entry button{min-height:44px;font-size:14px}.score-dialog .saved-name{display:flex;gap:10px;align-items:center}.score-dialog[data-entry=true] [role=status]{margin:4px 0;font-size:12px}.score-dialog #skip-score{font-size:12px}

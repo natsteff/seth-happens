@@ -14,7 +14,7 @@ Set these server environment variables:
 - `PORT`: defaults to `8787`.
 - `CLEAR_PASSWORD_HASH`: PBKDF2-SHA256 verifier, 210000 iterations, salt `seth-scores-clear-v1`, 32 bytes encoded as lowercase hex. Store as a server secret. The existing configured verifier can be copied from the legacy `verifyClearPassword` function in `src/scores.mjs`; the plaintext password is not needed or included in browser code.
 
-Run `pnpm scores:server`. Put the service behind HTTPS. Mount persistent storage, back it up, and run one instance against the score file. Do not put the score file in the public game directory. Without the clear secret, reads/saves work and clearing stays disabled.
+Run `pnpm scores:server`. Put the service behind HTTPS. Mount persistent storage, back it up, and run one instance against the score file. Do not put the score file in the public game directory. With the default password protection, missing clear secret leaves clearing disabled while reads/saves work. Owners may explicitly set `clearPasswordRequired:false` in `server/config.json` to allow password-free shared clearing; an explicit confirmation is then still required. This is separate from frontend `game-config.json`, whose setting affects local browser records only. GitHub Pages hostnames never bypass shared-server authentication.
 
 ## Connect the game
 
@@ -39,4 +39,4 @@ The API assigns timestamps, validates run fields, recalculates scores, deduplica
 
 Old browser records sync on load, High Scores open and browser reconnect. Imports are idempotent by run ID; local records remain unchanged. Untimed legacy scores retain their validated historical score/date and no timer bonus.
 
-GET `/api/scores` lists records. POST to that path submits a run. POST `/api/scores/import` imports one legacy record. POST `/api/scores/clear` accepts a JSON password, verifies it server-side and clears records. Origin allowlisting applies to browser callers; it is not authentication. All responses disable caching.
+GET `/api/scores` lists records. POST to that path submits a run. POST `/api/scores/import` imports one legacy record. POST `/api/scores/clear` accepts a JSON password, verifies it server-side and clears records by default. With explicit server opt-out, send `{ "confirm": true }` instead; GET metadata reports whether a password is required. Origin allowlisting applies to browser callers; it is not authentication. All responses disable caching.

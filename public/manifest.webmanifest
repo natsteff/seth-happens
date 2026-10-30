@@ -6,7 +6,7 @@
   "display": "standalone",
   "background_color": "#101d30",
   "theme_color": "#101d30",
-  "description": "Deliver the beer and take two rooftop photos.",
+  "description": "Deliver the beer across twenty-six rooftops; collect two optional photos along the way.",
   "icons": [
     {
       "src": "./icons/app-192.png",
