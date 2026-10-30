@@ -1,3 +1,4 @@
+import { standaloneLaunch, readMobileSetup, saveMobileSetup, mobileStartup } from './mobile-setup.mjs';
 import { SummitReminder, REMINDER_MS } from './reminders.mjs';
 import { checkForUpdate } from './updates.mjs';
 import { loadSettings, saveSettings } from './preferences.mjs';
@@ -777,12 +778,15 @@ document.getElementById('fullscreen-exit')!.addEventListener('click',()=>{void t
 
 const touchToggle=document.getElementById('touch-toggle')!;
 const touchOffer=document.getElementById('touch-offer') as HTMLDialogElement;
+const homeScreenLaunch=standaloneLaunch(window);
+let setupStorage:Storage|null=null;try{setupStorage=localStorage;}catch{/* Session setup still works. */}
 function setTouch(enabled:boolean){
   touch.clear();touch.enabled=enabled;
   document.getElementById('touch-controls')!.hidden=!enabled;
   gameElement.classList.toggle('touch-mode',enabled);
   touchViewport.sync();
-  (game.scene.scenes[0] as Errand)?.refreshControlCopy();
+  const scene=game.scene.scenes[0] as Errand;
+  if(scene?.sys?.isActive())scene.refreshControlCopy();
   const radio=document.getElementById('radio')!;
   if(enabled)document.getElementById('touch-radio-slot')!.append(radio);else gameElement.insertBefore(radio,document.getElementById('game'));
   if(!enabled)(document.getElementById('touch-menu') as HTMLDialogElement).close();
@@ -790,11 +794,17 @@ function setTouch(enabled:boolean){
   touchToggle.setAttribute('aria-pressed',String(enabled));
   requestAnimationFrame(()=>game.scale.refresh());
 }
-touchToggle.addEventListener('click',()=>{setTouch(!touch.enabled);touchToggle.blur();});
-document.getElementById('touch-accept')!.addEventListener('click',()=>{touchOffer.close();setTouch(true);void toggleFullscreen();});
-document.getElementById('touch-decline')!.addEventListener('click',()=>touchOffer.close());
+function completeMobileSetup(enabled:boolean,expand=false){
+ saveMobileSetup(setupStorage,enabled?'touch':'keyboard');
+ if(enabled&&homeScreenLaunch)gameElement.classList.add('expanded');
+ setTouch(enabled);
+ if(expand&&!homeScreenLaunch)void toggleFullscreen();
+}
+touchToggle.addEventListener('click',()=>{completeMobileSetup(!touch.enabled);touchToggle.blur();});
+document.getElementById('touch-accept')!.addEventListener('click',()=>{touchOffer.close();completeMobileSetup(true,true);});
+document.getElementById('touch-decline')!.addEventListener('click',()=>{touchOffer.close();completeMobileSetup(false);});
 document.getElementById('touch-view')!.addEventListener('click',()=>{closeTouchMenu();void toggleFullscreen();});
-if(navigator.maxTouchPoints>0||matchMedia('(pointer: coarse)').matches)touchOffer.showModal();
+// Restore setup only after control settings and dialog handlers are initialized.
 window.addEventListener('resize',()=>{clearPlayPointers();requestAnimationFrame(()=>game.scale.refresh());});
 
 document.querySelectorAll<HTMLButtonElement>('[data-proxy]').forEach(button=>{
@@ -871,7 +881,7 @@ document.getElementById('touch-customize')!.addEventListener('click',()=>openCon
 document.querySelectorAll<HTMLInputElement>('input[name=movement-style]').forEach(radio=>radio.addEventListener('change',()=>{if(radio.checked){styleSelect.value=radio.value;previewControls();}}));
 spacingInput.addEventListener('input',previewControls);styleSelect.addEventListener('change',previewControls);
 document.getElementById('controls-reset')!.addEventListener('click',()=>{styleSelect.value='default';spacingInput.value='3';quickSprintInput.checked=false;previewControls();});
-document.getElementById('controls-save')!.addEventListener('click',()=>{controlStyle=styleSelect.value;controlSpacing=Number(spacingInput.value);controlQuickSprint=quickSprintInput.checked;applyControls();try{localStorage.setItem('seth-touch-controls',JSON.stringify({style:controlStyle,spacing:controlSpacing,quickSprint:controlQuickSprint}));}catch{/* Session controls still work. */}controlSettings.close();if(customizeFromOffer){setTouch(true);void toggleFullscreen();}});
+document.getElementById('controls-save')!.addEventListener('click',()=>{controlStyle=styleSelect.value;controlSpacing=Number(spacingInput.value);controlQuickSprint=quickSprintInput.checked;applyControls();try{localStorage.setItem('seth-touch-controls',JSON.stringify({style:controlStyle,spacing:controlSpacing,quickSprint:controlQuickSprint}));}catch{/* Session controls still work. */}controlSettings.close();if(customizeFromOffer)completeMobileSetup(true,true);});
 controlSettings.addEventListener('cancel',()=>{if(customizeFromOffer)requestAnimationFrame(()=>touchOffer.showModal());});
 const installHelp=document.getElementById('install-help') as HTMLDialogElement;
 document.querySelectorAll('[data-install-help]').forEach(button=>button.addEventListener('click',()=>{touch.clear();modalNavigation.open(installHelp,touchMenu.open?touchMenu:touchOffer,document.getElementById('install-close'));}));
@@ -881,6 +891,16 @@ for(const dialog of [controlSettings,installHelp])dialog.addEventListener('close
 for(const dialog of [touchMenu,controlSettings,installHelp,touchOffer])for(const type of ['keydown','keyup'])dialog.addEventListener(type,event=>event.stopPropagation());
 document.getElementById('start-game')!.addEventListener('click',()=>{gameAudio.unlock();const scene=game.scene.scenes[0] as Errand;void scene?.startIntro();});
 applyControls();
+const priorSetup=readMobileSetup(setupStorage);
+const mobileStart=mobileStartup({touchCapable:navigator.maxTouchPoints>0||matchMedia('(pointer: coarse)').matches,setup:priorSetup});
+if(priorSetup?.legacy)saveMobileSetup(setupStorage,priorSetup.mode);
+if(homeScreenLaunch){
+ document.getElementById('touch-offer-install-advice')!.hidden=true;
+ touchOffer.querySelector('h2')!.textContent='Choose your controls';
+ document.getElementById('touch-offer-context')!.textContent='You’re playing from the Home Screen app. Choose your controls once; you can change them later in the menu.';
+}
+if(mobileStart.touchEnabled){if(homeScreenLaunch)gameElement.classList.add('expanded');setTouch(true);}
+if(mobileStart.showOffer)touchOffer.showModal();
 
 // Follow the fitted canvas, rather than the radio + game wrapper or letterbox.
 function positionStartGame(){

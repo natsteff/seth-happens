@@ -68,7 +68,7 @@ Beer pickup requires **Action** (mobile), **F** (keyboard) or the controller int
 
 Portrait mode groups the complete game view and touch controls together, with an accessible menu and a reminder to rotate. Landscape remains the recommended way to play. Mobile instructions use Action and menu names rather than keyboard letters. The mobile HUD shows the track number/title and audio state; change music through the menu.
 
-**Launch the Home Screen app in landscape for mobile play**—see [How to add as a mobile app](#how-to-add-as-a-mobile-app). Phones and tablets are offered optional touch controls, also available through **Touch controls**. The game keeps its full framing, with translucent controls over the lower corners. Direct mobile browser-tab layout issues are not being pursued further.
+**Launch the Home Screen app in landscape for mobile play**—see [How to add as a mobile app](#how-to-add-as-a-mobile-app). Phones and tablets are offered optional touch controls on their first visit. The game remembers touch versus keyboard/controller choice and restores saved controls on later launches; existing saved customization also counts as completed setup. Controls remain available through **Touch controls**. Home Screen launches omit redundant installation advice. Clearing storage can reset setup; browser and Home Screen storage may be separate. The game keeps its full framing, with translucent controls over the lower corners. Direct mobile browser-tab layout issues are not being pursued further.
 
 Slide the left pad left or right without lifting your thumb; the center stops movement and either outer edge activates sprint. Use the round **Jump** button (double-tap within 300ms for Mega Jump) and **Action** for beer pickup, photos, finish and elevator. Release the pad to stop.
 
@@ -144,6 +144,10 @@ Mobile images are **browser viewport previews**, not physical iPhone/Android scr
 | **Mobile setup prompt**<br>[<img src="docs/screenshots/mobile-setup.jpg" width="220" alt="Mobile setup prompt">](docs/screenshots/mobile-setup.jpg) | **How to add as a mobile app**<br>[<img src="docs/screenshots/mobile-add-as-app.jpg" width="220" alt="How to add as a mobile app">](docs/screenshots/mobile-add-as-app.jpg) |
 | **Portrait gameplay · landscape recommended**<br>[<img src="docs/screenshots/mobile-portrait.jpg" width="220" alt="Portrait gameplay · landscape recommended">](docs/screenshots/mobile-portrait.jpg) | **Portrait menu**<br>[<img src="docs/screenshots/mobile-portrait-menu.jpg" width="220" alt="Portrait menu">](docs/screenshots/mobile-portrait-menu.jpg) |
 | **Portrait customization**<br>[<img src="docs/screenshots/mobile-portrait-customize.jpg" width="220" alt="Portrait customization">](docs/screenshots/mobile-portrait-customize.jpg) |  |
+
+## Maintenance update v0.3.17
+
+Mobile setup is shown once, remembers touch versus keyboard/controller choice, and restores saved controls on later launches. Home Screen launches omit redundant installation advice; customization/help remain available. Existing saved customization skips setup. Clearing storage can reset setup. Physical Home Screen acceptance remains pending.
 
 ## Maintenance update v0.3.16
 
