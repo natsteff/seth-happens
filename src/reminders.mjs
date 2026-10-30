@@ -7,7 +7,7 @@ export class SummitReminder{
   if(!beer||!home||!ready||this.shown||this.arrivedAt===null||now-this.arrivedAt<5000)return null;
   this.shown=true;
   const delivery=beer?'Use Action to deliver the six-pack & finish':'Return to Floor 12 for the beer';
-  return delivery+(missed?'\nMissing photo: use Action to recall': '');
+  return delivery+(missed?'\nMissing photo: choose delivery or Recall at the door': '');
  }
 }
 export const REMINDER_MS=1800;

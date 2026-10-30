@@ -102,7 +102,7 @@ header .game-subtitle{text-align:left;color:#ffd08b;font-size:16px;margin:8px 0 
 
 /* Lock only the background page during expanded/fullscreen touch play. */
 html.touch-play-locked{overflow:hidden;overscroll-behavior:none;scrollbar-width:none;height:100%}
-html.touch-play-locked body{position:fixed;top:var(--touch-page-top,0px);left:0;right:0;width:100%;overflow:hidden;overscroll-behavior:none}
+html.touch-play-locked body{width:100%;overflow:hidden;overscroll-behavior:none}
 html.touch-play-locked::-webkit-scrollbar,html.touch-play-locked body::-webkit-scrollbar{display:none}
 #play-area.expanded.touch-mode{inset:auto;left:var(--play-left,0px);top:var(--play-top,0px);width:var(--play-width,100%);height:var(--play-height,100dvh);overscroll-behavior:none}
 #play-area:fullscreen.touch-mode{width:var(--play-width,100vw);height:var(--play-height,100dvh);overscroll-behavior:none}

@@ -677,7 +677,6 @@ class Errand extends Phaser.Scene {
       if(stop>=0)this.prompt.setText(this.photos.has(stop)?'✓ Photo saved. Upward, photographer.':this.summitReached?'[ F ] RECOVER PHOTO • +125 points (half value)':'[ F ] PHOTO OPPORTUNITY • +250 points');
       if(beerNearby)this.prompt.setText(beerInReach?'[ Action ] Pick up the six-pack':`GET THE BEER ${this.player.x<beerSpot.x?'→':'←'} Move closer, then press Action`);
       const action=missionAction({beerInReach,photoInReach:stop>=0&&!this.photos.has(stop),home,beer:this.beer,missed:missedPhotos(this.player.x,this.photos).length>0,heroPlaying:this.heroPlaying});
-      if(action==='recall'){this.prompt.setVisible(true).setText('[ Action ] Recall missed photo');}
       if(home&&!this.beer){
         if(this.elapsedMs-this.beerWarningAt>6000){this.beerWarningAt=this.elapsedMs;this.flashReminder(FORGOT_BEER);}
         this.prompt.setVisible(true).setText('Return to Floor 12 for the beer');
@@ -687,10 +686,9 @@ class Errand extends Phaser.Scene {
         else if(stop>=0&&!this.photos.has(stop)){this.photos.add(stop);if(this.summitReached)this.latePhotos.add(stop);gameAudio.play('photo');this.cameras.main.flash(140,255,255,255);this.say(`PHOTO SAVED • +${this.latePhotos.has(stop)?125:250} points • ${photoStops[stop].caption}`);}
         else if(action==='finish')this.finish();
         else if(action==='finish-choice')this.chooseFinish();
-        else if(action==='recall')this.recallPhoto(time);
       }
       for(const i of missedPhotos(this.player.x,this.photos))if(!(home&&!this.beer)&&!this.warned.has(i)){
-        this.warned.add(i);gameAudio.play('miss');this.say(`MISSED PHOTO: ${photoStops[i].short.toUpperCase()}!`);if(!(home&&!this.beer))this.flashReminder('Missing photo: use Action to recall');
+        this.warned.add(i);this.say(`MISSED PHOTO: ${photoStops[i].short.toUpperCase()} — return to the photo stop.`);
       }
     }
     this.hero.setPosition(this.player.x,this.player.y);
@@ -768,7 +766,7 @@ function clearPlayPointers(){
  try{if(pointer!==null&&button.hasPointerCapture(pointer))button.releasePointerCapture(pointer);}catch{/* Pointer already invalid after orientation change. */}
 }
 const touchViewport=installTouchViewport(gameElement,{onResize:()=>requestAnimationFrame(()=>refreshGameLayout()),onCancel:clearPlayPointers});
-installDialogRotationRecovery(gameElement,{onCancel:clearPlayPointers});
+installDialogRotationRecovery(gameElement,{onCancel:clearPlayPointers,onSettled:()=>{touchViewport.sync();refreshGameLayout();game.scale.updateBounds();}});
 async function toggleFullscreen(){
   fullscreenToggle.blur();
   try {

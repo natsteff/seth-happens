@@ -23,7 +23,8 @@ export function installTouchViewport(root,{win=window,doc=document,onResize=()=>
   const active=root.classList.contains('touch-mode')&&(root.classList.contains('expanded')||doc.fullscreenElement===root);
   if(active&&!locked){
    savedX=win.scrollX;savedY=win.scrollY;locked=true;
-   doc.documentElement.style.setProperty('--touch-page-top',`${-savedY}px`);
+   // Keep body in normal flow: a fixed body can retain pre-rotation iOS hit coordinates.
+   win.scrollTo(0,0);
    doc.documentElement.classList.add('touch-play-locked');
   }else if(!active&&locked){
    locked=false;lastRect='';onCancel();
@@ -41,7 +42,7 @@ export function installTouchViewport(root,{win=window,doc=document,onResize=()=>
  types.forEach(type=>root.addEventListener(type,guard,{passive:false}));
  let orientationFrame;
  const orientation=()=>{
-  onCancel();layout();if(locked)onResize();
+  onCancel();if(locked)win.scrollTo(0,0);layout();if(locked)onResize();
   if(orientationFrame!==undefined)win.cancelAnimationFrame?.(orientationFrame);
   orientationFrame=win.requestAnimationFrame?.(()=>{orientationFrame=undefined;layout();if(locked)onResize();});
  };

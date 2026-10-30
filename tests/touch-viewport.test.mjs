@@ -31,7 +31,7 @@ test('expanded touch play locks background, tracks viewport resize, and restores
  Object.assign(win,{innerWidth:844,innerHeight:390,scrollX:0,scrollY:250,visualViewport:view,scrollTo(x,y){this.restored=[x,y];}});
  Object.assign(view,{width:844,height:330,offsetTop:0,offsetLeft:0});
  const controller=installTouchViewport(root,{win,doc,onCancel(){cancels++;},onResize(){resizes++;}});
- assert.equal(controller.locked,true);assert.equal(html.classList.contains('touch-play-locked'),true);assert.equal(html.style.getPropertyValue('--touch-page-top'),'-250px');
+ assert.equal(controller.locked,true);assert.equal(html.classList.contains('touch-play-locked'),true);assert.equal(html.style.getPropertyValue('--touch-page-top'),undefined);assert.deepEqual(win.restored,[0,0]);
  assert.equal(root.style.getPropertyValue('--play-height'),'330px');
  assert.equal(root.listeners.get('touchmove').options.passive,false);
  let prevented=false;root.listeners.get('touchend').fn({type:'touchend',target:target('control'),cancelable:true,preventDefault(){prevented=true;}});assert.equal(prevented,true);

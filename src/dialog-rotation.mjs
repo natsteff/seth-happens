@@ -1,6 +1,6 @@
 // Re-present the existing native modal after viewport rotation/layout settles.
 // This preserves DOM/listeners and refreshes top-layer layout and hit testing.
-export function installDialogRotationRecovery(root,{win=window,doc=document,now=()=>performance.now(),onCancel=()=>{}}={}){
+export function installDialogRotationRecovery(root,{win=window,doc=document,now=()=>performance.now(),onCancel=()=>{},onSettled=()=>{}}={}){
  let dimensions=`${win.innerWidth}x${win.innerHeight}`,timer,frame,readyAt=0,disposed=false;
  const held=new Set();
  const modal=()=>[...root.querySelectorAll('dialog[open]')].at(-1);
@@ -8,6 +8,7 @@ export function installDialogRotationRecovery(root,{win=window,doc=document,now=
   timer=undefined;
   frame=win.requestAnimationFrame(()=>{
    frame=undefined;if(disposed)return;
+   onSettled();
    const dialog=modal();if(!dialog)return;
    const focused=doc.activeElement,scrollTop=dialog.scrollTop;
    // close/show is synchronous: queued close listeners see it still open and
@@ -19,7 +20,6 @@ export function installDialogRotationRecovery(root,{win=window,doc=document,now=
  }
  function refresh(){
   onCancel();
-  if(!modal())return;
   readyAt=now()+250;
   if(timer!==undefined)win.clearTimeout(timer);
   if(frame!==undefined){win.cancelAnimationFrame(frame);frame=undefined;}

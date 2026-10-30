@@ -3,7 +3,7 @@ export function missionAction({beerInReach,photoInReach,home,beer,missed,heroPla
  if(beerInReach)return 'beer';
  if(photoInReach)return 'photo';
  if(home){if(!beer)return 'missing-beer';if(heroPlaying)return 'wait';return missed?'finish-choice':'finish';}
- return missed?'recall':null;
+ return null;
 }
 
 export function summitSignals({home,beer,reached,heroHeard}){return {reached:reached||home,playHero:home&&beer&&!heroHeard};}

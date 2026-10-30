@@ -13,7 +13,7 @@ test('summit waits for voice and return, suppresses finished runs and recalls on
  assert.equal(reminder.update(6000,{...state,ready:false}),null);
  assert.equal(reminder.update(7000,{...state,home:false}),null);
  assert.equal(reminder.update(8000,{...state,finished:true}),null);
- assert.match(reminder.update(9000,{...state,missed:true}),/use Action to recall/);
+ assert.match(reminder.update(9000,{...state,missed:true}),/choose delivery or Recall at the door/);
  const keyboard=new SummitReminder();keyboard.update(0,state);
  assert.equal(keyboard.update(5000,{...state,mobile:false,missed:true,beer:false}),null);
  assert.match(keyboard.update(6000,{...state,beer:true}),/deliver the six-pack/);

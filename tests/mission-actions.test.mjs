@@ -2,7 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import {missionAction,FORGOT_BEER,summitSignals} from '../src/mission-actions.mjs';
 const base={beerInReach:false,photoInReach:false,home:false,beer:true,missed:false,heroPlaying:false};
 test('photo and beer actions outrank recall; finish choice never offers completion without beer',()=>{
- assert.equal(missionAction({...base,missed:true}),'recall');
+ assert.equal(missionAction({...base,missed:true}),null);
  assert.equal(missionAction({...base,missed:true,photoInReach:true}),'photo');
  assert.equal(missionAction({...base,missed:true,beerInReach:true}),'beer');
  assert.equal(missionAction({...base,home:true,beer:false,missed:true}),'missing-beer');

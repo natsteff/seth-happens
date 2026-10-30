@@ -46,7 +46,7 @@ async function syncLocalScores(){
 void configReady.then(()=>syncLocalScores()).catch(()=>{/* Retry on score-list open or reconnect. */});
 window.addEventListener('online',()=>{void configReady.then(()=>syncLocalScores()).catch(()=>{});});
 async function request(path='',body?:unknown){
-  if(!apiBase)throw new Error('Server leaderboard is not configured. This PC scores remain separate.');
+  if(!apiBase)throw new Error('Server leaderboard is not configured. This device scores remain separate.');
   const response=await fetch(apiBase+path,{method:body===undefined?'GET':'POST',headers:body===undefined?{}:{'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(10000),cache:'no-store'});
   const result=await response.json();if(typeof result.clearPasswordRequired==='boolean')serverClearRequired=result.clearPasswordRequired;if(!response.ok)throw new Error(result.error||'Leaderboard unavailable.');return result;
 }
@@ -55,7 +55,7 @@ function render(){
   const draft=dialog.querySelector('[name="player"]') as HTMLInputElement|null;
   if(draft)nameDraft=draft.value;
   dialog.dataset.entry=String(!!pending);
-  dialog.innerHTML=`<div class="score-heading"><span class="score-eyebrow">THE ROOFTOP RECORD BOOK</span><h2 id="scores-title">${pending?'Save your score':'HIGH SCORES'}</h2></div>${serverEnabled?'':'<!--'}<div class="score-actions"><button id="server-scores" aria-pressed="${scope==='server'}">Server High Scores</button><button id="local-scores" aria-pressed="${scope==='local'}">This PC High Scores</button></div>${serverEnabled?'':'-->'}<p>${scope==='server'?'Shared by this deployment.':'Saved only in this browser on this device.'} Ties favor the earliest run. First five CHEATER runs sit below every legitimate score.</p>
+  dialog.innerHTML=`<div class="score-heading"><span class="score-eyebrow">THE ROOFTOP RECORD BOOK</span><h2 id="scores-title">${pending?'Save your score':'HIGH SCORES'}</h2></div>${serverEnabled?'':'<!--'}<div class="score-actions"><button id="server-scores" aria-pressed="${scope==='server'}">Server High Scores</button><button id="local-scores" aria-pressed="${scope==='local'}">This device High Scores</button></div>${serverEnabled?'':'-->'}<p>${scope==='server'?'Shared by this deployment.':'Saved only in this browser on this device.'} Ties favor the earliest run. First five CHEATER runs sit below every legitimate score.</p>
   <p id="score-music" aria-live="polite"></p><form id="score-entry" ${pending?'':'hidden'}><div class="saved-name" ${editingName?'hidden':''}><span id="save-as"></span> <button type="button" id="change-name">Change name</button></div><label class="entry-fields" ${editingName?'':'hidden'}>Name <input name="player" maxlength="16" required autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="words" enterkeyhint="done" aria-label="Name or initials"></label><button id="save-score">Save score</button><button type="button" id="skip-score">Skip saving</button></form>
   <p role="status" aria-live="polite"></p><div class="score-list"></div>
   <div class="score-actions"><button id="all-scores">${all?'Show top 10':'Show all scores'}</button><button id="clear-scores">Clear high scores</button><button id="close-scores">Close</button></div>
@@ -105,8 +105,8 @@ function render(){
     if(!name){message('Enter a name or initials.');return;}
     const button=form.querySelector('#save-score') as HTMLButtonElement;button.disabled=true;submitting=true;
     const result={...pending,name};const outcomes:string[]=[];let localOK=false,serverOK=!serverEnabled,nameSaved=false;
-    try{const saved=saveScore(localStorage,result);localOK=true;nameSaved=saved.some((s:any)=>s.id===result.id);outcomes.push(saved.some((s:any)=>s.id===result.id)?'This PC: saved.':'This PC: five CHEATER slots already filled.');}
-    catch{outcomes.push('This PC: could not save; existing records unchanged.');}
+    try{const saved=saveScore(localStorage,result);localOK=true;nameSaved=saved.some((s:any)=>s.id===result.id);outcomes.push(saved.some((s:any)=>s.id===result.id)?'This device: saved.':'This device: five CHEATER slots already filled.');}
+    catch{outcomes.push('This device: could not save; existing records unchanged.');}
     if(serverEnabled)try{const saved=await request('',result);serverOK=true;nameSaved ||= saved.accepted===true;outcomes.push(saved.accepted?'Server: saved.':'Server: five CHEATER slots already filled.');}
     catch(error){outcomes.push('Server: '+(error instanceof Error?error.message:'could not save.'));}
     if(nameSaved)rememberPlayerName(playerStorage(),name);
@@ -138,7 +138,7 @@ function render(){
     try{
       if(clearScope==='server')await request('/clear',{password:value,confirm:true});
       else{readScores(localStorage);if(required&&!await verifyClearPassword(value))throw new Error('Incorrect password. Scores were not cleared.');localStorage.removeItem(SCORE_KEY);}
-      notice=clearScope==='server'?'Server high scores cleared.':'This PC high scores cleared.';render();
+      notice=clearScope==='server'?'Server high scores cleared.':'This device high scores cleared.';render();
     }catch(error){message(error instanceof Error?error.message:'Could not clear shared scores.');}
     finally{button.disabled=false;}
   });
@@ -146,7 +146,7 @@ function render(){
 async function openScores(){
   returnFocus=document.activeElement as HTMLElement;
   await configReady;if(!serverEnabled)scope='local';
-  if(serverEnabled){try{await syncLocalScores();}catch{notice='Some local scores could not sync. They remain on this PC; retry by reopening High Scores.';}}
+  if(serverEnabled){try{await syncLocalScores();}catch{notice='Some local scores could not sync. They remain on this device; retry by reopening High Scores.';}}
   render();
   if(!dialog.open)dialog.showModal();
   fitEntry();

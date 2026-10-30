@@ -1,14 +1,14 @@
 # Seth Happens - Beer Run, Elevator Out of Order
 
-**Version 1.0.0**
+**Version 1.0.1**
 
 ![Seth Happens - Beer Run, Elevator Out of Order](public/assets/title-logo.png)
 
 <p align="center">
-  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 1.0.0"></a>
+  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 1.0.1"></a>
 </p>
 
-**Play version 1.0.0** — Fullscreen highly recommended.
+**Play version 1.0.1** — Fullscreen highly recommended.
 
 **Now with mobile gameplay support!** Choose Default left/right arrows, Sliding Speed Runner or Game Stick. Customize arrow spacing and save your preferred setup. Select **Customize Controls** at the mobile start prompt or in the game menu. **For the best mobile experience, add the game as a Home Screen app and launch its icon in landscape. Direct mobile browser-tab play is not supported for further fixes.** See [How to add as a mobile app](#how-to-add-as-a-mobile-app).
 
@@ -18,9 +18,9 @@ One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and
 
 🎵 **[Listen to the entire video game soundtrack](https://suno.com/playlist/0ef61d61-9481-48f2-b67f-989cffdc9cca)**.
 
-## Version 1.0.0
+## Version 1.0.1
 
-The full release includes centered menu controls and improved rotation layout recovery, contextual photo Recall, compact high-score name entry with remembered names, and confirmed local score clearing without a password on GitHub Pages. Beer is required for a normal delivery; Allison’s “My hero” line plays only when Seth brings it. Missing beer takes priority over photo reminders.
+This maintenance release updates rotation input recovery across gameplay and menus, removes immediate Recall prompts and audio after missed photos, and replaces “This PC” score messages with “This device.” Recall remains available at beer delivery, with keyboard/controller shortcuts preserved. Compact remembered-name score entry and confirmed password-free local clearing on GitHub Pages remain available. Beer is required for a normal delivery; Allison’s “My hero” line plays only when Seth brings it. Missing beer takes priority over photo reminders.
 
 This game now receives minor maintenance and bug fixes. New levels and major enhancements belong to the separate V2 project. Existing gallery images were captured from earlier releases and may show older menu/score-entry layouts. Physical controller, Android and latest iPhone edge-case acceptance remain pending; browser checks do not certify every device.
 
@@ -76,7 +76,7 @@ Portrait mode groups the complete game view and touch controls together, with an
 
 **Launch the Home Screen app in landscape for mobile play**—see [How to add as a mobile app](#how-to-add-as-a-mobile-app). Phones and tablets are offered optional touch controls on their first visit. The game remembers touch versus keyboard/controller choice and restores saved controls on later launches; existing saved customization also counts as completed setup. Controls remain available through **Touch controls**. Home Screen launches omit redundant installation advice. Clearing storage can reset setup; browser and Home Screen storage may be separate. The game keeps its full framing, with translucent controls over the lower corners. Direct mobile browser-tab layout issues are not being pursued further.
 
-Slide the left pad left or right without lifting your thumb; the center stops movement and either outer edge activates sprint. Use the round **Jump** button (double-tap within 300ms for Mega Jump) and **Action** for beer pickup, photos, contextual Recall, finish and elevator. Recall returns to the earliest missed photo; when delivering with photos missing, choose delivery, Recall, or keep playing. Beer is required to finish normally; photos remain optional. Release the pad to stop.
+Slide the left pad left or right without lifting your thumb; the center stops movement and either outer edge activates sprint. Use the round **Jump** button (double-tap within 300ms for Mega Jump) and **Action** for beer pickup, photos, finish and elevator. Recall returns to the earliest missed photo; when delivering with photos missing, choose delivery, Recall, or keep playing. Beer is required to finish normally; photos remain optional. Release the pad to stop.
 
 The **☰** button pauses play and opens the menu: Resume, control customization, restart, scores, sound, music/volume/tracks and fullscreen exit. Keyboard and standard controllers remain available. Owner testing confirmed successful iOS Home Screen gameplay; Android device acceptance remains pending.
 
@@ -194,8 +194,8 @@ Gameplay station, music volume, music on/off and overall sound are remembered in
 
 ## What’s new in 0.3.11
 
-- Floor 26 gives a brief Action reminder after five seconds, then leaves you free to explore. Recall guidance appears briefly only when a photo is actually missed.
-- Recall is offered during play when a photo is missed; it is no longer a mobile menu item.
+- Floor 26 gives a brief Action reminder after five seconds, then leaves you free to explore. At delivery, missing photos offer a choice to finish or Recall.
+- Missed photos show a silent reminder to return. Recall is offered at beer delivery, and is no longer a mobile menu item.
 
 ## What’s new in 0.3.10
 
