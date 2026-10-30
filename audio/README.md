@@ -1,6 +1,6 @@
 # Owner-supplied voice recordings
 
-Provided directly by Nate October 26, 2026; copied byte-for-byte from the named Downloads files. Originals untouched. Local prototype use only; no GitHub upload or public distribution authorized. No voice cloning or robotic browser TTS.
+Provided directly by Nate October 26, 2026; copied byte-for-byte from the named Downloads files. Originals untouched. Owner-supplied recordings used in this game; original source files are preserved. No voice cloning or robotic browser TTS.
 
 | Runtime file | Supplied file | Trigger | Duration |
 | --- | --- | --- | --- |
