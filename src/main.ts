@@ -63,6 +63,8 @@ class Errand extends Phaser.Scene {
   hazards: Hazard[] = []; floor = 0; checkpoint = {x:75,y:ROAD.y-24};
   lastGround = -1000; jumpUntil = 0; immuneUntil = 0; facing = 1; walking = false;
   preload(){
+    this.load.on('progress',(value:number)=>window.dispatchEvent(new CustomEvent('game-startup',{detail:{state:'progress',value}})));
+    this.load.on('loaderror',()=>window.dispatchEvent(new CustomEvent('game-startup',{detail:{state:'error'}})));
     this.load.image('seth-timeout','./assets/seth-timeout-v1.png');
     this.load.spritesheet('seth-walk','./assets/seth-walk.png',walkLayout);
     this.load.spritesheet('seth-fall','./assets/seth-fall-v1.png',fallLayout);
@@ -205,7 +207,7 @@ class Errand extends Phaser.Scene {
     this.introOverlay=this.add.container(0,0,[backdrop,logo,this.introCaption]).setScrollFactor(0).setDepth(50);
     document.getElementById('start-game')!.hidden=false;
     (document.getElementById('touch-menu-open') as HTMLButtonElement).disabled=false;
-    requestAnimationFrame(positionStartGame);
+    requestAnimationFrame(()=>{positionStartGame();window.dispatchEvent(new CustomEvent('game-startup',{detail:{state:'ready'}}));});
   }
   async startIntro(){
     if(this.introStarted||!this.introActive||document.querySelector('dialog[open]'))return;
@@ -980,7 +982,7 @@ async function checkUpdates(manual=false){
  const current=document.getElementById('game-version')!.textContent!.replace(/^v/,'');
  updateStatus.textContent=`v${current} · Checking…`;
  let storage:Storage|undefined;try{storage=sessionStorage;}catch{/* URL guard remains available. */}
- const result=await checkForUpdate({current,url:location.href,storage,manual,navigate:(url:string)=>location.replace(url)});
+ const result=await checkForUpdate({current,url:location.href,storage,manual,navigate:(url:string)=>{window.dispatchEvent(new CustomEvent('game-startup',{detail:{state:'updating'}}));setTimeout(()=>location.replace(url),150);}});
  updateStatus.textContent=`v${current} · ${result==='updating'?'Updating…':result==='current'?'Up to date':result==='stale'?'Reload still returned an older page. Try Check for updates.':'Could not check. Try again online.'}`;
  updateButton.disabled=false;updateChecking=false;
 }

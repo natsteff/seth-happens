@@ -1,14 +1,14 @@
 # Seth Happens - Beer Run, Elevator Out of Order
 
-**Version 1.0.4**
+**Version 1.0.5**
 
 ![Seth Happens - Beer Run, Elevator Out of Order](public/assets/title-logo.png)
 
 <p align="center">
-  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 1.0.4"></a>
+  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 1.0.5"></a>
 </p>
 
-**Play version 1.0.4** — Fullscreen highly recommended.
+**Play version 1.0.5** — Fullscreen highly recommended.
 
 **Now with mobile gameplay support!** Choose Default left/right arrows, Sliding Speed Runner or Game Stick. Customize arrow spacing and save your preferred setup. Select **Customize Controls** at the mobile start prompt or in the game menu. **For the best mobile experience, add the game as a Home Screen app and launch its icon in landscape. Direct mobile browser-tab play is not supported for further fixes.** See [How to add as a mobile app](#how-to-add-as-a-mobile-app).
 
@@ -22,10 +22,10 @@ One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and
 
 Visit **Credits/Jukebox** for Seth’s afterparty, dancing and all 11 music tracks. Pick a song, adjust the volume and stay a while.
 
-## Version 1.0.4
+## Version 1.0.5
 
-- New Credits/Jukebox afterparty with all game music.
-- Improved portrait presentation and miscellaneous bug fixes.
+- Visible loading progress and a Retry option for slow or failed startup.
+- Miscellaneous bug fixes.
 
 This game receives minor improvements and bug fixes. New levels and major enhancements are planned for the separate V2 game.
 
