@@ -259,3 +259,32 @@ html.touch-play-locked #play-area.expanded.touch-mode{position:relative;inset:au
 /* Native modal semantics remain; use the same document coordinate space. */
 .touch-mode dialog:modal{position:absolute}
 .touch-mode .score-dialog[data-entry=true]{position:absolute}
+
+/* The afterparty uses the same document-based modal layout as the game menus. */
+#afterparty{width:min(1140px,98vw);height:min(820px,98dvh);max-width:none;max-height:98dvh;overflow:hidden;padding:0;border:2px solid #83dfcc;border-radius:16px;background:#080d19;color:#e7f6f1}
+#afterparty[open]{display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+#afterparty::backdrop{background:#040913ed}
+#afterparty .party-header{display:flex;justify-content:space-between;align-items:center;margin:0;padding:10px 16px;background:#101c2d;border-bottom:1px solid #335464}
+#afterparty h2{font-size:21px;color:#ffe0a0;margin:2px 0;letter-spacing:.4px}
+.party-eyebrow{font-size:10px;letter-spacing:2px;color:#8ee7d1}
+#afterparty button,#afterparty select{min-height:44px;border:1px solid #739aa9;border-radius:8px;padding:8px 12px;background:#233d55;color:#f0f7f5;font:inherit;touch-action:manipulation}
+#afterparty button:focus-visible,#afterparty select:focus-visible,#afterparty input:focus-visible{outline:3px solid #ffcf91;outline-offset:2px}
+#afterparty #party-close{background:#314b5a;flex:none}
+.party-stage{position:relative;min-height:0;overflow:hidden;background:#070a12;isolation:isolate}
+.party-stage canvas{width:100%;height:100%;display:block}
+.party-credits{position:absolute;left:0;right:0;top:0;z-index:2;text-align:center;padding:0 24px;color:#fff6df;text-shadow:0 2px 5px #000,0 0 12px #000;font-size:clamp(17px,2.5vw,25px);pointer-events:none;background:linear-gradient(90deg,transparent,#080c2280,transparent)}
+.party-credits>div{max-width:880px;margin:0 auto 16px;line-height:1.3}
+.party-credits .credit-title{font-size:clamp(30px,5vw,55px);font-weight:900;color:#ffda8f}
+.party-credits .credit-subtitle{font-size:clamp(22px,3.5vw,34px);font-weight:bold;letter-spacing:5px;color:#a7fff0}
+.party-credits .credit-label{font-size:clamp(15px,2vw,19px);letter-spacing:3px;color:#bceeff;margin-top:30px}
+.party-credits .credit-name{font-size:clamp(25px,4vw,40px);font-weight:bold;color:#ffe1a6}
+.party-deck{padding:10px 16px;background:linear-gradient(135deg,#18283c,#151529);border-top:1px solid #7164a0;display:grid;grid-template-columns:1fr 1.5fr;gap:8px 16px;align-items:center}
+.party-now{display:flex;flex-direction:column;gap:3px;min-width:0}.party-now strong{color:#ffdf9d;font-size:17px}.party-now [role=status]{font-size:12px;color:#97c6d3}
+.party-track-controls{display:flex;align-items:center;gap:7px;min-width:0}.party-track-controls label{font-size:12px}.party-track-controls select{width:100%;min-width:0;max-width:100%;font-size:14px}
+.party-mix{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-size:13px}.party-mix label{white-space:nowrap}.party-mix input{width:min(160px,25vw);accent-color:#91e1cd;min-height:32px}
+#afterparty[data-phase=jukebox] .party-deck{background:linear-gradient(125deg,#253e50,#29203f);border-top:3px solid #c191f3}
+#afterparty [hidden]{display:none!important}
+@media(max-width:540px){#afterparty .party-header{padding:8px 10px}#afterparty h2{font-size:18px}.party-deck{grid-template-columns:1fr;padding:8px 10px;gap:6px}.party-now strong{font-size:15px}.party-mix{gap:7px;font-size:12px}.party-track-controls label{display:none}.party-mix input{flex:1;min-width:70px}.party-credits{padding:0 12px}}
+@media(max-height:480px) and (orientation:landscape){#afterparty{height:98dvh}#afterparty .party-header{padding:4px 12px}#afterparty h2{font-size:16px}#afterparty .party-header .party-eyebrow{display:none}.party-deck{padding:5px 10px;grid-template-columns:minmax(130px,1fr) minmax(200px,1.4fr) minmax(240px,1.5fr);gap:8px}.party-mix{grid-column:auto;gap:5px}.party-mix label{font-size:10px}.party-mix input{width:70px}.party-now strong{font-size:13px}.party-now .party-eyebrow{display:none}#afterparty button,#afterparty select{padding:5px 8px;font-size:12px}.party-track-controls label{display:none}}
+
+.party-loading{position:absolute;inset:45% 12px auto;text-align:center;color:#bceeff;font-size:16px}

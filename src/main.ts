@@ -10,6 +10,7 @@ import { installDialogRotationRecovery } from './dialog-rotation.mjs';
 import { ModalNavigation } from './modal-navigation.mjs';
 import { installOpeningGuard } from './dialog-input.mjs';
 import { controlCopy } from './control-copy.mjs';
+import { createAfterparty } from './afterparty';
 import Phaser from 'phaser';
 import { ControllerInput, keyboardOrControllerMove } from './controller.mjs';
 import './style.css';
@@ -838,15 +839,17 @@ document.querySelectorAll<HTMLButtonElement>('[data-proxy]').forEach(button=>{
 });
 
 const touchMenu=document.getElementById('touch-menu') as HTMLDialogElement;
+let partyScene:Errand|undefined,partyAudioHold=false,partySceneVisible=true;
 function closeTouchMenu(resume=true){
   touchMenu.close();touch.clear();
+  if(resume){gameAudio.music.setHold('afterparty',false);if(partyAudioHold){partyAudioHold=false;void gameAudio.setPaused(false);}}
   const scene=game.scene.scenes[0] as Errand;
   if(resume&&scene?.paused)scene.togglePause();
 }
 const menuButton=document.getElementById('touch-menu-open') as HTMLButtonElement;
 function openTouchMenu(){
   const scene=game.scene.scenes[0] as Errand;
-  if(!scene||(scene.introActive&&scene.introStarted)||scoresOpen()||touchMenu.open||controlSettings?.open||installHelp?.open)return;
+  if(!scene||(scene.introActive&&scene.introStarted)||scoresOpen()||touchMenu.open||controlSettings?.open||installHelp?.open||afterparty.isOpen)return;
   touch.clear();if(!scene.introActive&&!scene.paused&&!scene.won&&!scene.failed)scene.togglePause();
   document.querySelectorAll<HTMLButtonElement>('[data-proxy]').forEach(button=>{button.textContent=controlCopy(Array.from(document.getElementById(button.dataset.proxy!)!.childNodes).map(node=>node.nodeName==='BR'?'\n':node.textContent??'').join(''),touch.enabled);});
   const resume=document.getElementById('touch-resume') as HTMLButtonElement;
@@ -911,6 +914,21 @@ for(const dialog of [controlSettings,installHelp])dialog.addEventListener('close
 // Let native dialog controls receive keys, then stop them reaching gameplay.
 for(const dialog of [touchMenu,controlSettings,installHelp,touchOffer])for(const type of ['keydown','keyup'])dialog.addEventListener(type,event=>event.stopPropagation());
 document.getElementById('start-game')!.addEventListener('click',()=>{gameAudio.unlock();const scene=game.scene.scenes[0] as Errand;void scene?.startIntro();});
+const afterparty=createAfterparty(()=>{
+ if(partyScene){partyScene.scene.setVisible(partySceneVisible);partyScene.scene.resume();}
+ partyScene=undefined;touch.clear();openTouchMenu();
+});
+function openCredits(){
+ const scene=game.scene.scenes[0] as Errand;
+ if(!scene||afterparty.isOpen||scoresOpen()||(scene.introActive&&scene.introStarted))return;
+ closeTouchMenu(false);
+ if(!scene.introActive&&!scene.paused&&!scene.won&&!scene.failed)scene.togglePause();
+ gameAudio.music.setHold('afterparty',true);partyAudioHold=true;void gameAudio.setPaused(true);
+ partyScene=scene;partySceneVisible=scene.sys.settings.visible;scene.scene.setVisible(false);scene.scene.pause();afterparty.open();
+}
+for(const [parent,id] of [[document.querySelector('.sound-row')!,'credits-open'],[touchMenu.querySelector('.touch-menu-actions')!,'touch-credits']] as const){
+ const button=document.createElement('button');button.id=id;button.type='button';button.textContent='Credits/Jukebox';button.addEventListener('click',openCredits);parent.append(button);
+}
 applyControls();
 const priorSetup=readMobileSetup(setupStorage);
 const mobileStart=mobileStartup({touchCapable:navigator.maxTouchPoints>0||matchMedia('(pointer: coarse)').matches,setup:priorSetup});
