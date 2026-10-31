@@ -1,4 +1,4 @@
-# Afterparty artwork — v1.0.3
+# Afterparty artwork — v1.0.4
 
 Generated with the **built-in imagegen tool**, using the owner's BT-AI artwork/DJ portrait and the existing Seth character image as references. No CLI/API fallback. Original inputs remain unchanged in the private reference folder; they are not public-release assets.
 

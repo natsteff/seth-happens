@@ -1,6 +1,6 @@
 # Credits/Jukebox afterparty
 
-Included in v1.0.3.
+Included in v1.0.4.
 
 Open **Credits/Jukebox** from the desktop controls or game menu. The game pauses while the presentation runs; Close or Escape stops/unloads the jukebox stream and returns to the game menu. Resume continues the preserved run. Opening from the title or an ended run also returns to its appropriate menu. No scores, objectives, route or physics change.
 

@@ -20,7 +20,7 @@ export class AfterpartyArt{
  resize(){
   const rect=this.canvas.getBoundingClientRect(),density=Math.min(2,window.devicePixelRatio||1);
   this.canvas.width=Math.max(1,Math.round(rect.width*density));this.canvas.height=Math.max(1,Math.round(rect.height*density));
-  this.width=1100;this.height=Math.max(600,1100*rect.height/Math.max(1,rect.width));
+  this.width=1100;this.height=600;
  }
  private image(key:string,crop?:Crop):Art|undefined{const image=this.images.get(key);return image?{image,crop}:undefined;}
  private sprite(art:Art|undefined,x:number,y:number,w:number,h:number,angle=0,flip=false){
@@ -79,7 +79,7 @@ export class AfterpartyArt{
  render(ms:number,phase:string,dance:string,reduced:boolean){
   const c=this.ctx,w=this.width,h=this.height,t=(reduced?0:ms)/1000;
   c.setTransform(1,0,0,1,0,0);c.fillStyle='#000';c.fillRect(0,0,this.canvas.width,this.canvas.height);
-  const scale=Math.min(this.canvas.width/w,this.canvas.height/h);c.setTransform(scale,0,0,scale,(this.canvas.width-w*scale)/2,0);
+  const scale=Math.min(this.canvas.width/w,this.canvas.height/h);c.setTransform(scale,0,0,scale,(this.canvas.width-w*scale)/2,(this.canvas.height-h*scale)/2);
   if(phase==='jukebox'){this.finalLogo();return;}
   const lit=phase!=='spotlight';
   if(lit){

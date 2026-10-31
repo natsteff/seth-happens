@@ -1,14 +1,14 @@
 # Seth Happens - Beer Run, Elevator Out of Order
 
-**Version 1.0.3**
+**Version 1.0.4**
 
 ![Seth Happens - Beer Run, Elevator Out of Order](public/assets/title-logo.png)
 
 <p align="center">
-  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 1.0.3"></a>
+  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 1.0.4"></a>
 </p>
 
-**Play version 1.0.3** — Fullscreen highly recommended.
+**Play version 1.0.4** — Fullscreen highly recommended.
 
 **Now with mobile gameplay support!** Choose Default left/right arrows, Sliding Speed Runner or Game Stick. Customize arrow spacing and save your preferred setup. Select **Customize Controls** at the mobile start prompt or in the game menu. **For the best mobile experience, add the game as a Home Screen app and launch its icon in landscape. Direct mobile browser-tab play is not supported for further fixes.** See [How to add as a mobile app](#how-to-add-as-a-mobile-app).
 
@@ -20,13 +20,14 @@ One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and
 
 ## Credits/Jukebox afterparty
 
-The Credits/Jukebox afterparty includes: a photorealistic BT-AI venue/DJ, new full-body Seth dance frames, 20-second credits and a timed spotlight finale lead to a jukebox with all 11 game music tracks. The final view keeps a large logo and taglines on black above the persistent music controls. Eye of the Stairwell is the default; Close returns to the menu with the run preserved. See [afterparty details](docs/afterparty.md).
+Visit **Credits/Jukebox** for Seth’s afterparty, dancing and all 11 music tracks. Pick a song, adjust the volume and stay a while.
 
-## Version 1.0.3
+## Version 1.0.4
 
-This maintenance release keeps mobile expanded play in the document layout and preserves native dialogs during rotation, addressing the repeated-rotation input issue. Physical iPhone confirmation is still pending. Missed-photo reminders stay silent and score messages use “This device.” Recall remains available at beer delivery, with keyboard/controller shortcuts preserved. Compact remembered-name score entry and confirmed password-free local clearing on GitHub Pages remain available. Beer is required for a normal delivery; Allison’s “My hero” line plays only when Seth brings it. Missing beer takes priority over photo reminders.
+- New Credits/Jukebox afterparty with all game music.
+- Improved portrait presentation and miscellaneous bug fixes.
 
-This game now receives minor maintenance and bug fixes. New levels and major enhancements belong to the separate V2 project. Existing gallery images were captured from earlier releases and may show older menu/score-entry layouts. Physical controller, Android and latest iPhone edge-case acceptance remain pending; browser checks do not certify every device.
+This game receives minor improvements and bug fixes. New levels and major enhancements are planned for the separate V2 game.
 
 ## Fun Things to Explore
 
