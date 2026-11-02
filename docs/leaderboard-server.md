@@ -1,6 +1,8 @@
-# Shared leaderboard deployment
+# Optional Node leaderboard deployment
 
-Server-enabled deployments need their own score API and persistent JSON text file. All players of that deployment share those scores; independently hosted copies should use separate score files. A separate This PC list preserves browser scores. Old browser records sync automatically when server scores are enabled. New submitted runs attempt both lists.
+The Play Now release uses Firebase shared scores alongside device scores. This guide is for separately hosted Node installations: set `onlineScores.enabled:false` before enabling the Node service below.
+
+Server-enabled deployments need their own score API and persistent JSON text file. All players of that deployment share those scores; independently hosted copies should use separate score files. A separate This device list preserves browser scores. Old browser records sync automatically when server scores are enabled. New submitted runs attempt both lists.
 
 ## Run the server
 

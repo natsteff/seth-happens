@@ -1,0 +1,103 @@
+rules_version = '2';
+service cloud.firestore {
+ match /databases/{database}/documents {
+  function signed(){return request.auth != null;}
+  function budgetPath(){return /databases/$(database)/documents/games/beer-run/budgets/$(request.auth.uid);}
+  function scorePath(board,key){return /databases/$(database)/documents/games/beer-run/boards/$(board)/scores/$(key);}
+  function receiptPath(key){return /databases/$(database)/documents/games/beer-run/receipts/$(key);}
+  function slotsPath(){return /databases/$(database)/documents/games/beer-run/slots/live;}
+  function boardOK(board){return board in ['live','historical'];}
+  function keyOK(key){return key.matches('^[a-f0-9]{64}$');}
+  function payloadOK(p,board){
+   return p.keys().hasAll(['schema','gameId','levelId','rulesetId','source','id','name','score','dateMs','elapsedMs','bonus','falls','squishes','bumps','photos','latePhotos','beer','cheater'])
+    && p.keys().hasOnly(['schema','gameId','levelId','rulesetId','source','id','name','score','dateMs','elapsedMs','bonus','falls','squishes','bumps','photos','latePhotos','beer','cheater'])
+    && p.schema==1 && p.gameId=='beer-run' && p.levelId=='rooftop'
+    && p.id is string && p.id.size()>0 && p.id.size()<=128 && !p.id.matches('.*[\\x00-\\x1f\\x7f].*')
+    && p.name is string && p.name.size()>0 && p.name.size()<=16 && p.name.matches('.*[^ ].*') && !p.name.matches('.*[\\x00-\\x1f\\x7f].*')
+    && p.score is int && p.dateMs is int && p.dateMs>=0 && p.dateMs<=request.time.toMillis()+86400000
+    && p.falls is int && p.falls>=0 && p.falls<=100000 && p.squishes is int && p.squishes>=0 && p.squishes<=100000 && p.bumps is int && p.bumps>=0 && p.bumps<=100000
+    && p.photos is int && p.photos>=0 && p.photos<=2 && p.latePhotos is int && p.latePhotos>=0 && p.latePhotos<=p.photos
+    && p.beer is bool && p.cheater is bool && p.elapsedMs is number && p.bonus is number
+    && (p.cheater ? p.score == -10000 : p.score>=0 && p.score<=14000)
+    && (board=='historical' ? p.source=='historical' && p.rulesetId=='legacy' && p.elapsedMs>=-1 && p.elapsedMs<180000 && p.bonus>=-1 && p.bonus<=12000
+      : p.source=='new' && p.rulesetId=='current-120-v1' && p.elapsedMs>=0 && p.elapsedMs<120000 && (p.beer||p.cheater) && newTotal(p));
+  }
+  function nonnegative(n){return n>0?n:0;}
+  function newTotal(p){
+   let bonus=p.cheater?0:nonnegative(120-math.ceil(p.elapsedMs / 1000.0))*100;
+   let base=nonnegative(1000+(p.photos-p.latePhotos)*250+p.latePhotos*125+(p.beer?500:0)-10*(p.falls+p.squishes+p.bumps));
+   return p.bonus==bonus && p.score==(p.cheater?-10000:base+bonus);
+  }
+  function budgetAfter(key,board){
+   let b=getAfter(budgetPath()).data;
+   return b.lastRunKey==key && b.board==board && b.lastAt==request.time;
+  }
+  function privateReceipt(key,board){let r=getAfter(receiptPath(key)).data;return r.uid==request.auth.uid && r.board==board && r.receivedAt==request.time;}
+  match /games/beer-run/boards/{board}/scores/{key} {
+   allow get: if signed() && boardOK(board);
+   allow list: if signed() && boardOK(board) && request.query.limit<=50;
+   allow create: if signed() && boardOK(board) && keyOK(key)
+    && request.resource.data.keys().hasOnly(['payload','receivedAt','slot'])
+    && request.resource.data.receivedAt==request.time && payloadOK(request.resource.data.payload,board)
+    && budgetAfter(key,board) && privateReceipt(key,board)
+    && (board=='live' && request.resource.data.payload.cheater
+      ? request.resource.data.slot==getAfter(slotsPath()).data.count && getAfter(slotsPath()).data.lastRunKey==key
+      : request.resource.data.slot==0);
+   allow update,delete: if false;
+  }
+  match /games/beer-run/receipts/{key} {
+   allow get: if signed() && resource.data.uid==request.auth.uid;
+   allow create: if signed() && keyOK(key) && request.resource.data.keys().hasOnly(['uid','board','digest','receivedAt'])
+    && request.resource.data.uid==request.auth.uid && boardOK(request.resource.data.board)
+    && request.resource.data.digest is string && request.resource.data.digest.matches('^[a-f0-9]{64}$') && request.resource.data.receivedAt==request.time
+    && !exists(scorePath(request.resource.data.board,key))
+    && existsAfter(scorePath(request.resource.data.board,key)) && budgetAfter(key,request.resource.data.board);
+   allow update,delete,list: if false;
+  }
+  function validBudget(b,previous,reset){
+   return b.keys().hasOnly(['windowStartedAt','lastAt','lastRunKey','board','liveCount','historicalCount'])
+    && boardOK(b.board) && keyOK(b.lastRunKey) && b.lastAt==request.time
+    && b.windowStartedAt==(reset?request.time:previous.windowStartedAt)
+    && b.liveCount is int && b.historicalCount is int
+    && b.liveCount==(reset?0:previous.liveCount)+(b.board=='live'?1:0)
+    && b.historicalCount==(reset?0:previous.historicalCount)+(b.board=='historical'?1:0)
+    && b.liveCount<=60 && b.historicalCount<=100
+    && !exists(scorePath(b.board,b.lastRunKey)) && existsAfter(scorePath(b.board,b.lastRunKey));
+  }
+  match /games/beer-run/budgets/{uid} {
+   allow get: if signed() && uid==request.auth.uid;
+   allow create: if signed() && uid==request.auth.uid && validBudget(request.resource.data,{},true);
+   allow update: if signed() && uid==request.auth.uid && request.time>=resource.data.lastAt+duration.value(1,'s')
+    && validBudget(request.resource.data,resource.data,request.time>=resource.data.windowStartedAt+duration.value(24,'h'));
+   allow delete,list: if false;
+  }
+  match /games/beer-run/slots/{board} {
+   allow get: if signed() && board=='live';
+   allow create,update: if signed() && board=='live' && request.resource.data.keys().hasOnly(['count','lastRunKey'])
+    && request.resource.data.count is int && request.resource.data.count==(exists(slotsPath())?resource.data.count:0)+1 && request.resource.data.count<=5
+    && keyOK(request.resource.data.lastRunKey) && !exists(scorePath('live',request.resource.data.lastRunKey))
+    && getAfter(scorePath('live',request.resource.data.lastRunKey)).data.payload.cheater==true
+    && getAfter(scorePath('live',request.resource.data.lastRunKey)).data.slot==request.resource.data.count
+    && budgetAfter(request.resource.data.lastRunKey,'live') && privateReceipt(request.resource.data.lastRunKey,'live');
+   allow delete,list: if false;
+  }
+  match /games/beer-run/installations/{id} {
+   allow get: if signed() && (!exists(/databases/$(database)/documents/games/beer-run/installations/$(id)) || resource.data.uid==request.auth.uid);
+   allow create,update: if signed() && id.size()==36 && request.resource.data.uid==request.auth.uid
+    && (!exists(/databases/$(database)/documents/games/beer-run/installations/$(id)) || resource.data.uid==request.auth.uid)
+    && request.resource.data.keys().hasOnly(['uid','firstSeen','updatedAt','baselineStatus','hadExisting','consent','boardUsed','total','invalid','eligible','imported','duplicates','pending','rejected','conflicts','everFailed','failedPending','newSubmitted','lastError'])
+    && request.resource.data.updatedAt==request.time
+    && (exists(/databases/$(database)/documents/games/beer-run/installations/$(id)) ? request.resource.data.firstSeen==resource.data.firstSeen : request.resource.data.firstSeen==request.time)
+    && request.resource.data.baselineStatus in ['empty','valid','partial','corrupt','unavailable']
+    && request.resource.data.hadExisting is bool && request.resource.data.boardUsed is bool && request.resource.data.consent in ['ask','yes','later']
+    && request.resource.data.everFailed is bool && request.resource.data.newSubmitted is bool && request.resource.data.failedPending is int && request.resource.data.failedPending>=0
+    && request.resource.data.lastError is string && request.resource.data.lastError.size()<=128
+    && request.resource.data.total is int && request.resource.data.total>=0 && request.resource.data.total<=1000000
+    && request.resource.data.invalid is int && request.resource.data.invalid>=0 && request.resource.data.eligible is int && request.resource.data.eligible>=0
+    && request.resource.data.imported is int && request.resource.data.imported>=0 && request.resource.data.duplicates is int && request.resource.data.duplicates>=0
+    && request.resource.data.pending is int && request.resource.data.pending>=0 && request.resource.data.rejected is int && request.resource.data.rejected>=0 && request.resource.data.conflicts is int && request.resource.data.conflicts>=0;
+   allow list,delete: if false;
+  }
+  match /{document=**}{allow read,write:if false;}
+ }
+}

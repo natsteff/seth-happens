@@ -1,0 +1,6 @@
+# These dependencies work here without optional install-time scripts/native RE2.
+# Explicit denials prevent pnpm from repeatedly prompting during builds.
+allowBuilds:
+  '@firebase/util': false
+  protobufjs: false
+  re2: false

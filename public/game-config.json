@@ -1,5 +1,14 @@
 {
   "serverHighScores": false,
   "scoreApiUrl": "/api/scores",
-  "clearPasswordRequired": true
+  "clearPasswordRequired": true,
+  "onlineScores": {
+    "enabled": true,
+    "firebase": {
+      "apiKey": "AIzaSyCmlpcilw9cL7bwda03wnIslC2P4gMePqA",
+      "authDomain": "seth-happens.firebaseapp.com",
+      "projectId": "seth-happens",
+      "appId": "1:489092472146:web:d7dd4dc404e0e3236d2e8b"
+    }
+  }
 }

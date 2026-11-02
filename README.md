@@ -1,18 +1,18 @@
 # Seth Happens - Beer Run, Elevator Out of Order
 
-**Version 1.0.5**
+**Version 1.0.6**
 
 ![Seth Happens - Beer Run, Elevator Out of Order](public/assets/title-logo.png)
 
 <p align="center">
-  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 1.0.5"></a>
+  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 1.0.6"></a>
 </p>
 
-**Play version 1.0.5** — Fullscreen highly recommended.
+**Play version 1.0.6** — Fullscreen highly recommended.
 
 **Now with mobile gameplay support!** Choose Default left/right arrows, Sliding Speed Runner or Game Stick. Customize arrow spacing and save your preferred setup. Select **Customize Controls** at the mobile start prompt or in the game menu. **For the best mobile experience, add the game as a Home Screen app and launch its icon in landscape. Direct mobile browser-tab play is not supported for further fixes.** See [How to add as a mobile app](#how-to-add-as-a-mobile-app).
 
-**Play Now on GitHub Pages uses local browser high scores only. Server-wide high scores cannot run on GitHub Pages; they require a server-enabled installation.**
+**Shared online high scores are now available alongside This device scores. Local scores remain available if the connection fails.**
 
 One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and Ellowyn before the 120-second deadline. See if you can find the 'easter egg'!
 
@@ -22,10 +22,10 @@ One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and
 
 Visit **Credits/Jukebox** for Seth’s afterparty, dancing and all 11 music tracks. Pick a song, adjust the volume and stay a while.
 
-## Version 1.0.5
+## Version 1.0.6
 
-- Visible loading progress and a Retry option for slow or failed startup.
-- Miscellaneous bug fixes.
+- Shared online high scores, with local saving and automatic fallback.
+- Optional import of existing scores into a separate Historical leaderboard.
 
 This game receives minor improvements and bug fixes. New levels and major enhancements are planned for the separate V2 game.
 
@@ -108,13 +108,13 @@ Five backing tracks are selectable in the SETH FM bar. **Arcade Staircase** is d
 
 The countdown displays seconds (120s → 0s), and run times in score screens use seconds. Existing scores and point totals are preserved. Historical finishes at or above the new limit are labelled “previous time limit”; they are not deleted or treated as newly valid runs.
 
-## Optional server high scores
+## High scores
 
-High Scores opens your existing local browser list directly by default, including on the **Play Now** GitHub Pages version. Server scores default off in `public/game-config.json` (deployed as `game-config.json`).
+**Online** shares new scores across players. **This device** keeps your existing browser records. Saving always attempts the device copy first; online submissions queue for retry if needed. If Firebase or the internet is unavailable, the score screen falls back to This device.
 
-Server installations can enable **Server High Scores** alongside **This PC High Scores**. New runs attempt both lists, with separate save results. Existing local records automatically sync to that deployment’s server when enabled, without deleting local scores or duplicating imports. Failed syncs retry when reopening scores or reconnecting. Older untimed runs retain their original score and date without an invented timer bonus. Each hosted copy has its own shared records.
+Choose **Import old scores** to copy eligible existing records into **Historical**, or **Not now**. Originals stay on your device; duplicate imports do not create another shared score. Nicknames and run details become public when shared. Historical results may lack timing data and are labelled separately.
 
-Server-wide scores require a running score service; GitHub Pages cannot provide it. See [server setup](docs/leaderboard-server.md). Clearing acts on the selected list only and always requires confirmation. GitHub Pages local scores do not require a password; other installations are password-protected by default, with separate local/server configuration options.
+Use **Use local only** to pause online sync. Clearing device scores does not clear the online boards or pending submissions. Shared scores are casual player-reported results; owner moderation is separate. [Privacy and migration](public/docs/online-scores-privacy.html) · [Online setup](docs/online-scores.md). Other server installations can still use the optional [Node leaderboard](docs/leaderboard-server.md).
 
 ## Screenshots
 
@@ -266,7 +266,7 @@ Gameplay station, music volume, music on/off and overall sound are remembered in
 - Optional standard-layout gamepad support alongside keyboard controls (physical controller acceptance still pending).
 - Updated walking/falling/carrying sprites, faster sprint cadence, earlier fall audio and solid landed hazards.
 - Richer timeout presentation, clearer controls/layout and removal of the old jump-clue toggle.
-- Existing browser high scores remain preserved; Play Now still uses local-only scores.
+- Existing browser high scores remain preserved alongside the online boards.
 
 ## Local development
 
@@ -279,7 +279,7 @@ pnpm test
 pnpm build
 ```
 
-The repository uses relative asset URLs for GitHub Pages. Source is on main; the compiled playable site is on gh-pages. The shared leaderboard requires the server setup above; GitHub Pages hosts only the game files. No player accounts or analytics.
+The repository uses relative asset URLs for GitHub Pages. Source is on main; the compiled playable site is on gh-pages. GitHub Pages hosts the game files; Firebase provides the shared leaderboard. No mandatory player registration. Only limited private migration reporting is included, with no general analytics.
 
 Owner-supplied character references, logo and audio; generated character artwork and original code-drawn props/effects. The Minnesota United crest is owner supplied for an unofficial fan scene; no affiliation or endorsement. Raw reference photographs are not included. See [asset and dependency notices](THIRD_PARTY_NOTICES.md).
 
@@ -287,4 +287,4 @@ Owner-supplied character references, logo and audio; generated character artwork
 
 Successful names are remembered in this browser: use Save as the last name or Change name. New/changed names use a compact keyboard-aware form; Return saves, and the full record list appears afterward. Full names remain supported up to 16 characters. This preference is separate from stored scores.
 
-On github.io, clearing this device’s browser scores requires confirmation but no password. Other deployments require the existing clear password by default; owners can set `clearPasswordRequired:false` in `game-config.json` for local scores. Shared leaderboard clearing has its own server-side setting in `server/config.json` and cannot be unlocked by the client hostname. Alternate installations should retain protection unless intentionally opting out. Clearing one list never clears the other.
+On github.io, clearing this device’s browser scores requires confirmation but no password. Other deployments require the existing clear password by default; owners can set `clearPasswordRequired:false` in `game-config.json` for local scores. Firebase board removal is owner-only. Optional Node leaderboard installations have a separate server-side clearing setting in `server/config.json`, unaffected by the client hostname. Alternate installations should retain protection unless intentionally opting out. Clearing one list never clears the other.

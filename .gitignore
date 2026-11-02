@@ -5,3 +5,9 @@ dist/
 data/
 .env
 .env.*
+
+# Local Firebase tooling state
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
