@@ -14,6 +14,7 @@ let scope:'server'|'local'|'online'|'historical'='local';
 let online:OnlineScores|undefined;
 let onlinePage:any=null,onlineRows:any[]=[],onlineMore=false;
 let onlineBoard='';
+let onlineRevision=0;
 
 let notice='';
 let returnFocus:HTMLElement|null=null;
@@ -42,7 +43,7 @@ const configReady=fetch(new URL('./game-config.json',document.baseURI),{cache:'n
     const {FirebaseScores}=await import('./firebase-scores');
     let storage:Storage|undefined;try{storage=localStorage;}catch{}
     online=new OnlineScores({storage,transport:new FirebaseScores(config.onlineScores.firebase,emulator)});
-    online.subscribe(()=>{if(dialog.open)void syncOnlinePanel();});
+    online.subscribe(()=>{if(dialog.open){void syncOnlinePanel();if(!pending&&scope==='online'&&online!.revision!==onlineRevision){onlineRevision=online!.revision;onlineBoard='';onlinePage=null;onlineRows=[];render();}}});
     await online.start();scope=online.localOnly?'local':'online';serverEnabled=false;
    }
   })
@@ -72,9 +73,9 @@ function render(){
   const draft=dialog.querySelector('[name="player"]') as HTMLInputElement|null;
   if(draft)nameDraft=draft.value;
   dialog.dataset.entry=String(!!pending);
-  dialog.innerHTML=`<div class="score-heading"><span class="score-eyebrow">THE ROOFTOP RECORD BOOK</span><h2 id="scores-title">${pending?'Save your score':'HIGH SCORES'}</h2></div>${serverEnabled||online?'':'<!--'}<div class="score-actions">${online?`<button id="online-scores" aria-pressed="${scope==='online'}">Online</button><button id="historical-scores" aria-pressed="${scope==='historical'}">Historical</button>`:`<button id="server-scores" aria-pressed="${scope==='server'}">Server High Scores</button>`}<button id="local-scores" aria-pressed="${scope==='local'}">This device High Scores</button></div>${serverEnabled||online?'':'-->'}<p>${scope==='online'?'Shared online, casual player-reported scores.':scope==='historical'?'Imported historical scores; dates/totals are not independently verified.':scope==='server'?'Shared by this deployment.':'Saved only in this browser on this device.'} Ties favor the earliest run. First five CHEATER runs sit below every legitimate score.</p>
+  dialog.innerHTML=`<div class="score-heading"><span class="score-eyebrow">THE ROOFTOP RECORD BOOK</span><h2 id="scores-title">${pending?'Save your score':'HIGH SCORES'}</h2></div>${serverEnabled||online?'':'<!--'}<div class="score-actions">${online?`<button id="online-scores" aria-pressed="${scope==='online'}">Online</button>`:`<button id="server-scores" aria-pressed="${scope==='server'}">Server High Scores</button>`}<button id="local-scores" aria-pressed="${scope==='local'}">This device</button></div>${serverEnabled||online?'':'-->'}<p>${scope==='online'?'Scores from all players.':scope==='historical'?'Imported historical scores; dates/totals are not independently verified.':scope==='server'?'Shared by this deployment.':'Saved only in this browser on this device.'}</p>
   <p id="score-music" aria-live="polite"></p><form id="score-entry" ${pending?'':'hidden'}><div class="saved-name" ${editingName?'hidden':''}><span id="save-as"></span> <button type="button" id="change-name">Change name</button></div><label class="entry-fields" ${editingName?'':'hidden'}>Name <input name="player" maxlength="16" required autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="words" enterkeyhint="done" aria-label="Name or initials"></label><button id="save-score">Save score</button>${online&&!online.localOnly?'<small>Nickname and score will be public online.</small>':''}<button type="button" id="skip-score">Skip saving</button></form>
-  <p role="status" aria-live="polite"></p>${online?`<section id="online-panel" ${pending?'hidden':''}><p id="online-sync" role="status"></p><div id="migration-offer" hidden><p>Import existing scores to the public Historical leaderboard? Nicknames and scores become public. Originals stay on this device.</p><button id="migration-yes" type="button">Import old scores</button><button id="migration-later" type="button">Not now</button></div><small>Online mode records an anonymous installation ID and migration status privately; no device fingerprinting. <a href="./docs/online-scores-privacy.html" target="_blank" rel="noopener">Privacy &amp; migration</a></small><div class="score-actions"><button id="sync-retry" type="button">Retry sync</button><button id="local-only" type="button"></button><button id="review-import" type="button">Review old-score import</button></div></section>`:''}<div class="score-list"></div>
+  <p role="status" aria-live="polite"></p>${online?`<p id="online-sync" role="status" ${pending?'hidden':''}></p>`:''}<div class="score-list"></div>
   <div class="score-actions"><button id="all-scores">${scope==='online'||scope==='historical'?'Show more':all?'Show top 10':'Show all scores'}</button><button id="clear-scores" ${(scope==='online'||scope==='historical')?'hidden':''}>Clear high scores</button><button id="close-scores">Close</button></div>
   <form id="clear-form" hidden><label id="clear-password-label">Clear password <input name="password" type="password" autocomplete="off"></label><label><input name="confirm" type="checkbox" required> Permanently delete all ${scope==='server'?'server':'this browser’s'} scores</label>${online?'<p>Online scores and pending online submissions are separate; pending submissions will still sync.</p>':''}<button>Confirm clear</button><button type="button" id="cancel-clear">Cancel</button></form>`;
   (dialog.querySelector('#save-as') as HTMLElement).textContent=`Save as ${nameDraft}`;
@@ -141,7 +142,7 @@ function render(){
   dialog.querySelector('#skip-score')!.addEventListener('click',()=>{if(submitting)return;pending=null;nameDraft='';render();});
   dialog.querySelector('#cancel-clear')!.addEventListener('click',()=>{(dialog.querySelector('#clear-form') as HTMLFormElement).reset();(dialog.querySelector('#clear-form') as HTMLFormElement).hidden=true;});
   dialog.querySelector('#server-scores')?.addEventListener('click',()=>{scope='server';notice='';render();});
-  for(const [id,next] of [['online-scores','online'],['historical-scores','historical']] as const)dialog.querySelector(`#${id}`)?.addEventListener('click',()=>{scope=next;onlineBoard='';onlinePage=null;onlineRows=[];notice='';render();});
+  dialog.querySelector('#online-scores')?.addEventListener('click',()=>{void online?.setLocalOnly(false).then(()=>{scope='online';onlineBoard='';onlinePage=null;onlineRows=[];notice='';render();});});
   bindOnlinePanel();
   dialog.querySelector('#local-scores')?.addEventListener('click',()=>{scope='local';notice='';render();});
   dialog.querySelector('#all-scores')!.addEventListener('click',()=>{if(scope==='online'||scope==='historical'){if(onlineMore)render();}else{all=!all;render();}});
@@ -191,7 +192,7 @@ gameAudio.music.subscribe(updateScoreMusic);
 
 async function onlineResults(requestRevision:number){
  if(!online||online.localOnly)return {scores:[]};
- const board=scope==='historical'?'historical':'live';
+ const board='all';
  try{
   const page=await online.list(board,onlineBoard===board?onlinePage:undefined);
   if(requestRevision!==revision)return {scores:[]};
@@ -209,18 +210,10 @@ async function onlineResults(requestRevision:number){
 }
 async function syncOnlinePanel(){
  if(!online||!dialog.open)return;
- const summary=await online.summary().catch(()=>null);
- const label=dialog.querySelector('#online-sync');if(label)label.textContent=[online.localOnly?'Local-only mode.':online.status,summary&&summary.eligible?`Historical: ${summary.imported} imported, ${summary.duplicates} already online, ${summary.pending} pending, ${summary.invalid+summary.conflicts} need review.`:'',online.baseline?.status==='corrupt'?'Existing storage is unreadable; nothing was changed.':''].filter(Boolean).join(' ');
- const offer=dialog.querySelector('#migration-offer') as HTMLElement|null;if(offer)offer.hidden=online.localOnly||online.consent!=='ask'||!online.migrationAvailable;
- const toggle=dialog.querySelector('#local-only');if(toggle)toggle.textContent=online.localOnly?'Enable online scores':'Use local only';
- const more=dialog.querySelector('#all-scores') as HTMLButtonElement|null;if(more&&(scope==='online'||scope==='historical'))more.disabled=!onlineMore;
+ const jobs=await online.store.jobs().catch(()=>[]);
+ const waiting=jobs.filter((job:any)=>job.state==='pending');
+ const label=dialog.querySelector('#online-sync');
+ if(label)label.textContent=waiting.length?(waiting.some((job:any)=>job.error&&job.error!=='pacing')?'Online unavailable. Scores are safe on this device and will retry automatically.':'Saving scores online…'):'';
+ const more=dialog.querySelector('#all-scores') as HTMLButtonElement|null;if(more&&scope==='online')more.disabled=!onlineMore;
 }
-function bindOnlinePanel(){
- if(!online)return;
- dialog.querySelector('#migration-yes')?.addEventListener('click',()=>{void online!.setConsent('yes').then(()=>syncOnlinePanel()).catch(()=>message('Could not prepare import. Originals are unchanged.'));});
- dialog.querySelector('#migration-later')?.addEventListener('click',()=>{void online!.setConsent('later').then(()=>syncOnlinePanel());});
- dialog.querySelector('#review-import')?.addEventListener('click',()=>{void online!.setConsent('ask').then(()=>syncOnlinePanel());});
- dialog.querySelector('#sync-retry')?.addEventListener('click',()=>{void online!.retry().catch(()=>message('Retry unavailable; existing scores remain safe.'));});
- dialog.querySelector('#local-only')?.addEventListener('click',()=>{void online!.setLocalOnly(!online!.localOnly).then(()=>{scope=online!.localOnly?'local':'online';onlineBoard='';onlinePage=null;onlineRows=[];render();});});
- void syncOnlinePanel();
-}
+function bindOnlinePanel(){void syncOnlinePanel();}

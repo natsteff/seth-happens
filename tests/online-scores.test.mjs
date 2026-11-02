@@ -22,9 +22,9 @@ test('exclusive expiring lease and atomic new-run markers survive multiple tabs'
  const s=make(),other=new ScoreOutbox(s.indexedDB);assert.equal(await s.claim('a',100),true);assert.equal(await other.claim('b',101),false);assert.equal(await other.claim('b',30200),true);await s.release('a');assert.equal(await s.claim('a',30201),false);await other.release('b');assert.equal(await s.claim('a',30202),true);
  await Promise.all([s.rememberRun(run('a')),other.rememberRun(run('b'))]);assert.equal((await s.get('new-runs')).length,2);
 });
-test('migration requires confirmation, rescan recovers interrupted imports, local array untouched',async()=>{
- const s=make(),api={submit:async()=> 'accepted',report:async()=>{}},o=new OnlineScores({store:s,storage:storage(JSON.stringify([run('old')])),transport:api,visible:()=>false});await o.start();assert.equal((await s.jobs()).length,0);
- await o.setConsent('yes');assert.equal((await s.jobs()).length,1);assert.equal((await s.jobs())[0].payload.source,'historical');
+test('migration starts automatically, rescan recovers interrupted imports, local array untouched',async()=>{
+ const s=make(),api={submit:async()=> 'accepted',report:async()=>{}},o=new OnlineScores({store:s,storage:storage(JSON.stringify([run('old')])),transport:api,visible:()=>false});await o.start();assert.equal((await s.jobs()).length,1);
+ assert.equal(o.consent,'yes');assert.equal((await s.jobs()).length,1);assert.equal((await s.jobs())[0].payload.source,'historical');
  await o.enqueue(run('new'));await o.recover();assert.equal((await s.jobs()).length,2);assert.equal((await s.jobs()).find(j=>j.payload.id==='new').payload.source,'new');o.dispose();
 });
 test('network failure retains pending outbox, acknowledgment loss replays as duplicate, counts once',async()=>{
@@ -45,4 +45,8 @@ test('migration report distinguishes imports/duplicates/failed/pending and never
 
 test('blocked local score storage is unknown, never miscounted as a new empty installation',async()=>{
  const o=new OnlineScores({store:make(),storage:{getItem(){throw Error('blocked');}},visible:()=>false});await o.start();assert.equal(o.baseline.status,'unavailable');assert.equal(o.scan.status,'unavailable');o.dispose();
+});
+
+test('automatic startup supersedes old Not now and never deletes local records',async()=>{
+ const s=make();await s.set('migration-consent','later');const o=new OnlineScores({store:s,storage:storage(JSON.stringify([run('old')])),visible:()=>false});await o.start();assert.equal((await s.jobs()).length,1);assert.equal(o.consent,'yes');o.dispose();
 });

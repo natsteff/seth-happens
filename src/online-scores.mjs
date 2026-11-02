@@ -5,7 +5,7 @@ import {ScoreOutbox} from './online-score-store.mjs';
 export class OnlineScores{
  /** @param {any} options */
  constructor({store=new ScoreOutbox(),storage,transport,visible=()=>!document.hidden,now=Date.now}={}){
-  this.store=store;this.storage=storage;this.transport=transport;this.visible=visible;this.now=now;this.owner=crypto.randomUUID();this.listeners=new Set();this.status='';this.working=false;this.timer=undefined;
+  this.store=store;this.storage=storage;this.transport=transport;this.visible=visible;this.now=now;this.owner=crypto.randomUUID();this.listeners=new Set();this.status='';this.working=false;this.timer=undefined;this.revision=0;
  }
  subscribe(fn){this.listeners.add(fn);return ()=>this.listeners.delete(fn);}
  changed(){for(const fn of this.listeners)fn();}
@@ -16,7 +16,7 @@ export class OnlineScores{
    if(!baseline){let raw;try{if(!this.storage)throw Error('Storage unavailable');raw=this.storage.getItem(SCORE_KEY);}catch{raw=undefined;}
     baseline=raw===undefined?{status:'unavailable',total:0,invalid:0}:scanLegacy(raw);delete baseline.candidates;await this.store.set('baseline',baseline);
    }
-   this.baseline=baseline;this.consent=await this.store.get('migration-consent')||'ask';this.localOnly=await this.store.get('local-only')===true;
+   this.baseline=baseline;this.consent='yes';await this.store.set('migration-consent','yes');this.localOnly=await this.store.get('local-only')===true;
    await this.recover();this.changed();if(!this.localOnly)void this.kick();
   }catch{this.status='Online queue unavailable. This device scores are unchanged.';this.changed();}
  }
@@ -54,7 +54,7 @@ export class OnlineScores{
    if(this.transport.uid){const uid=await this.transport.uid(),old=await this.store.get('uid');if(old&&old!==uid){this.installationId=crypto.randomUUID();await this.store.set('installation',this.installationId);}if(old!==uid)await this.store.set('uid',uid);}
    const jobs=await this.store.jobs(),job=jobs.filter(j=>j.state==='pending'&&j.nextAttempt<=this.now()).sort((a,b)=>(a.payload.source==='new'?0:1)-(b.payload.source==='new'?0:1))[0];
    if(job){
-    try{const state=await this.transport.submit(job);await this.store.update(job.key,{state,finishedAt:this.now()});if(job.payload.source==='new'&&['accepted','duplicate'].includes(state))rememberPlayerName(this.storage,job.payload.name);this.status=state==='accepted'?'Saved online.':state==='duplicate'?'Already saved online.':state==='rejected'?'Online shortcut list is full. This device score is unchanged.':'Conflicting run data; this device score is unchanged.';}
+    try{const state=await this.transport.submit(job);await this.store.update(job.key,{state,finishedAt:this.now()});this.revision++;if(job.payload.source==='new'&&['accepted','duplicate'].includes(state))rememberPlayerName(this.storage,job.payload.name);this.status=state==='accepted'?'Saved online.':state==='duplicate'?'Already saved online.':state==='rejected'?'Online shortcut list is full. This device score is unchanged.':'Conflicting run data; this device score is unchanged.';}
     catch(error){await this.store.set('ever-failed',true);const code=String(error?.code||'unavailable');const delay=code==='daily-limit'?86400000:retryDelay(job.attempts+1);await this.store.update(job.key,{attempts:job.attempts+1,nextAttempt:this.now()+delay,error:code});this.status='Online sync pending. Scores remain on this device.';}
    }
    const summary=await this.summary();const remaining=(await this.store.jobs()).filter(j=>j.state==='pending');

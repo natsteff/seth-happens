@@ -1,14 +1,14 @@
 # Seth Happens - Beer Run, Elevator Out of Order
 
-**Version 1.0.6**
+**Version 1.0.7**
 
 ![Seth Happens - Beer Run, Elevator Out of Order](public/assets/title-logo.png)
 
 <p align="center">
-  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 1.0.6"></a>
+  <a href="https://natsteff.github.io/seth-happens/"><img src="docs/play-now.svg" width="400" alt="Play Now! Seth Happens version 1.0.7"></a>
 </p>
 
-**Play version 1.0.6** — Fullscreen highly recommended.
+**Play version 1.0.7** — Fullscreen highly recommended.
 
 **Now with mobile gameplay support!** Choose Default left/right arrows, Sliding Speed Runner or Game Stick. Customize arrow spacing and save your preferred setup. Select **Customize Controls** at the mobile start prompt or in the game menu. **For the best mobile experience, add the game as a Home Screen app and launch its icon in landscape. Direct mobile browser-tab play is not supported for further fixes.** See [How to add as a mobile app](#how-to-add-as-a-mobile-app).
 
@@ -22,10 +22,10 @@ One six-pack. Two photos. Twenty-six floors. Get Seth home to Allison, Oakey and
 
 Visit **Credits/Jukebox** for Seth’s afterparty, dancing and all 11 music tracks. Pick a song, adjust the volume and stay a while.
 
-## Version 1.0.6
+## Version 1.0.7
 
-- Shared online high scores, with local saving and automatic fallback.
-- Optional import of existing scores into a separate Historical leaderboard.
+- Automatic online score syncing, including existing scores.
+- Simpler Online and This device views, with local fallback.
 
 This game receives minor improvements and bug fixes. New levels and major enhancements are planned for the separate V2 game.
 
@@ -112,9 +112,9 @@ The countdown displays seconds (120s → 0s), and run times in score screens use
 
 **Online** shares new scores across players. **This device** keeps your existing browser records. Saving always attempts the device copy first; online submissions queue for retry if needed. If Firebase or the internet is unavailable, the score screen falls back to This device.
 
-Choose **Import old scores** to copy eligible existing records into **Historical**, or **Not now**. Originals stay on your device; duplicate imports do not create another shared score. Nicknames and run details become public when shared. Historical results may lack timing data and are labelled separately.
+Eligible existing scores sync automatically and appear alongside new results under **Online**. Originals stay on your device; retries do not duplicate records. Nicknames and run details are public when shared. Older results retain unknown timing fields where needed.
 
-Use **Use local only** to pause online sync. Clearing device scores does not clear the online boards or pending submissions. Shared scores are casual player-reported results; owner moderation is separate. [Privacy and migration](public/docs/online-scores-privacy.html) · [Online setup](docs/online-scores.md). Other server installations can still use the optional [Node leaderboard](docs/leaderboard-server.md).
+The score screen has just **Online** and **This device** views, with a brief status if syncing is delayed. Clearing device scores does not clear online records or pending submissions. [Privacy and migration](public/docs/online-scores-privacy.html) · [Online setup](docs/online-scores.md). Other server installations can still use the optional [Node leaderboard](docs/leaderboard-server.md).
 
 ## Screenshots
 

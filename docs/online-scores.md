@@ -4,13 +4,13 @@ Version1.0.6 enables Firebase online scores with preserved device scores and aut
 
 ## Player behavior
 
-Online and Historical boards are separate from This device. New results save locally and enter a persistent online queue; a queued result is not yet a confirmed online save. Retry/reopening/foreground return resumes pending work. A one-time Import old scores confirmation copies eligible existing nicknames and records to Historical without deleting the originals. Not now defers it; Review old-score import can reopen the choice. Unreadable/invalid records are preserved, not overwritten or guessed.
+Online combines imported and new scores; This device remains separate. Historical provenance remains internal. New results save locally and enter a persistent online queue; a queued result is not yet a confirmed online save. Retry/reopening/foreground return resumes pending work. Eligible existing nicknames and records sync automatically without deleting the originals or requiring import/sync buttons. Unreadable/invalid records are preserved, not overwritten or guessed.
 
 Historical scores retain their stored total/date; missing timing/bonus is shown as unknown. This route has a120second current deadline; earlier untimed or up-to180second records belong only to Historical. New records require a completed beer delivery (except the established shortcut) and the existing score formula. Current score/physics rules, remembered-name entry and device score clearing are unchanged.
 
-Legitimate scores rank by descending total, then claimed finish time and stable ID. Historical shortcuts show the earliest five claimed historical dates. The online shortcut board has five centrally reserved slots in server-acceptance order; its-10000fixed score always comes after legitimate scores. Browser clocks and reported gameplay are not proof of honest play.
+Legitimate scores rank by descending total, then claimed finish time and stable ID. The combined view shows the earliest five claimed shortcut dates across both sources. New online shortcut submissions still have five centrally reserved acceptance slots; the fixed-10000score always comes after legitimate scores. Browser clocks and reported gameplay are not proof of honest play.
 
-Use local only pauses future online submissions and migration reporting from that installation; turning online back on resumes pending submissions. Previously shared records remain shared. Local clear does not delete online records or the pending outbox. See the in-game Privacy & migration page for disclosure and owner contact/deletion guidance.
+Previously saved local-only opt-outs remain respected; choosing Online re-enables automatic sync. The device tab is a view, not a sync switch. Previously shared records remain shared. Local clear does not delete online records or the pending outbox. See the in-game Privacy & migration page for disclosure and owner contact/deletion guidance.
 
 ## Installation and security
 

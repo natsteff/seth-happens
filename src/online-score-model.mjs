@@ -43,3 +43,13 @@ export function sameRun(a,b){
  const ignored=new Set(['source','rulesetId']);
  return Object.keys(a).filter(key=>!ignored.has(key)).every(key=>['bonus','elapsedMs'].includes(key)&&(a[key]===-1||b[key]===-1)||a[key]===b[key]);
 }
+
+/** Merge ordered board streams without skipping unconsumed rows on later pages. */
+export function mergeOnlineRows(live,historical,size=10){
+ const pool=[...live.map(row=>({...row,board:'live'})),...historical.map(row=>({...row,board:'historical'}))].sort((a,b)=>b.score-a.score||Date.parse(a.date)-Date.parse(b.date)||a.id.localeCompare(b.id)||a.board.localeCompare(b.board));
+ const selected=[],seen=new Set();
+ /** @type {{live:any,historical:any}} */
+ const consumed={live:undefined,historical:undefined};
+ for(const row of pool){if(selected.length>=size)break;consumed[row.board]=row; if(!seen.has(row.id)){seen.add(row.id);selected.push(row);}}
+ return {selected,consumed,more:pool.length>selected.length};
+}
