@@ -291,14 +291,13 @@ html.touch-play-locked #play-area.expanded.touch-mode{position:relative;inset:au
 
 .score-dialog .saved-score-row{background:#285249;box-shadow:inset 4px 0 #ffd08b}.score-dialog .saved-score-row td{border-bottom-color:#8cdbc5}.saved-score-badge{display:inline-block;margin-left:8px;padding:2px 5px;border:1px solid #ffd08b;border-radius:4px;color:#ffd08b;font-size:10px;white-space:nowrap}
 
-/* Size uses layout zoom so the rendered hit targets grow with their artwork. */
-#touch-controls .touch-movement,#touch-controls .touch-actions{zoom:var(--button-scale,1)}
-.control-size-preview{display:flex;align-items:center;justify-content:center;gap:12px}
-#control-settings .control-size-label{display:flex;flex-direction:column;align-items:center;gap:4px;margin:0;flex:0 0 58px;font-size:12px}
-#control-size{writing-mode:vertical-lr;direction:rtl;width:32px;height:116px;touch-action:none;accent-color:#73dfc5}
-#control-settings #spacing-preview{flex:none;width:204px;max-width:calc(100% - 70px);height:156px;align-items:center;padding:6px;gap:24px;overflow:visible}
-#control-settings #spacing-preview span{flex-shrink:0;width:calc(36px * var(--preview-scale,1));height:calc(36px * var(--preview-scale,1));font-size:calc(18px * var(--preview-scale,1));border-radius:calc(10px * var(--preview-scale,1))}
-/* In portrait, put the action cluster above movement when enlarged rather than overlapping it. */
-@media(orientation:portrait){#touch-controls[data-enlarged=true] .touch-actions{bottom:calc((80px * var(--button-scale,1) + 36px) / var(--button-scale,1));right:calc(16px / var(--button-scale,1))}#touch-controls[data-enlarged=true] .touch-movement{left:calc(16px / var(--button-scale,1));bottom:calc(20px / var(--button-scale,1))}}
 
-@media(orientation:landscape) and (max-width:700px){#touch-controls[data-enlarged=true] .touch-actions{bottom:calc(90px / var(--button-scale,1));right:calc(16px / var(--button-scale,1))}}
+/* Keep the original layout boxes/centers; enlarge only each arrow and its hit target. */
+#touch-arrows button{transform:scale(var(--arrow-scale,1));transform-origin:center center}
+.control-size-preview{display:flex;flex-direction:column;align-items:center;gap:8px}
+#control-settings .control-size-label{display:flex;align-items:center;gap:8px;margin:0;font-size:14px}
+#control-size{width:20px;height:20px;accent-color:#73dfc5}
+#control-settings #spacing-preview{position:relative;isolation:isolate;flex:none;width:85px;max-width:100%;height:51px;align-items:center;padding:0;gap:24px;background:none;border-radius:0}
+#control-settings #spacing-preview:before,#control-settings #spacing-preview:after{content:'';position:absolute;z-index:-1;top:3px;width:47px;height:45px;background:#a53b3b55;border-radius:7px}
+#control-settings #spacing-preview:before{left:0}#control-settings #spacing-preview:after{right:0}
+#control-settings #spacing-preview span{flex-shrink:0;width:26px;height:30px;font-size:13px;border-radius:10px;transform:scale(var(--preview-scale,1));transform-origin:center}
