@@ -301,3 +301,5 @@ html.touch-play-locked #play-area.expanded.touch-mode{position:relative;inset:au
 #control-settings #spacing-preview:before,#control-settings #spacing-preview:after{content:'';position:absolute;z-index:-1;top:3px;width:49px;height:45px;background:#a53b3b55;border-radius:7px}
 #control-settings #spacing-preview:before{left:0}#control-settings #spacing-preview:after{right:0}
 #control-settings #spacing-preview span{flex-shrink:0;width:26px;height:30px;font-size:13px;border-radius:10px;transform:scale(var(--preview-scale,1));transform-origin:center}
+
+.score-dialog .score-top-actions{position:sticky;top:0;z-index:2;background:#14263b;padding:8px 0;margin-top:8px}.score-dialog .score-top-actions button{min-height:44px}.score-dialog .score-top-actions #close-scores{margin-left:auto}
