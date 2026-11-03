@@ -884,6 +884,7 @@ touchMenu.addEventListener('cancel',event=>{event.preventDefault();closeTouchMen
 for(const type of ['keydown','keyup'])document.addEventListener(type,event=>{if(touchMenu.open&&!(event.target instanceof Element&&event.target.closest('dialog')))event.stopPropagation();},true);
 
 // Control configuration is local to this browser and never touches scores.
+function arrowGap(size:number,spacing:number){return size===1.5?30+(spacing-1)*10:8+(spacing-1)*8;}
 const controlSettings=document.getElementById('control-settings') as HTMLDialogElement;
 const styleSelect=document.getElementById('control-style') as HTMLInputElement;
 const spacingInput=document.getElementById('control-spacing') as HTMLInputElement;
@@ -896,13 +897,13 @@ function applyControls(){
  document.getElementById('touch-arrows')!.style.setProperty('--arrow-scale',String(controlSize));
  touch.clear();touch.style=controlStyle;touch.quickSprintEnabled=controlQuickSprint;
  gameElement.dataset.controlStyle=controlStyle;
- gameElement.style.setProperty('--arrow-gap',`${Math.max(controlSize===1.5?26:8,8+(controlSpacing-1)*8)}px`);
+ gameElement.style.setProperty('--arrow-gap',`${arrowGap(controlSize,controlSpacing)}px`);
  document.getElementById('touch-style-help')!.textContent=controlStyle==='default'?(controlQuickSprint?'Double-tap the same arrow, holding the second press to sprint. Release or change direction to cancel. Double-tap Jump for Mega Jump.':'Default arrows walk only; no sprint. Release to stop. Double-tap Jump for Mega Jump.'):'Slide through the center to reverse without lifting. Release to stop. Push left/right to the edge to sprint. Double-tap Jump for Mega Jump.';
  document.getElementById('touch-arrows')!.hidden=controlStyle!=='default';
  document.getElementById('touch-stick')!.hidden=controlStyle==='default';
  document.querySelector('.touch-hint')!.textContent=controlStyle==='default'?(controlQuickSprint?'Double-tap + hold arrow · sprint':'Left / right · release to stop'):controlStyle==='stick'?'Game Stick · edges sprint':'Slide to move · edges sprint';
 }
-function previewControls(){const size=sizeInput.checked?1.5:1;document.getElementById('spacing-preview')!.style.setProperty('--preview-scale',String(size));document.querySelectorAll<HTMLInputElement>('input[name=movement-style]').forEach(radio=>{radio.checked=radio.value===styleSelect.value;});document.getElementById('style-detail')!.textContent=styleSelect.value==='stick'?'Up/down has no game action. Jump and Action stay separate.':'Jump and Action stay separate.';document.getElementById('spacing-value')!.textContent=spacingInput.value;document.getElementById('spacing-preview')!.style.gap=`${Math.max(size===1.5?26:8,8+(Number(spacingInput.value)-1)*8)/2}px`;spacingInput.disabled=styleSelect.value!=='default';quickSprintInput.disabled=styleSelect.value!=='default';}
+function previewControls(){const size=sizeInput.checked?1.5:1;document.getElementById('spacing-preview')!.style.setProperty('--preview-scale',String(size));document.querySelectorAll<HTMLInputElement>('input[name=movement-style]').forEach(radio=>{radio.checked=radio.value===styleSelect.value;});document.getElementById('style-detail')!.textContent=styleSelect.value==='stick'?'Up/down has no game action. Jump and Action stay separate.':'Jump and Action stay separate.';document.getElementById('spacing-value')!.textContent=spacingInput.value;document.getElementById('spacing-preview')!.style.gap=`${arrowGap(size,Number(spacingInput.value))/2}px`;spacingInput.disabled=styleSelect.value!=='default';quickSprintInput.disabled=styleSelect.value!=='default';}
 const controlInputGuard=installOpeningGuard(controlSettings);
 function openControls(first=false){document.getElementById('controls-save')!.textContent=first?'Save and continue':'Save controls';customizeFromOffer=first;touch.clear();sizeInput.checked=controlSize===1.5;styleSelect.value=controlStyle;spacingInput.value=String(controlSpacing);quickSprintInput.checked=controlQuickSprint;previewControls();modalNavigation.open(controlSettings,touchMenu,controlSettings);controlInputGuard.arm();}
 document.getElementById('touch-customize-first')!.addEventListener('click',()=>{touchOffer.close();openControls(true);});
