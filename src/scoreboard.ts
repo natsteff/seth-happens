@@ -1,3 +1,4 @@
+import {withDeadline} from './score-waits.mjs';
 import {deviceFallback} from './score-fallback.mjs';
 import {OnlineScores} from './online-scores.mjs';
 import { savedPlayerName, rememberPlayerName, clearPasswordRequired, fitScoreDialog } from './score-options.mjs';
@@ -15,6 +16,8 @@ let online:OnlineScores|undefined;
 let onlinePage:any=null,onlineRows:any[]=[],onlineMore=false;
 let onlineBoard='';
 let onlineRevision=0;
+let onlineDisplay:any=null;
+let opening=0,userChoseScope=false;
 
 let notice='';
 let returnFocus:HTMLElement|null=null;
@@ -44,7 +47,9 @@ const configReady=fetch(new URL('./game-config.json',document.baseURI),{cache:'n
     let storage:Storage|undefined;try{storage=localStorage;}catch{}
     online=new OnlineScores({storage,transport:new FirebaseScores(config.onlineScores.firebase,emulator)});
     online.subscribe(()=>{if(dialog.open){void syncOnlinePanel();if(!pending&&scope==='online'&&online!.revision!==onlineRevision){onlineRevision=online!.revision;onlineBoard='';onlinePage=null;onlineRows=[];render();}}});
-    await online.start();scope=online.localOnly?'local':'online';serverEnabled=false;
+    // Startup/migration runs separately from displaying the board.
+    void online.start();serverEnabled=false;
+    if(!userChoseScope){scope='online';if(dialog.open)render();}
    }
   })
   .catch(()=>{serverEnabled=false;notice='Online scores unavailable. This device scores remain safe.';});
@@ -142,9 +147,9 @@ function render(){
   dialog.querySelector('#skip-score')!.addEventListener('click',()=>{if(submitting)return;pending=null;nameDraft='';render();});
   dialog.querySelector('#cancel-clear')!.addEventListener('click',()=>{(dialog.querySelector('#clear-form') as HTMLFormElement).reset();(dialog.querySelector('#clear-form') as HTMLFormElement).hidden=true;});
   dialog.querySelector('#server-scores')?.addEventListener('click',()=>{scope='server';notice='';render();});
-  dialog.querySelector('#online-scores')?.addEventListener('click',()=>{void online?.setLocalOnly(false).then(()=>{scope='online';onlineBoard='';onlinePage=null;onlineRows=[];notice='';render();});});
+  dialog.querySelector('#online-scores')?.addEventListener('click',()=>{userChoseScope=true;void online?.setLocalOnly(false).then(()=>{scope='online';onlineBoard='';onlinePage=null;onlineRows=[];notice='';render();});});
   bindOnlinePanel();
-  dialog.querySelector('#local-scores')?.addEventListener('click',()=>{scope='local';notice='';render();});
+  dialog.querySelector('#local-scores')?.addEventListener('click',()=>{userChoseScope=true;scope='local';notice='';render();});
   dialog.querySelector('#all-scores')!.addEventListener('click',()=>{if(scope==='online'||scope==='historical'){if(onlineMore)render();}else{all=!all;render();}});
   dialog.querySelector('#close-scores')!.addEventListener('click',()=>dialog.close());
   dialog.querySelector('#clear-scores')!.addEventListener('click',()=>{
@@ -170,13 +175,20 @@ function render(){
 }
 async function openScores(){
   returnFocus=document.activeElement as HTMLElement;
-  await configReady;if(!serverEnabled&&!online)scope='local';
-  if(online){await online.recover().catch(()=>{});onlineBoard='';onlinePage=null;onlineRows=[];if(!online.localOnly)void online.kick();}
-  if(serverEnabled){try{await syncLocalScores();}catch{notice='Some local scores could not sync. They remain on this device; retry by reopening High Scores.';}}
+  const opened=++opening;userChoseScope=false;
+  scope=online?'online':serverEnabled?'server':'local';
+  onlineBoard='';onlinePage=null;onlineRows=[];onlineDisplay=null;onlineMore=false;
   render();
   if(!dialog.open)dialog.showModal();
   fitEntry();
   if(pending)(dialog.querySelector(editingName?'[name=player]':'#save-score') as HTMLElement).focus({preventScroll:true});
+  // Neither configuration downloads, recovery nor server sync block opening.
+  void withDeadline(configReady,7000).then(()=>{
+   if(!dialog.open||opened!==opening||userChoseScope)return;
+   const target=online?'online':serverEnabled?'server':'local';
+   if(scope!==target){scope=target;render();}
+   if(serverEnabled)void syncLocalScores().catch(()=>{});
+  }).catch(()=>{if(dialog.open&&opened===opening&&!userChoseScope){notice='Online unavailable. Showing this device’s scores.';scope='local';render();}});
 }
 export function offerScore(result:Result){notice='';nameDraft=savedPlayerName(playerStorage());editingName=!nameDraft;pending={...result,id:crypto.randomUUID(),date:new Date().toISOString()};openScores();}
 export function resetScoreEntry(){nameDraft='';pending=null;submitting=false;if(dialog.open)dialog.close();}
@@ -191,18 +203,38 @@ function updateScoreMusic(){const label=dialog.querySelector('#score-music');if(
 gameAudio.music.subscribe(updateScoreMusic);
 
 async function onlineResults(requestRevision:number){
- if(!online||online.localOnly)return {scores:[]};
- const board='all';
- try{
-  const page=await online.list(board,onlineBoard===board?onlinePage:undefined);
-  if(requestRevision!==revision)return {scores:[]};
+ if(!online)return {scores:[]};
+ if(onlineDisplay){const scores=onlineDisplay;onlineDisplay=null;return {scores};}
+ const board='all',cursor=onlineBoard===board?onlinePage:undefined;
+ const apply=(page:any)=>{
   if(onlineBoard!==board)onlineRows=[];
   onlineBoard=board;onlinePage=page.cursor;onlineMore=page.more;
   onlineRows=[...onlineRows,...page.normal.filter((row:any)=>!onlineRows.some(old=>old.id===row.id))];
-  return {scores:[...onlineRows,...page.cheaters]};
- }catch(error){
+  return [...onlineRows,...page.cheaters];
+ };
+ // Start the server request first. Cached shared data stays explicitly Online.
+ const fresh=online.list(board,cursor);void fresh.catch(()=>{});
+ const cached=!cursor?await withDeadline(online.cached(board),100).catch(()=>null):null;
+ if(requestRevision!==revision){void fresh.catch(()=>{});return {scores:[]};}
+ if(cached){
+  notice='Updating online scores…';
+  void fresh.then(page=>{
+   if(requestRevision!==revision||!dialog.open)return;
+   onlineDisplay=apply(page);notice='';render();
+  }).catch(()=>{
+   if(requestRevision!==revision||!dialog.open)return;
+   onlineDisplay=[...cached.normal,...cached.cheaters];onlineMore=false;
+   notice='Showing saved online scores. Connection unavailable.';render();
+  });
+  onlineMore=false;
+  return {scores:[...cached.normal,...cached.cheaters]};
+ }
+ try{
+  const page=await fresh;
   if(requestRevision!==revision)return {scores:[]};
-  // Re-render the actual device tab so labels/clear actions cannot imply shared data.
+  return {scores:apply(page)};
+ }catch{
+  if(requestRevision!==revision)return {scores:[]};
   const fallback=deviceFallback(()=>readScores(localStorage));
   scope='local';notice=fallback.notice;onlineBoard='';onlinePage=null;onlineRows=[];onlineMore=false;
   render();return {scores:[]};
@@ -213,7 +245,7 @@ async function syncOnlinePanel(){
  const jobs=await online.store.jobs().catch(()=>[]);
  const waiting=jobs.filter((job:any)=>job.state==='pending');
  const label=dialog.querySelector('#online-sync');
- if(label)label.textContent=waiting.length?(waiting.some((job:any)=>job.error&&job.error!=='pacing')?'Online unavailable. Scores are safe on this device and will retry automatically.':'Saving scores online…'):'';
+ if(label)label.textContent=waiting.length?(waiting.some((job:any)=>job.error&&job.error!=='pacing')?'Online unavailable. Scores are safe on this device and will retry automatically.':'Saved on this device. Updating online scores in the background…'):'';
  const more=dialog.querySelector('#all-scores') as HTMLButtonElement|null;if(more&&scope==='online')more.disabled=!onlineMore;
 }
 function bindOnlinePanel(){void syncOnlinePanel();}

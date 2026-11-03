@@ -53,3 +53,9 @@ export function mergeOnlineRows(live,historical,size=10){
  for(const row of pool){if(selected.length>=size)break;consumed[row.board]=row; if(!seen.has(row.id)){seen.add(row.id);selected.push(row);}}
  return {selected,consumed,more:pool.length>selected.length};
 }
+
+/** Candidate admission hint only; confirmed or deliberately skipped jobs stay terminal. */
+export function qualifiesForTop25(payload,key,rows){
+ const last=rows[24];
+ return payload.cheater||rows.some(row=>row.key===key)||!last||payload.score>last.score||payload.score===last.score&&(payload.dateMs<last.dateMs||payload.dateMs===last.dateMs&&key.localeCompare(last.key)<0);
+}

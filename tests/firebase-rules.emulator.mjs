@@ -59,10 +59,30 @@ test('real Firebase client saves, acknowledges duplicates across history, querie
  const {FirebaseScores}=await import('../src/firebase-scores.ts');
  const transport=new FirebaseScores({apiKey:'demo-key',authDomain:'demo-seth-happens.firebaseapp.com',projectId:'demo-seth-happens'},true);
  const job=await submission(run('adapter-run'));
- assert.equal(await transport.submit(job),'accepted');assert.equal(await transport.submit(job),'duplicate');
+ assert.deepEqual(await Promise.all([transport.submit(job),transport.submit(job)]),['accepted','accepted']);assert.equal(await transport.submit(job),'duplicate');
  assert.equal(await transport.submit(await submission(run('adapter-run'),'historical')),'duplicate');
  assert.equal(await transport.submit(await submission(run('adapter-run',{name:'Imposter'}),'historical')),'conflict');
  const page=await transport.list('live');assert.equal(page.normal.length,1);assert.equal(page.normal[0].name,'Nate S');
  const id=crypto.randomUUID();await transport.report(id,{baselineStatus:'valid',hadExisting:true,consent:'yes',boardUsed:true,total:1,invalid:0,eligible:1,imported:1,duplicates:0,pending:0,rejected:0,conflicts:0,everFailed:false,failedPending:0,newSubmitted:true,lastError:''});
  const stranger=env.authenticatedContext('stranger').firestore();await assertFails(getDoc(doc(stranger,`${base}/installations/${id}`)));await transport.dispose();
+});
+
+test('real client skips nonqualifying normal submissions once combined top 25 is full',async()=>{
+ await env.withSecurityRulesDisabled(async c=>{
+  const db=c.firestore(),batch=writeBatch(db);
+  for(let i=0;i<25;i++){
+   const job=await submission(run('cutoff-'+i,{score:14000-i}),'historical');
+   batch.set(doc(db,`${base}/boards/historical/scores/${job.key}`),{payload:job.payload,receivedAt:Timestamp.now(),slot:0});
+  }
+  await batch.commit();
+ });
+ const {FirebaseScores}=await import('../src/firebase-scores.ts');
+ const transport=new FirebaseScores({apiKey:'demo-key',authDomain:'demo-seth-happens.firebaseapp.com',projectId:'demo-seth-happens'},true);
+ try{
+  const job=await submission(run('below-cutoff'));
+  assert.equal(await transport.submit(job),'below-cutoff');
+  const db=env.authenticatedContext('reader').firestore();
+  assert.equal((await getDocs(query(collection(db,`${base}/boards/live/scores`),limit(25)))).size,0);
+  assert.equal((await getDocs(query(collection(db,`${base}/boards/historical/scores`),limit(25)))).size,25);
+ }finally{await transport.dispose();}
 });
