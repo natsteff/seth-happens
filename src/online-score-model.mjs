@@ -22,7 +22,7 @@ export function scorePayload(record,source='new'){
 export function canonicalPayload(payload){return JSON.stringify(Object.fromEntries(Object.keys(payload).sort().map(key=>[key,payload[key]])));}
 export async function sha256(text){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text))),n=>n.toString(16).padStart(2,'0')).join('');}
 export async function submission(record,source='new'){
- const payload=scorePayload(record,source);return {key:await sha256(`${ONLINE_GAME}/rooftop/${record.id}`),digest:await sha256(canonicalPayload(payload)),payload,state:'pending',attempts:0,nextAttempt:0};
+ const payload=scorePayload(record,source);return {key:await sha256(`${ONLINE_GAME}/rooftop/${record.id}`),digest:await sha256(canonicalPayload(payload)),payload,firstSeenMs:record.cheaterFirstSeenMs??payload.dateMs,state:'pending',attempts:0,nextAttempt:0};
 }
 export function scanLegacy(raw){
  if(raw===null)return {status:'empty',candidates:[],invalid:0,total:0};
@@ -34,10 +34,10 @@ export function scanLegacy(raw){
 }
 export function retryDelay(attempts){return Math.min(300000,1000*2**Math.min(8,attempts));}
 export function migrationSummary(jobs,scan={total:0,invalid:0}){
- const historical=jobs.filter(j=>j.payload.source==='historical');const count=state=>historical.filter(j=>j.state===state).length;
- return {total:scan.total,invalid:scan.invalid,eligible:historical.length,imported:count('accepted'),duplicates:count('duplicate'),pending:count('pending'),rejected:count('rejected'),conflicts:count('conflict')+historical.reduce((n,j)=>n+(j.conflictDigests?.length||0),0)};
+ const historical=jobs.filter(j=>(j.payload?.source??j.source)==='historical');const count=state=>historical.filter(j=>j.state===state).length;
+ return {total:scan.total,invalid:scan.invalid,eligible:historical.length,imported:count('accepted'),duplicates:count('duplicate'),pending:count('pending'),rejected:count('rejected')+count('below-cutoff'),conflicts:count('conflict')+historical.reduce((n,j)=>n+(j.conflictDigests?.length||0),0)};
 }
-export function displayScore(data,key){return {...data,id:key,date:new Date(data.dateMs).toISOString(),...(data.elapsedMs===-1?{elapsedMs:undefined}:{elapsedMs:data.elapsedMs}),...(data.bonus===-1?{bonus:undefined}:{bonus:data.bonus})};}
+export function displayScore(data,key){return {...data,runId:data.id,id:key,date:new Date(data.dateMs).toISOString(),...(data.elapsedMs===-1?{elapsedMs:undefined}:{elapsedMs:data.elapsedMs}),...(data.bonus===-1?{bonus:undefined}:{bonus:data.bonus})};}
 
 export function sameRun(a,b){
  const ignored=new Set(['source','rulesetId']);

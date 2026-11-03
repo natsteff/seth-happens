@@ -10,6 +10,12 @@ export function leaderboard({filePath='data/high-scores.json',origins=[],clearHa
   let records=existsSync(filePath)?validScores(JSON.parse(readFileSync(filePath,'utf8'))):[];
   const list=()=>rankScores(records);
   const store=next=>{const temp=filePath+'.tmp';writeFileSync(temp,JSON.stringify(next,null,2)+'\n',{mode:0o600});renameSync(temp,filePath);records=next;};
+  const bounded=rankScores(records);
+  if(JSON.stringify(bounded)!==JSON.stringify(records)){
+    const backup=filePath+'.before-retention-v2.json';
+    if(!existsSync(backup))writeFileSync(backup,readFileSync(filePath),{mode:0o600,flag:'wx'});
+    store(bounded);
+  }
   const attempts=new Map();
   const server=createServer(async(req,res)=>{
     const send=(status,value)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
@@ -48,8 +54,9 @@ export function leaderboard({filePath='data/high-scores.json',origins=[],clearHa
       record.score=importing&&input.elapsedMs===undefined?input.score:finalScore(record.beer,new Set(Array.from({length:record.photos},(_,i)=>i)),{falls:record.falls,squishes:record.squishes,bumps:record.bumps},new Set(Array.from({length:record.latePhotos},(_,i)=>i)),record.elapsedMs,record.cheater);
       record.bonus=record.cheater||record.elapsedMs===undefined?0:timeBonus(record.elapsedMs);validScores([record]);
       const existing=list();const duplicate=existing.some(s=>s.id===record.id);
-      const accepted=duplicate||!record.cheater||existing.filter(s=>s.cheater).length<5;
-      if(accepted&&!duplicate)store(rankScores([...existing,record]));
+      const ranked=rankScores([...existing,record]);
+      const accepted=duplicate||ranked.some(s=>s.id===record.id);
+      if(!duplicate&&JSON.stringify(ranked)!==JSON.stringify(existing))store(ranked);
       return send(200,{accepted,scores:list()});
     }catch{return send(400,{error:'Invalid score submission.'});}
   });

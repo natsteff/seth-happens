@@ -25,6 +25,20 @@ export class ScoreOutbox{
   const db=await this.db();return new Promise((resolve,reject)=>{const tx=db.transaction('jobs','readwrite'),store=tx.objectStore('jobs'),req=store.get(key);req.onsuccess=()=>{if(req.result)store.put({...req.result,...changes,key});};tx.oncomplete=()=>resolve();tx.onabort=tx.onerror=()=>reject(tx.error);});
  }
  async rememberRun(record){const db=await this.db();return new Promise((resolve,reject)=>{const tx=db.transaction('meta','readwrite'),store=tx.objectStore('meta'),req=store.get('new-runs');req.onsuccess=()=>{const rows=req.result||[];if(!rows.some(row=>row.id===record.id))store.put([...rows,record],'new-runs');};tx.oncomplete=()=>resolve();tx.onabort=tx.onerror=()=>reject(tx.error);});}
+ async compactAcknowledgments(){
+  const db=await this.db();return new Promise((resolve,reject)=>{
+   const tx=db.transaction(['jobs','meta'],'readwrite'),jobs=tx.objectStore('jobs'),meta=tx.objectStore('meta');
+   const request=jobs.getAll();request.onsuccess=()=>{
+    const finished=new Set();
+    for(const job of request.result)if(job.state!=='pending'&&job.payload){
+     if(job.payload.source==='new')finished.add(job.payload.id);
+     const {payload,...receipt}=job;jobs.put({...receipt,source:payload.source,runId:payload.id});
+    }
+    const markers=meta.get('new-runs');markers.onsuccess=()=>meta.put((markers.result||[]).map(row=>finished.has(row.id)?{id:row.id,submitted:true}:row),'new-runs');
+   };
+   tx.oncomplete=()=>resolve();tx.onabort=tx.onerror=()=>reject(tx.error||Error('Receipt cleanup failed.'));
+  });
+ }
  async claim(owner,now=Date.now()){
   const db=await this.db();return new Promise((resolve,reject)=>{const tx=db.transaction('meta','readwrite'),store=tx.objectStore('meta'),req=store.get('lease');let yes=false;req.onsuccess=()=>{const lease=req.result;if(!lease||lease.until<now||lease.owner===owner){store.put({owner,until:now+30000},'lease');yes=true;}};tx.oncomplete=()=>resolve(yes);tx.onabort=tx.onerror=()=>reject(tx.error);});
  }

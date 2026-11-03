@@ -36,7 +36,7 @@ service cloud.firestore {
   match /games/beer-run/boards/{board}/scores/{key} {
    allow get: if signed() && boardOK(board);
    allow list: if signed() && boardOK(board) && request.query.limit<=50;
-   allow create: if signed() && boardOK(board) && keyOK(key)
+   allow create: if signed() && !exists(bookPath()) && boardOK(board) && keyOK(key)
     && request.resource.data.keys().hasOnly(['payload','receivedAt','slot'])
     && request.resource.data.receivedAt==request.time && payloadOK(request.resource.data.payload,board)
     && budgetAfter(key,board) && privateReceipt(key,board)
@@ -97,6 +97,90 @@ service cloud.firestore {
     && request.resource.data.imported is int && request.resource.data.imported>=0 && request.resource.data.duplicates is int && request.resource.data.duplicates>=0
     && request.resource.data.pending is int && request.resource.data.pending>=0 && request.resource.data.rejected is int && request.resource.data.rejected>=0 && request.resource.data.conflicts is int && request.resource.data.conflicts>=0;
    allow list,delete: if false;
+  }
+  // V2 fixed-size record book. Only the owner migration may create the base.
+  function bookPath(){return /databases/$(database)/documents/games/beer-run/record-book/current;}
+  function seenPath(key){return /databases/$(database)/documents/games/beer-run/seen-runs/$(key);}
+  function budgetV2Path(){return /databases/$(database)/documents/games/beer-run/budgets-v2/$(request.auth.uid);}
+  function normalBefore(a,b){return a.payload.score>b.payload.score || a.payload.score==b.payload.score && (a.payload.dateMs<b.payload.dateMs || a.payload.dateMs==b.payload.dateMs && a.key<b.key);}
+  function admissionBefore(a,b){return a.firstSeenMs<b.firstSeenMs || a.firstSeenMs==b.firstSeenMs && a.nameKey<b.nameKey;}
+  function knownTime(p){return p.elapsedMs>=0?p.elapsedMs:1000000000;}
+  function bestBefore(a,b){
+   let ac=a.payload.falls+a.payload.squishes+a.payload.bumps;
+   let bc=b.payload.falls+b.payload.squishes+b.payload.bumps;
+   return knownTime(a.payload)<knownTime(b.payload) || knownTime(a.payload)==knownTime(b.payload) && (ac<bc || ac==bc && (a.payload.dateMs<b.payload.dateMs || a.payload.dateMs==b.payload.dateMs && a.key<b.key));
+  }
+  function normalOrdered(rows,i){return i>=0 && i<rows.size() && (i==0 || normalBefore(rows[i-1],rows[i])) && (i==rows.size()-1 || normalBefore(rows[i],rows[i+1]));}
+  function shortcutsOrdered(rows,i){return i>=0 && i<rows.size() && (i==0 || admissionBefore(rows[i-1],rows[i])) && (i==rows.size()-1 || admissionBefore(rows[i],rows[i+1]));}
+  function noName(rows,name){return (rows.size()<=0 || rows[0].nameKey!=name) && (rows.size()<=1 || rows[1].nameKey!=name) && (rows.size()<=2 || rows[2].nameKey!=name) && (rows.size()<=3 || rows[3].nameKey!=name) && (rows.size()<=4 || rows[4].nameKey!=name);}
+  function normalChange(old,next,c){
+   return next.cheaters==old.cheaters && next.normal.size()==(old.normal.size()<25?old.normal.size()+1:25)
+    && next.normal.removeAll(old.normal)==[c]
+    && old.normal.removeAll(next.normal)==(old.normal.size()==25?[old.normal[24]]:[])
+    && next.normal.removeAll([c])==old.normal.removeAll(old.normal.size()==25?[old.normal[24]]:[])
+    && next.normal[next.lastPosition]==c && normalOrdered(next.normal,next.lastPosition)
+    && (old.normal.size()<25||normalBefore(c,old.normal[24]));
+  }
+  function replacement(oldRow,newRow,c){
+   let winner=bestBefore(c,oldRow)?c:oldRow;
+   return newRow=={'key':winner.key,'payload':winner.payload,'nameKey':c.nameKey,'firstSeenMs':(c.firstSeenMs<oldRow.firstSeenMs?c.firstSeenMs:oldRow.firstSeenMs)};
+  }
+  function shortcutChange(old,next,c){
+   let removed=old.cheaters.removeAll(next.cheaters);
+   let added=next.cheaters.removeAll(old.cheaters);
+   return next.normal==old.normal && added.size()==1 && next.cheaters.removeAll(added)==old.cheaters.removeAll(removed)
+    && next.cheaters[next.lastPosition]==added[0] && shortcutsOrdered(next.cheaters,next.lastPosition)
+    && (removed.size()==1 && removed[0].nameKey==c.nameKey
+      ? next.cheaters.size()==old.cheaters.size() && replacement(removed[0],added[0],c)
+      : noName(old.cheaters,c.nameKey) && added==[c]
+        && next.cheaters.size()==(old.cheaters.size()<5?old.cheaters.size()+1:5)
+        && removed==(old.cheaters.size()==5?[old.cheaters[4]]:[])
+        && (old.cheaters.size()<5||admissionBefore(c,old.cheaters[4])));
+  }
+  function bookChange(old,next){
+   let p=next.lastPayload;
+   let board=p.source=='new'?'live':'historical';
+   let c={'key':next.lastKey,'payload':p,'firstSeenMs':p.cheater?next.lastFirstSeenMs:p.dateMs,'nameKey':p.cheater?p.name.trim().lower():''};
+   return next.keys().hasOnly(['schema','revision','normal','cheaters','updatedAt','lastKey','lastDigest','lastPayload','lastFirstSeenMs','lastPosition'])
+    && next.schema==2 && next.revision==old.revision+1 && next.updatedAt==request.time
+    && next.lastPosition is int && next.normal is list && next.normal.size()<=25 && next.cheaters is list && next.cheaters.size()<=5
+    && keyOK(next.lastKey) && keyOK(next.lastDigest) && payloadOK(p,board)
+    && next.lastFirstSeenMs is int && next.lastFirstSeenMs>=0 && next.lastFirstSeenMs<=p.dateMs
+    && (p.source=='historical'||next.lastFirstSeenMs==p.dateMs)
+    && !exists(seenPath(next.lastKey)) && getAfter(seenPath(next.lastKey)).data.digest==next.lastDigest
+    && getAfter(budgetV2Path()).data.lastRunKey==next.lastKey && getAfter(budgetV2Path()).data.board==board && getAfter(budgetV2Path()).data.lastAt==request.time
+    && (p.cheater?shortcutChange(old,next,c):normalChange(old,next,c));
+  }
+  match /games/beer-run/record-book/{id}{
+   allow get: if signed() && id=='current';
+   allow update: if signed() && id=='current' && bookChange(resource.data,request.resource.data);
+   allow create,delete,list: if false;
+  }
+  match /games/beer-run/seen-runs/{key}{
+   allow get: if signed() && keyOK(key);
+   allow create: if signed() && keyOK(key) && request.resource.data.keys().hasOnly(['digest','source','receivedAt'])
+    && keyOK(request.resource.data.digest) && request.resource.data.source==getAfter(bookPath()).data.lastPayload.source && request.resource.data.receivedAt==request.time
+    && getAfter(bookPath()).data.lastKey==key && getAfter(bookPath()).data.lastDigest==request.resource.data.digest
+    && getAfter(bookPath()).data.updatedAt==request.time && getAfter(budgetV2Path()).data.lastRunKey==key;
+   allow update,delete,list: if false;
+  }
+  function validV2Budget(b,previous,reset){
+   return b.keys().hasOnly(['windowStartedAt','lastAt','lastRunKey','board','liveCount','historicalCount'])
+    && boardOK(b.board) && keyOK(b.lastRunKey) && b.lastAt==request.time
+    && b.windowStartedAt==(reset?request.time:previous.windowStartedAt)
+    && b.liveCount is int && b.historicalCount is int
+    && b.liveCount==(reset?0:previous.liveCount)+(b.board=='live'?1:0)
+    && b.historicalCount==(reset?0:previous.historicalCount)+(b.board=='historical'?1:0)
+    && b.liveCount<=60 && b.historicalCount<=100
+    && !exists(seenPath(b.lastRunKey)) && existsAfter(seenPath(b.lastRunKey))
+    && getAfter(bookPath()).data.lastKey==b.lastRunKey && getAfter(bookPath()).data.updatedAt==request.time;
+  }
+  match /games/beer-run/budgets-v2/{uid}{
+   allow get: if signed() && uid==request.auth.uid;
+   allow create: if signed() && uid==request.auth.uid && validV2Budget(request.resource.data,{},true);
+   allow update: if signed() && uid==request.auth.uid && request.time>=resource.data.lastAt+duration.value(1,'s')
+    && validV2Budget(request.resource.data,resource.data,request.time>=resource.data.windowStartedAt+duration.value(24,'h'));
+   allow delete,list: if false;
   }
   match /{document=**}{allow read,write:if false;}
  }

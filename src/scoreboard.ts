@@ -1,10 +1,11 @@
+import {isSavedRun} from './record-book.mjs';
 import {withDeadline} from './score-waits.mjs';
 import {deviceFallback} from './score-fallback.mjs';
 import {OnlineScores} from './online-scores.mjs';
 import { savedPlayerName, rememberPlayerName, clearPasswordRequired, fitScoreDialog } from './score-options.mjs';
 import { RUN_LIMIT_MS,formatRunSeconds } from './mission.mjs';
 import {gameAudio} from './audio';
-import { rankScores,readScores,saveScore,verifyClearPassword,SCORE_KEY } from './scores.mjs';
+import { rankScores,readScores,saveScore,compactScores,verifyClearPassword,SCORE_KEY } from './scores.mjs';
 type Result={score:number;falls:number;squishes:number;bumps:number;photos:number;latePhotos:number;beer:boolean;elapsedMs?:number;bonus?:number;cheater?:boolean};
 const dialog=document.createElement('dialog');
 dialog.className='score-dialog';
@@ -16,6 +17,7 @@ let online:OnlineScores|undefined;
 let onlinePage:any=null,onlineRows:any[]=[],onlineMore=false;
 let onlineBoard='';
 let onlineRevision=0;
+let highlightRunId='';
 let onlineDisplay:any=null;
 let opening=0,userChoseScope=false;
 
@@ -37,6 +39,7 @@ for(const type of ['keydown','keyup'])dialog.addEventListener(type,event=>event.
 function message(text:string){dialog.querySelector('[role="status"]')!.textContent=text;}
 let revision=0;
 let serverEnabled=false,apiBase='';
+try{compactScores(localStorage);}catch{/* Corrupt data/quota never overwrite originals. */}
 const configReady=fetch(new URL('./game-config.json',document.baseURI),{cache:'no-store'})
   .then(response=>{if(!response.ok)throw Error();return response.json();})
   .then(async config=>{
@@ -103,9 +106,11 @@ function render(){
       const body=table.createTBody();
       ((all||scope==='online'||scope==='historical')?scores:[...scores.filter((s:any)=>!s.cheater).slice(0,10),...scores.filter((s:any)=>s.cheater)]).forEach((s:any,i:number)=>{
         const row=body.insertRow();
-        row.className=s.cheater?'cheater-row':'';
+        row.className=[s.cheater?'cheater-row':'',isSavedRun(s,highlightRunId)?'saved-score-row':''].filter(Boolean).join(' ');
+        if(isSavedRun(s,highlightRunId))row.setAttribute('aria-label','Your saved run');
         row.insertCell().textContent=s.cheater?'—':String(i+1);
         const player=row.insertCell();player.textContent=s.name;
+        if(isSavedRun(s,highlightRunId)){const badge=document.createElement('span');badge.className='saved-score-badge';badge.textContent='YOUR RUN';player.append(badge);}
         if(s.cheater){const badge=document.createElement('span');badge.className='cheater-badge';badge.textContent='CHEATER';player.append(badge);}
         const points=row.insertCell();points.className='score-points';points.textContent=s.score.toLocaleString();
         const details=row.insertCell();details.className='run-details';
@@ -128,13 +133,13 @@ function render(){
     const name=String(new FormData(form).get('player')??'').trim();
     if(!name){message('Enter a name or initials.');return;}
     const button=form.querySelector('#save-score') as HTMLButtonElement;button.disabled=true;submitting=true;
-    const result={...pending,name};const outcomes:string[]=[];let localOK=false,serverOK=!serverEnabled,nameSaved=false;
+    const result={...pending,name};highlightRunId=result.id;const outcomes:string[]=[];let localOK=false,serverOK=!serverEnabled,nameSaved=false;
 
-    try{const saved=saveScore(localStorage,result);localOK=true;nameSaved=saved.some((s:any)=>s.id===result.id);outcomes.push(saved.some((s:any)=>s.id===result.id)?'This device: saved.':'This device: five CHEATER slots already filled.');}
+    try{const saved=saveScore(localStorage,result);localOK=true;nameSaved=saved.some((s:any)=>s.id===result.id);outcomes.push(saved.some((s:any)=>s.id===result.id)?'This device: saved.':'This device: outside the record book limits.');}
     catch{outcomes.push('This device: could not save; existing records unchanged.');}
     if(online&&!online.localOnly)try{await online.enqueue(result);serverOK=true;outcomes.push('Online: queued; confirmation appears after sync.');}catch{serverOK=false;outcomes.push('Online: could not queue. This result remains available to retry.');}
 
-    if(serverEnabled)try{const saved=await request('',result);serverOK=true;nameSaved ||= saved.accepted===true;outcomes.push(saved.accepted?'Server: saved.':'Server: five CHEATER slots already filled.');}
+    if(serverEnabled)try{const saved=await request('',result);serverOK=true;nameSaved ||= saved.accepted===true;outcomes.push(saved.accepted?'Server: saved.':'Server: outside the record book limits.');}
     catch(error){outcomes.push('Server: '+(error instanceof Error?error.message:'could not save.'));}
     if(nameSaved)rememberPlayerName(playerStorage(),name);
     if(pending?.id!==result.id)return;

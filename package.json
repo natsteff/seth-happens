@@ -1,6 +1,6 @@
 {
   "name": "seth-happens",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,7 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "test": "node --test tests/*.test.mjs",
-    "test:firebase": "node --test tests/firebase-rules.emulator.mjs",
+    "test:firebase": "node --test tests/firebase-rules.emulator.mjs && node --test tests/migration.emulator.mjs",
     "scores:report": "node scripts/report-online-scores.mjs"
   },
   "engines": {

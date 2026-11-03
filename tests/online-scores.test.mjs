@@ -63,10 +63,10 @@ test('unchanged recovery skips enqueue across reloads; changed legacy storage pr
 });
 test('interrupted checkpoint write safely replays without resetting confirmed acknowledgments',async()=>{
  const store=make(),set=store.set.bind(store);let fail=true;
- store.set=async(key,value)=>{if(key==='recovery-v2'&&fail)throw Error('interrupted');return set(key,value);};
+ store.set=async(key,value)=>{if(key==='recovery-v3'&&fail)throw Error('interrupted');return set(key,value);};
  const o=new OnlineScores({store,storage:storage(JSON.stringify([run('old')])),visible:()=>false});await o.start();
  const [job]=await store.jobs();await store.update(job.key,{state:'accepted'});fail=false;await o.recover();
- assert.equal((await store.jobs()).length,1);assert.equal((await store.jobs())[0].state,'accepted');assert.ok(await store.get('recovery-v2'));o.dispose();
+ assert.equal((await store.jobs()).length,1);assert.equal((await store.jobs())[0].state,'accepted');assert.ok(await store.get('recovery-v3'));o.dispose();
 });
 test('a stuck submission times out to pending, releases lease, and retries the same ID',async()=>{
  const store=make();let stuck=true;const ids=[];
@@ -92,4 +92,19 @@ test('below-cutoff decisions stay terminal across recovery and later sync attemp
  const store=make();let writes=0;
  const o=new OnlineScores({store,storage:storage(JSON.stringify([run('low')])),visible:()=>false,transport:{submit:async()=>{writes++;return 'below-cutoff';},report:async()=>{}}});
  await o.start();o.visible=()=>true;await o.kick();await o.recover();await o.kick();assert.equal(writes,1);assert.equal((await store.jobs())[0].state,'below-cutoff');o.dispose();
+});
+
+test('finished jobs compact to receipts and markers without losing duplicate protection',async()=>{
+ const store=make(),o=new OnlineScores({store,storage:storage(null),visible:()=>false,transport:{submit:async()=> 'accepted',report:async()=>{}}});
+ await o.start();const original=run('receipt');await o.enqueue(original);o.visible=()=>true;await o.kick();o.visible=()=>false;
+ const [receipt]=await store.jobs();assert.equal(receipt.payload,undefined);assert.equal(receipt.source,'new');assert.equal(receipt.runId,'receipt');
+ assert.deepEqual(await store.get('new-runs'),[{id:'receipt',submitted:true}]);
+ await o.recover();assert.equal((await store.jobs()).length,1);assert.equal((await store.enqueue(await submission(original))).state,'accepted');
+ assert.equal((await o.summary()).pending,0);o.dispose();
+});
+test('receipt compaction failure never resets an acknowledged submission to pending',async()=>{
+ const store=make();store.compactAcknowledgments=async()=>{throw Error('quota');};let calls=0;
+ const o=new OnlineScores({store,storage:storage(null),visible:()=>false,transport:{submit:async()=>{calls++;return 'accepted';},report:async()=>{}}});
+ await o.start();await o.enqueue(run('confirmed'));o.visible=()=>true;await o.kick();await o.kick();
+ assert.equal((await store.jobs())[0].state,'accepted');assert.equal(calls,1);o.dispose();
 });

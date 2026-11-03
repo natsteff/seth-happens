@@ -55,34 +55,78 @@ test('live shortcut slots are capped centrally, immutable and linked to actual s
  await env.withSecurityRulesDisabled(c=>setDoc(doc(c.firestore(),`${base}/slots/live`),{count:5,lastRunKey:y.job.key}));
  const z=await prepare('three',{id:'three',score:-10000,cheater:true,bonus:0});await assertFails(batchFor(z,{slot:6}).commit());
 });
-test('real Firebase client saves, acknowledges duplicates across history, queries and reports privately',async()=>{
+async function boundedClient(){
+ const {emptyBook,BOOK_PATH}=await import('../src/record-book.mjs');
+ await env.withSecurityRulesDisabled(c=>setDoc(doc(c.firestore(),BOOK_PATH),emptyBook()));
  const {FirebaseScores}=await import('../src/firebase-scores.ts');
- const transport=new FirebaseScores({apiKey:'demo-key',authDomain:'demo-seth-happens.firebaseapp.com',projectId:'demo-seth-happens'},true);
- const job=await submission(run('adapter-run'));
- assert.deepEqual(await Promise.all([transport.submit(job),transport.submit(job)]),['accepted','accepted']);assert.equal(await transport.submit(job),'duplicate');
- assert.equal(await transport.submit(await submission(run('adapter-run'),'historical')),'duplicate');
- assert.equal(await transport.submit(await submission(run('adapter-run',{name:'Imposter'}),'historical')),'conflict');
- const page=await transport.list('live');assert.equal(page.normal.length,1);assert.equal(page.normal[0].name,'Nate S');
- const id=crypto.randomUUID();await transport.report(id,{baselineStatus:'valid',hadExisting:true,consent:'yes',boardUsed:true,total:1,invalid:0,eligible:1,imported:1,duplicates:0,pending:0,rejected:0,conflicts:0,everFailed:false,failedPending:0,newSubmitted:true,lastError:''});
- const stranger=env.authenticatedContext('stranger').firestore();await assertFails(getDoc(doc(stranger,`${base}/installations/${id}`)));await transport.dispose();
-});
-
-test('real client skips nonqualifying normal submissions once combined top 25 is full',async()=>{
- await env.withSecurityRulesDisabled(async c=>{
-  const db=c.firestore(),batch=writeBatch(db);
-  for(let i=0;i<25;i++){
-   const job=await submission(run('cutoff-'+i,{score:14000-i}),'historical');
-   batch.set(doc(db,`${base}/boards/historical/scores/${job.key}`),{payload:job.payload,receivedAt:Timestamp.now(),slot:0});
-  }
-  await batch.commit();
- });
- const {FirebaseScores}=await import('../src/firebase-scores.ts');
- const transport=new FirebaseScores({apiKey:'demo-key',authDomain:'demo-seth-happens.firebaseapp.com',projectId:'demo-seth-happens'},true);
+ return new FirebaseScores({apiKey:'demo-key',authDomain:'demo-seth-happens.firebaseapp.com',projectId:'demo-seth-happens'},true);
+}
+test('bounded client saves atomically, acknowledges duplicate IDs and refuses private access',async()=>{
+ const client=await boundedClient();
  try{
-  const job=await submission(run('below-cutoff'));
-  assert.equal(await transport.submit(job),'below-cutoff');
-  const db=env.authenticatedContext('reader').firestore();
-  assert.equal((await getDocs(query(collection(db,`${base}/boards/live/scores`),limit(25)))).size,0);
-  assert.equal((await getDocs(query(collection(db,`${base}/boards/historical/scores`),limit(25)))).size,25);
- }finally{await transport.dispose();}
+  const job=await submission(run('adapter'));
+  assert.deepEqual(await Promise.all([client.submit(job),client.submit(job)]),['accepted','accepted']);
+  assert.equal(await client.submit(job),'duplicate');
+  assert.equal(await client.submit(await submission(run('adapter'),'historical')),'duplicate');
+  assert.equal(await client.submit(await submission(run('adapter',{name:'Other'}))),'conflict');
+  const page=await client.list('all');assert.equal(page.normal.length,1);assert.equal(page.normal[0].runId,'adapter');
+  const stranger=env.authenticatedContext('stranger').firestore();
+  await assertFails(getDocs(collection(stranger,`${base}/seen-runs`)));
+  await assertFails(setDoc(doc(stranger,`${base}/record-book/current`),{normal:[],cheaters:[],schema:2,revision:100}));
+  await assertFails(deleteDoc(doc(stranger,`${base}/record-book/current`)));
+  // Legacy clients cannot create another unbounded record after activation.
+  const legacy=await prepare('old-client',{id:'old'});await assertFails(batchFor(legacy).commit());
+ }finally{await client.dispose();}
+});
+test('full normal book replaces only its cutoff and permanently remembers dropped submissions',async()=>{
+ const client=await boundedClient();
+ try{
+  const {BOOK_PATH,emptyBook,updateBook,runDigest}=await import('../src/record-book.mjs');
+  let book=emptyBook();const jobs=[];
+  for(let i=0;i<25;i++){const job=await submission(run('seed'+i,{score:8000+i}),'historical');jobs.push(job);book=updateBook(book,job);}
+  await env.withSecurityRulesDisabled(async c=>{const db=c.firestore(),b=writeBatch(db);b.set(doc(db,BOOK_PATH),book);for(const job of jobs)b.set(doc(db,`${base}/seen-runs/${job.key}`),{digest:await runDigest(job.payload),receivedAt:Timestamp.now()});await b.commit();});
+  assert.equal(await client.submit(await submission(run('low',{score:1000}),'historical')),'below-cutoff');
+  const high=await submission(run('high',{score:13000}),'historical');assert.equal(await client.submit(high),'accepted');
+  assert.equal(await client.submit(jobs[0]),'duplicate');
+  const page=await client.list('all');assert.equal(page.normal[0].score,13000);assert.equal(page.normal.length,10);
+  const last=await client.list('all',{offset:20,book:(await getDoc(doc(env.authenticatedContext('reader').firestore(),BOOK_PATH))).data()});assert.equal(last.normal.length,5);assert.equal(last.more,false);
+  assert.equal((await getDoc(doc(env.authenticatedContext('reader').firestore(),BOOK_PATH))).data().normal.length,25);
+ }finally{await client.dispose();}
+});
+test('shortcut name improves inside full book; forged replacement, clear and budget reset denied',async()=>{
+ const client=await boundedClient();
+ try{
+  const {BOOK_PATH,emptyBook,updateBook}=await import('../src/record-book.mjs');let book=emptyBook();
+  for(let i=0;i<5;i++)book=updateBook(book,await submission(run('seed'+i,{name:'Name'+i,score:-10000,cheater:true,bonus:0,date:new Date(Date.UTC(2026,10,2,12,i)).toISOString()})));
+  await env.withSecurityRulesDisabled(c=>setDoc(doc(c.firestore(),BOOK_PATH),book));
+  assert.equal(await client.submit(await submission(run('sixth',{name:'Sixth',score:-10000,cheater:true,bonus:0,date:'2026-11-02T13:00:00Z'}))),'below-cutoff');
+  const better=await submission(run('better',{name:' NAME0 ',score:-10000,cheater:true,bonus:0,elapsedMs:10000,date:'2026-11-02T14:00:00Z'}));
+  assert.equal(await client.submit(better),'accepted');
+  const db=env.authenticatedContext('attacker').firestore(),ref=doc(db,BOOK_PATH),saved=(await getDoc(ref)).data();
+  assert.equal(saved.cheaters.length,5);assert.equal(saved.cheaters[0].payload.id,'better');assert.equal(saved.cheaters[0].firstSeenMs,Date.parse('2026-11-02T12:00:00Z'));
+  await assertFails(setDoc(ref,{...saved,revision:saved.revision+1,updatedAt:serverTimestamp(),cheaters:[]}));
+  await assertFails(setDoc(doc(db,`${base}/budgets-v2/attacker`),{windowStartedAt:serverTimestamp(),lastAt:serverTimestamp(),lastRunKey:better.key,board:'live',liveCount:0,historicalCount:0}));
+  // Another run cannot rewrite a receipt or resurrect the original winner.
+  await assertFails(setDoc(doc(db,`${base}/seen-runs/${better.key}`),{digest:'0'.repeat(64),receivedAt:serverTimestamp()}));
+ }finally{await client.dispose();}
+});
+async function forgedBookBatch(db,job,book){
+ const {BOOK_PATH,runDigest}=await import('../src/record-book.mjs'),uid='forger',digest=await runDigest(job.payload),b=writeBatch(db);
+ b.set(doc(db,BOOK_PATH),{...book,updatedAt:serverTimestamp(),lastKey:job.key,lastDigest:digest,lastPayload:job.payload,lastFirstSeenMs:job.payload.dateMs,lastPosition:book.normal.findIndex(row=>row.key===job.key)});
+ b.set(doc(db,`${base}/seen-runs/${job.key}`),{digest,source:job.payload.source,receivedAt:serverTimestamp()});
+ b.set(doc(db,`${base}/budgets-v2/${uid}`),{windowStartedAt:serverTimestamp(),lastAt:serverTimestamp(),lastRunKey:job.key,board:'historical',liveCount:0,historicalCount:1});
+ return b;
+}
+test('bounded rules reject low-cutoff swaps, dropped rows and reordered survivors even with valid atomic receipts',async()=>{
+ const {BOOK_PATH,emptyBook,updateBook}=await import('../src/record-book.mjs');let book=emptyBook();
+ for(let i=0;i<25;i++)book=updateBook(book,await submission(run('old'+i,{score:9000+i}),'historical'));
+ await env.withSecurityRulesDisabled(c=>setDoc(doc(c.firestore(),BOOK_PATH),book));
+ const db=env.authenticatedContext('forger').firestore(),low=await submission(run('low'),'historical');
+ const lowRow={key:low.key,payload:low.payload,firstSeenMs:low.payload.dateMs,nameKey:''};
+ await assertFails((await forgedBookBatch(db,low,{...book,revision:book.revision+1,normal:[...book.normal.slice(0,24),lowRow]})).commit());
+ const high=await submission(run('high',{score:13000}),'historical'),valid=updateBook(book,high);
+ await assertFails((await forgedBookBatch(db,high,{...valid,normal:valid.normal.slice(0,24)})).commit());
+ const reordered=[...valid.normal];[reordered[10],reordered[11]]=[reordered[11],reordered[10]];
+ await assertFails((await forgedBookBatch(db,high,{...valid,normal:reordered})).commit());
+ await assertSucceeds((await forgedBookBatch(db,high,valid)).commit());
 });

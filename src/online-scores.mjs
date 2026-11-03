@@ -18,7 +18,7 @@ export class OnlineScores{
     baseline=raw===undefined?{status:'unavailable',total:0,invalid:0}:scanLegacy(raw);delete baseline.candidates;await this.store.set('baseline',baseline);
    }
    this.baseline=baseline;this.consent='yes';await this.store.set('migration-consent','yes');this.localOnly=await this.store.get('local-only')===true;
-   await this.recover();this.changed();if(!this.localOnly)void this.kick();
+   await this.recover();await this.store.compactAcknowledgments().catch(()=>{});this.changed();if(!this.localOnly)void this.kick();
   }catch{this.status='Online queue unavailable. This device scores are unchanged.';this.changed();}
  }
  async recover(){
@@ -30,24 +30,25 @@ export class OnlineScores{
   const markers=await this.store.get('new-runs')||[];
   let raw;try{if(!this.storage)throw Error('Storage unavailable');raw=this.storage.getItem(SCORE_KEY);}catch{raw=undefined;}
   const fingerprint=await sha256(JSON.stringify([this.consent,raw===undefined?'unavailable':raw,markers]));
-  const checkpoint=await this.store.get('recovery-v2');
+  const checkpoint=await this.store.get('recovery-v3');
   if(checkpoint?.fingerprint===fingerprint){this.scan=checkpoint.scan;return;}
   // Acknowledgments remain in the outbox. Only changed records need hashing/enqueue.
   const recovered={...checkpoint?.records};
   const recover=async(record,source)=>{
-   const key=source+':'+record.id,value=JSON.stringify(record);
+   const key=source+':'+record.id,value=await sha256(JSON.stringify(record));
    if(recovered[key]===value)return;
    const job=await this.store.enqueue(await submission(record,source));
    if(job.collision)this.status='A saved run has conflicting data; the original is preserved.';
    recovered[key]=value;
   };
-  for(const record of markers)await recover(record,'new');
+  for(const record of markers)if(!record.submitted)await recover(record,'new');
   const scan=raw===undefined?{status:'unavailable',candidates:[],total:0,invalid:0}:scanLegacy(raw);
   const fresh=new Set(markers.map(r=>r.id));this.scan={...scan,candidates:undefined};
   this.migrationAvailable=(scan.candidates||[]).some(record=>!fresh.has(record.id));
   if(this.consent==='yes')for(const record of scan.candidates||[])if(!fresh.has(record.id))await recover(record,'historical');
   // Written last: interruptions replay safely through the existing idempotent outbox.
-  await this.store.set('recovery-v2',{fingerprint,records:recovered,scan:this.scan});
+  await this.store.set('recovery-v3',{fingerprint,records:recovered,scan:this.scan});
+  await this.store.set('recovery-v2',null);
  }
  async setConsent(value){this.consent=value;await this.store.set('migration-consent',value);if(value==='yes')await this.recover();this.changed();void this.kick();}
  async setLocalOnly(value){
@@ -71,13 +72,13 @@ export class OnlineScores{
    if(this.transport.uid){const uid=await withDeadline(this.transport.uid(),this.waitMs),old=await this.store.get('uid');if(old&&old!==uid){this.installationId=crypto.randomUUID();await this.store.set('installation',this.installationId);}if(old!==uid)await this.store.set('uid',uid);}
    const jobs=await this.store.jobs(),job=jobs.filter(j=>j.state==='pending'&&j.nextAttempt<=this.now()).sort((a,b)=>(a.payload.source==='new'?0:1)-(b.payload.source==='new'?0:1))[0];
    if(job){
-    try{const state=await withDeadline(this.transport.submit(job),this.waitMs);await this.store.update(job.key,{state,finishedAt:this.now()});this.revision++;if(job.payload.source==='new'&&['accepted','duplicate'].includes(state))rememberPlayerName(this.storage,job.payload.name);this.status=state==='accepted'?'Saved online.':state==='duplicate'?'Already saved online.':state==='below-cutoff'?'Saved on this device; outside the online top 25.':state==='rejected'?'Online shortcut list is full. This device score is unchanged.':'Conflicting run data; this device score is unchanged.';}
+    try{const state=await withDeadline(this.transport.submit(job),this.waitMs);await this.store.update(job.key,{state,finishedAt:this.now()});await this.store.compactAcknowledgments().catch(()=>{});this.revision++;if(job.payload.source==='new'&&['accepted','duplicate'].includes(state))rememberPlayerName(this.storage,job.payload.name);this.status=state==='accepted'?'Saved online.':state==='duplicate'?'Already saved online.':state==='below-cutoff'?'Outside the online record book limits.':state==='rejected'?'Online shortcut list is full. This device score is unchanged.':'Conflicting run data; this device score is unchanged.';}
     catch(error){await this.store.set('ever-failed',true);const code=String(error?.code||'unavailable');const delay=code==='daily-limit'?86400000:retryDelay(job.attempts+1);await this.store.update(job.key,{attempts:job.attempts+1,nextAttempt:this.now()+delay,error:code});this.status='Online sync pending. Scores remain on this device.';}
    }
    const summary=await this.summary();const remaining=(await this.store.jobs()).filter(j=>j.state==='pending');
    // A stalled best-effort report must never hold the submission lease/next job.
    if(!this.reporting){
-    const state={baselineStatus:this.baseline?.status||'unavailable',hadExisting:(this.baseline?.total||0)>0,consent:this.consent,boardUsed:await this.store.get('board-used')===true,...summary,everFailed:await this.store.get('ever-failed')===true,failedPending:remaining.filter(j=>!!j.error).length,newSubmitted:(await this.store.jobs()).some(j=>j.payload.source==='new'&&['accepted','duplicate'].includes(j.state)),lastError:remaining.find(j=>j.error)?.error||''};
+    const state={baselineStatus:this.baseline?.status||'unavailable',hadExisting:(this.baseline?.total||0)>0,consent:this.consent,boardUsed:await this.store.get('board-used')===true,...summary,everFailed:await this.store.get('ever-failed')===true,failedPending:remaining.filter(j=>!!j.error).length,newSubmitted:(await this.store.jobs()).some(j=>(j.payload?.source??j.source)==='new'&&['accepted','duplicate'].includes(j.state)),lastError:remaining.find(j=>j.error)?.error||''};
     this.reporting=Promise.resolve().then(()=>this.transport.report(this.installationId,state)).catch(()=>{}).finally(()=>{this.reporting=null;});
    }
    if(remaining.length&&this.visible())this.timer=setTimeout(()=>void this.kick(),Math.max(1500,Math.min(...remaining.map(j=>j.nextAttempt))-this.now()));
