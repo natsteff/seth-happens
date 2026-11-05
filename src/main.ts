@@ -58,7 +58,6 @@ class Errand extends Phaser.Scene {
   summitReminder=new SummitReminder();reminder!:Phaser.GameObjects.Text;reminderAt=-Infinity;
   introActive=true;introStarted=false;introOverlay!:Phaser.GameObjects.Container;introCaption!:Phaser.GameObjects.Text;
   failurePhase='none';timeoutAngel?:Phaser.GameObjects.Sprite;
-  heardLocations=new Set<string>();
   visitedWalkFrames=new Set<string>();
   hazards: Hazard[] = []; floor = 0; checkpoint = {x:75,y:ROAD.y-24};
   lastGround = -1000; jumpUntil = 0; immuneUntil = 0; facing = 1; walking = false;
@@ -90,7 +89,7 @@ class Errand extends Phaser.Scene {
     this.runVersion++;this.onRoad=true;this.fallSoundPlayed=false;this.heroHeard=false;this.summitReached=false;this.beerWarningAt=-Infinity;this.heroPlaying=false;
     gameAudio.beginRun();this.introActive=true;this.introStarted=false;
     this.latePhotos = new Set();
-    this.photos = new Set(); this.warned = new Set(); this.beer = false; this.won = false; this.retries = 0; this.hazards=[];this.heardLocations=new Set();this.visitedWalkFrames=new Set();this.failurePhase='none';this.timeoutAngel=undefined;
+    this.photos = new Set(); this.warned = new Set(); this.beer = false; this.won = false; this.retries = 0; this.hazards=[];this.visitedWalkFrames=new Set();this.failurePhase='none';this.timeoutAngel=undefined;
     this.lastGround=-1000; this.jumpUntil=0; this.immuneUntil=0; this.floor=0; this.facing=1;
     this.checkpoint={x:75,y:ROAD.y-24};
     this.cameras.main.setZoom(RENDER_SCALE);
@@ -645,7 +644,7 @@ class Errand extends Phaser.Scene {
           h.art.setVisible(motion.warning||motion.dropping||motion.landed);
           if(motion.landed&&h.impacted!==motion.serial){
             h.impacted=motion.serial;impactEffects(this,h.kind,h.x,floors[h.floor].y);
-            if(h.kind==='cooler')gameAudio.playLocation('crashing');else gameAudio.play('piano');
+            if(h.kind!=='cooler')gameAudio.play('piano');
             this.cameras.main.shake(h.kind==='anvil'?140:80,.002);
           }
         }
@@ -659,10 +658,6 @@ class Errand extends Phaser.Scene {
           const lines={keg:'Keg: 1. Shins: 0.',ball:'Red card for your ankles.',piano:'That was an upright. You are not.',anvil:'Heavy metal. Wrong concert.',ac:'You have been air conditioned.',cooler:'The cold ones got you.',partier:'The afterparty has right of way, apparently.',clown:'Honk if you regret this route.',cone:'You have been inconvenienced by municipal geometry.',pigeon:'You have been reviewed by a pigeon. One star.',suitcase:'Your baggage has arrived ahead of you.'};
           this.retry(time,lines[h.kind],isFalling(h.kind)?'squish':h.kind==='partier'||h.kind==='clown'?'person':'object');break;
         }
-      }
-      const locations=[{id:'soccer',floor:6,kind:'soccer' as const},{id:'concert',floor:17,kind:'concert' as const},{id:'jet-13',floor:13,kind:'jet' as const},{id:'jet-22',floor:22,kind:'jet' as const}];
-      for(const spot of locations)if(this.floor===spot.floor&&!this.heardLocations.has(spot.id)){
-        this.heardLocations.add(spot.id);gameAudio.playLocation(spot.kind);
       }
       this.updateEgg();
       if(this.riding)return;
@@ -717,7 +712,7 @@ class Errand extends Phaser.Scene {
     this.reminder.setVisible(!this.won&&!this.failed&&age<REMINDER_MS).setAlpha(Math.floor(age/450)%2===0?1:.4);
     const status=document.getElementById('live-status');
     const summary=`${this.hud.text}. ${indicator}. ${this.toast.text} ${this.reminder.visible?this.reminder.text:''}${this.won?' Mission complete.':''}`;
-    if(status){status.dataset.paused='false';const drop=this.hazards.find(h=>isFalling(h.kind)&&h.floor===this.floor);status.dataset.dropPhase=drop?.piano?.dropping?'dropping':drop?.piano?.landed?'landed':drop?.piano?.warning?'warning':'idle';status.dataset.heroFlipped=String(this.portrait.flipX);status.dataset.heroAnimation=this.portrait.anims.currentAnim?.key??'idle';status.dataset.heroAnimationRate=String(this.portrait.anims.timeScale);status.dataset.heroFilter='nearest';status.dataset.heroTexture=this.portrait.texture.key;status.dataset.timerBeeps=String(this.lastTimerBeep);status.dataset.megaJump=String(this.megaUsed);status.dataset.floor=String(this.floor);status.dataset.elapsed=String(Math.round(this.elapsedMs));status.dataset.eggStage=String(this.eggStage);status.dataset.riding=String(this.riding);status.dataset.failed=String(this.failed);status.dataset.failurePhase=this.failurePhase;status.dataset.score=String(finalScore(this.beer,this.photos,this.mishaps,this.latePhotos,this.elapsedMs,this.cheater));status.dataset.falls=String(this.mishaps.falls);status.dataset.squishes=String(this.mishaps.squishes);status.dataset.bumps=String(this.mishaps.bumps);status.dataset.won=String(this.won);status.dataset.intro='false';status.dataset.heroPlaying=String(this.heroPlaying);status.dataset.fallSound=String(this.fallSoundPlayed);if(status.textContent!==summary)status.textContent=summary;status.dataset.x=String(Math.round(this.player.x));status.dataset.y=String(Math.round(this.player.y));status.dataset.grounded=String(body.blocked.down);status.dataset.walkFrame=String(this.portrait.frame.name);status.dataset.walkFrames=[...this.visitedWalkFrames].sort().join(',');status.dataset.carrying=String(this.beer);status.dataset.sound=gameAudio.state;status.dataset.muted=String(gameAudio.muted);status.dataset.lastCue=gameAudio.lastCue;status.dataset.voiceLine=gameAudio.lastSpoken;status.dataset.voiceStatus=gameAudio.voiceStatus;status.dataset.voiceName=gameAudio.voiceName;status.dataset.loadedVoices=String(gameAudio.loadedVoiceCount);status.dataset.playedVoices=[...gameAudio.playedKinds].sort().join(',');status.dataset.locationCue=gameAudio.lastLocation;status.dataset.heardLocations=[...this.heardLocations].sort().join(',');const nearbyPiano=this.hazards.find(h=>h.kind==='piano'&&h.floor===this.floor);status.dataset.pianoDrops=String(nearbyPiano?.piano?.serial??0);status.dataset.pianoVisible=String(nearbyPiano?.art.visible??false);}
+    if(status){status.dataset.paused='false';const drop=this.hazards.find(h=>isFalling(h.kind)&&h.floor===this.floor);status.dataset.dropPhase=drop?.piano?.dropping?'dropping':drop?.piano?.landed?'landed':drop?.piano?.warning?'warning':'idle';status.dataset.heroFlipped=String(this.portrait.flipX);status.dataset.heroAnimation=this.portrait.anims.currentAnim?.key??'idle';status.dataset.heroAnimationRate=String(this.portrait.anims.timeScale);status.dataset.heroFilter='nearest';status.dataset.heroTexture=this.portrait.texture.key;status.dataset.timerBeeps=String(this.lastTimerBeep);status.dataset.megaJump=String(this.megaUsed);status.dataset.floor=String(this.floor);status.dataset.elapsed=String(Math.round(this.elapsedMs));status.dataset.eggStage=String(this.eggStage);status.dataset.riding=String(this.riding);status.dataset.failed=String(this.failed);status.dataset.failurePhase=this.failurePhase;status.dataset.score=String(finalScore(this.beer,this.photos,this.mishaps,this.latePhotos,this.elapsedMs,this.cheater));status.dataset.falls=String(this.mishaps.falls);status.dataset.squishes=String(this.mishaps.squishes);status.dataset.bumps=String(this.mishaps.bumps);status.dataset.won=String(this.won);status.dataset.intro='false';status.dataset.heroPlaying=String(this.heroPlaying);status.dataset.fallSound=String(this.fallSoundPlayed);if(status.textContent!==summary)status.textContent=summary;status.dataset.x=String(Math.round(this.player.x));status.dataset.y=String(Math.round(this.player.y));status.dataset.grounded=String(body.blocked.down);status.dataset.walkFrame=String(this.portrait.frame.name);status.dataset.walkFrames=[...this.visitedWalkFrames].sort().join(',');status.dataset.carrying=String(this.beer);status.dataset.sound=gameAudio.state;status.dataset.muted=String(gameAudio.muted);status.dataset.lastCue=gameAudio.lastCue;status.dataset.voiceLine=gameAudio.lastSpoken;status.dataset.voiceStatus=gameAudio.voiceStatus;status.dataset.voiceName=gameAudio.voiceName;status.dataset.loadedVoices=String(gameAudio.loadedVoiceCount);status.dataset.playedVoices=[...gameAudio.playedKinds].sort().join(',');status.dataset.locationCue=gameAudio.lastLocation;const nearbyPiano=this.hazards.find(h=>h.kind==='piano'&&h.floor===this.floor);status.dataset.pianoDrops=String(nearbyPiano?.piano?.serial??0);status.dataset.pianoVisible=String(nearbyPiano?.art.visible??false);}
     }finally{this.refreshControlCopy();}
   }
   recallPhoto(time:number){
