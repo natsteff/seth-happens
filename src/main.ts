@@ -1,3 +1,4 @@
+import { installControllerUI } from './controller-ui.mjs';
 import { refreshMeasuredScale, installLayoutSettlement } from './layout-settlement.mjs';
 import { missionAction, FORGOT_BEER, summitSignals } from './mission-actions.mjs';
 import { askFinishChoice, finishChoiceOpen, resetFinishChoice } from './finish-choice';
@@ -562,7 +563,7 @@ class Errand extends Phaser.Scene {
     try{
     gameAudio.music.setHold('scores',scoresOpen());
     let pads:readonly (Gamepad|null)[]=[];try{pads=navigator.getGamepads?.()??[];}catch{/* Keyboard remains usable if gamepad access is blocked. */}
-    const controller=this.controller.sample(Array.from(pads),document.hasFocus()&&!scoresOpen()&&!(document.getElementById('touch-menu') as HTMLDialogElement).open&&document.activeElement?.id!=='radio-volume');const mobile=touch.sample(scoresOpen()||document.hidden||!!document.querySelector('dialog[open]'));
+    const controller=this.controller.sample(Array.from(pads),document.hasFocus()&&!document.querySelector('dialog[open]')&&document.activeElement?.id!=='radio-volume');const mobile=touch.sample(scoresOpen()||document.hidden||!!document.querySelector('dialog[open]'));
     controller.move=controller.move||mobile.move;
     controller.jump ||= mobile.jump;controller.interact ||= mobile.interact;controller.recall ||= mobile.recall;controller.pause ||= mobile.pause;controller.sprint ||= mobile.sprint;
     this.pad=controller;
@@ -571,12 +572,12 @@ class Errand extends Phaser.Scene {
 
     const controllerStatus=document.getElementById('controller-status');if(controllerStatus&&controllerStatus.textContent!==controller.label)controllerStatus.textContent=controller.label;
     if(controller.disconnected&&!this.paused){this.player.setVelocityX(0);this.togglePause();}
-    if(!finishChoiceOpen()&&(Phaser.Input.Keyboard.JustDown(this.keys.P)||controller.pause))this.togglePause();
+    if(!finishChoiceOpen()&&(Phaser.Input.Keyboard.JustDown(this.keys.P)))this.togglePause();
     if(this.paused){const live=document.getElementById('live-status');if(live){live.dataset.paused='true';live.dataset.sound=gameAudio.state;live.textContent=controlCopy('Paused. Press P to resume.',touch.enabled);}return;}
     if(scoresOpen()){this.physics.world.pause();this.input.keyboard!.enabled=false;this.scorePaused=true;return;}
     if(this.scorePaused){this.input.keyboard!.enabled=true;this.scorePaused=false;for(const key of Object.values(this.keys))key.reset();if(!this.introActive&&!this.failed&&!this.won)this.physics.world.resume();}
     if(Phaser.Input.Keyboard.JustDown(this.keys.S))gameAudio.toggle();
-    if(this.introActive&&(controller.jump||controller.interact||controller.pause||controller.move!==0)){void gameAudio.unlock();void this.startIntro();}
+    if(this.introActive&&(controller.jump||controller.interact||controller.move!==0)){void gameAudio.unlock();void this.startIntro();}
     if(this.introActive){const status=document.getElementById('live-status');if(status){status.textContent=`BEER RUN intro. ${this.introStarted?'Playing Let’s go. Gameplay locked.':'Select Start Game to begin. Gameplay locked.'}`;status.dataset.intro='true';status.dataset.x=String(Math.round(this.player.x));status.dataset.y=String(Math.round(this.player.y));status.dataset.loadedVoices=String(gameAudio.loadedVoiceCount);status.dataset.voiceLine=gameAudio.lastSpoken;status.dataset.voiceStatus=gameAudio.voiceStatus;status.dataset.muted=String(gameAudio.muted);}return;}
     if(!this.won&&!this.failed)this.elapsedMs+=Math.min(delta,250);
     if(!this.won&&!this.failed&&runExpired(this.elapsedMs))this.failRun();
@@ -862,6 +863,8 @@ function openTouchMenu(){
   touchMenu.showModal();
   primary.focus({preventScroll:true});
 }
+
+installControllerUI({openMenu:openTouchMenu,audioUnlock:()=>{void gameAudio.unlock();}});
 
 menuButton.addEventListener('pointerdown',event=>{
  if(menuButton.disabled||menuPointer!==null)return;

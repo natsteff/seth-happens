@@ -303,3 +303,8 @@ html.touch-play-locked #play-area.expanded.touch-mode{position:relative;inset:au
 #control-settings #spacing-preview span{flex-shrink:0;width:26px;height:30px;font-size:13px;border-radius:10px;transform:scale(var(--preview-scale,1));transform-origin:center}
 
 .score-dialog .score-top-actions{position:sticky;top:0;z-index:2;background:#14263b;padding:8px 0;margin-top:8px}.score-dialog .score-top-actions button{min-height:44px}.score-dialog .score-top-actions #close-scores{margin-left:auto}
+
+.controller-ui-hint{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);z-index:10000;background:#102137;color:#fff;padding:10px 16px;border:2px solid #ffd08b;border-radius:8px;font:16px Arial;pointer-events:none;max-width:90vw}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #ffd08b;outline-offset:3px}
+
+.controller-focus{outline:3px solid #ffd08b!important;outline-offset:3px}
