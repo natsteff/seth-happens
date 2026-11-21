@@ -757,6 +757,8 @@ soundToggle?.addEventListener('click',()=>{void gameAudio.unlock();gameAudio.tog
 const fullscreenToggle=document.getElementById('fullscreen-toggle') as HTMLButtonElement;
 function refreshGameLayout(){refreshMeasuredScale(game.scale);}
 const gameElement=document.getElementById('play-area')!;
+const fullscreenLaunch=new URLSearchParams(window.location.search).get('fullscreen')==='1';
+if(fullscreenLaunch)gameElement.classList.add('expanded');
 installLayoutSettlement(refreshGameLayout,{parent:document.getElementById('game')!});
 let menuPointer:number|null=null;
 function clearPlayPointers(){
@@ -765,6 +767,7 @@ function clearPlayPointers(){
  try{if(pointer!==null&&button.hasPointerCapture(pointer))button.releasePointerCapture(pointer);}catch{/* Pointer already invalid after orientation change. */}
 }
 const touchViewport=installTouchViewport(gameElement,{onResize:()=>requestAnimationFrame(()=>refreshGameLayout()),onCancel:clearPlayPointers});
+if(fullscreenLaunch){touchViewport.sync();requestAnimationFrame(()=>refreshGameLayout());}
 installDialogRotationRecovery(gameElement,{onCancel:clearPlayPointers,onSettled:()=>{touchViewport.sync();refreshGameLayout();game.scale.updateBounds();}});
 async function toggleFullscreen(){
   fullscreenToggle.blur();
